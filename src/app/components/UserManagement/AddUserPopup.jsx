@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '@/app/CSS/popup.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
   const [formData, setFormData] = useState({
@@ -83,7 +83,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
         <h2 className="text-2xl font-bold text-[#111928] mb-6">Add New User</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Username</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Username</label>
             <input
               type="text"
               name="username"
@@ -95,7 +95,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Email</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Email</label>
             <input
               type="email"
               name="email"
@@ -107,7 +107,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Password</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -121,7 +121,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-[#9ca3af] hover:text-[#5750f1] transition"
+                className="absolute inset-y-0 right-3 flex items-center text-[#111928] hover:text-[#5750f1] transition"
               >
                 {showPassword ? (
                   <svg
@@ -164,7 +164,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">First Name</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -175,7 +175,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Last Name</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -186,7 +186,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Role</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Role</label>
             <select
               name="role"
               value={formData.role}
@@ -199,9 +199,9 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af] mb-2">Status</label>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Status</label>
             <div className="flex items-center">
-              <span className="text-sm text-[#9ca3af] mr-3">{formData.isActive ? 'Active' : 'Inactive'}</span>
+              <span className="text-sm text-[#111928] mr-3">{formData.isActive ? 'Active' : 'Inactive'}</span>
               <button
                 type="button"
                 onClick={() => setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))}

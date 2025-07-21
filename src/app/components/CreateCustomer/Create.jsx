@@ -103,7 +103,7 @@ export default function Create() {
         toast.success('Customer created successfully');
         setTimeout(() => {
           router.push('/dashboard/customer/list');
-        }, 2000);
+        }, 3000);
       } else {
         toast.error(result.message || 'Failed to create customer');
       }
@@ -122,7 +122,7 @@ export default function Create() {
         )}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Name *</label>
+            <label htmlFor="name" className="block text-[#111928] font-medium mb-2">Name *</label>
             <input
               type="text"
               id="name"
@@ -138,7 +138,7 @@ export default function Create() {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 font-medium mb-2">Email *</label>
+            <label htmlFor="email" className="block text-[#111928] font-medium mb-2">Email *</label>
             <input
               type="email"
               id="email"
@@ -154,7 +154,7 @@ export default function Create() {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="mobile" className="block text-gray-700 font-medium mb-2">Mobile *</label>
+            <label htmlFor="mobile" className="block text-[#111928] font-medium mb-2">Mobile *</label>
             <input
               type="tel"
               id="mobile"
@@ -170,7 +170,7 @@ export default function Create() {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="mobile2" className="block text-gray-700 font-medium mb-2">Mobile 2 (Optional)</label>
+            <label htmlFor="mobile2" className="block text-[#111928] font-medium mb-2">Mobile 2 (Optional)</label>
             <input
               type="tel"
               id="mobile2"
@@ -186,7 +186,7 @@ export default function Create() {
             )}
           </div>
           <div className="mb-4">
-            <label htmlFor="company" className="block text-gray-700 font-medium mb-2">Company (Optional)</label>
+            <label htmlFor="company" className="block text-[#111928] font-medium mb-2">Company (Optional)</label>
             <input
               type="text"
               id="company"
@@ -198,7 +198,7 @@ export default function Create() {
             />
           </div>
           <div className="mb-5">
-            <label htmlFor="address" className="block text-gray-700 font-medium mb-2">Address (Optional)</label>
+            <label htmlFor="address" className="block text-[#111928] font-medium mb-2">Address (Optional)</label>
             <textarea
               id="address"
               name="address"

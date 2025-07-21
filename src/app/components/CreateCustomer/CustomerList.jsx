@@ -98,65 +98,65 @@ const EditCustomerPopup = ({ isOpen, onClose, customer, onSave }) => {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Name</label>
+            <label className="block text-sm font-medium text-[#111928]">Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Email</label>
+            <label className="block text-sm font-medium text-[#111928]">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Mobile</label>
+            <label className="block text-sm font-medium text-[#111928]">Mobile</label>
             <input
               type="tel"
               name="mobile"
               value={formData.mobile}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Mobile 2</label>
+            <label className="block text-sm font-medium text-[#111928]">Mobile 2</label>
             <input
               type="tel"
               name="mobile2"
               value={formData.mobile2}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Company</label>
+            <label className="block text-sm font-medium text-[#111928]">Company</label>
             <input
               type="text"
               name="company"
               value={formData.company}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Address</label>
+            <label className="block text-sm font-medium text-[#111928]">Address</label>
             <textarea
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full p-2 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               rows="4"
             />
           </div>

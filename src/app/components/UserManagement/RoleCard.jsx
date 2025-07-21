@@ -82,7 +82,7 @@ const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Username</label>
+            <label className="block text-sm font-medium text-[#111928]">Username</label>
             <input
               type="text"
               name="username"
@@ -93,7 +93,7 @@ const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Email</label>
+            <label className="block text-sm font-medium text-[#111928]">Email</label>
             <input
               type="email"
               name="email"
@@ -104,7 +104,7 @@ const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">First Name</label>
+            <label className="block text-sm font-medium text-[#111928]">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -115,7 +115,7 @@ const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Last Name</label>
+            <label className="block text-sm font-medium text-[#111928]">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -126,7 +126,7 @@ const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#9ca3af]">Role</label>
+            <label className="block text-sm font-medium text-[#111928]">Role</label>
             <select
               name="role"
               value={formData.role}
@@ -239,11 +239,9 @@ const DeleteUserPopup = ({ isOpen, onClose, userId, onDelete }) => {
 
 const ToggleStatusPopup = ({ isOpen, onClose, userId, currentStatus, onToggle }) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const handleToggle = async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/users/${userId}/toggle-status`, {
         method: 'PATCH',
@@ -260,8 +258,6 @@ const ToggleStatusPopup = ({ isOpen, onClose, userId, currentStatus, onToggle })
       onClose();
     } catch (error) {
       toast.error(`Error toggling user status: ${error.message}`);
-      console.error('Error toggling user status:', error);
-      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -276,11 +272,6 @@ const ToggleStatusPopup = ({ isOpen, onClose, userId, currentStatus, onToggle })
         <p className="text-sm text-[#111928] mb-4">
           Are you sure you want to {currentStatus ? 'deactivate' : 'activate'} this user?
         </p>
-        {error && (
-          <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
-            {error}
-          </div>
-        )}
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
@@ -290,16 +281,18 @@ const ToggleStatusPopup = ({ isOpen, onClose, userId, currentStatus, onToggle })
           </button>
           <button
             onClick={handleToggle}
-            className="py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center cursor-pointer"
             disabled={loading}
-          >
-            {currentStatus ? 'Deactivate' : 'Activate'}
-            {loading && (
-              <svg className="ml-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+            className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center cursor-pointer ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+            }`}
+            >
+            {loading ? (
+              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-            )}
+            ) : null}
+            {loading ? 'Processing...' : `${currentStatus ? 'Deactivate' : 'Activate'} User`}
           </button>
         </div>
       </div>
@@ -508,7 +501,7 @@ const RoleCard = ({ onUserUpdated }) => {
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="deactive">Deactive</option>
           </select>
         </div>
       </div>
