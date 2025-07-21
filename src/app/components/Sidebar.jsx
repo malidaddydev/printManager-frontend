@@ -20,8 +20,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'dashboard',
       title: 'Dashboard',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h7a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1zm11 0h7a1 1 0 011 1v7a1 1 0 01-1 1h-7a1 1 0 01-1-1V5a1 1 0 011-1zm-11 9h7a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1v-7a1 1 0 011-1zm11 0h7a1 1 0 011 1v7a1 1 0 01-1 1h-7a1 1 0 01-1-1v-7a1 1 0 011-1z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+          <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+          <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+          <rect width="7" height="5" x="3" y="16" rx="1"></rect>
         </svg>
       ),
       href: '/dashboard',
@@ -30,8 +33,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'customers',
       title: 'Customers',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4a4 4 0 110 8 4 4 0 010-8zm-7 14a3 3 0 013-3h8a3 3 0 013 3v2H5v-2z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
       ),
       dropdown: [
@@ -43,8 +49,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'orders',
       title: 'Orders',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm2 6h10m-10 4h10"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"></path>
+          <path d="M12 22V12"></path>
+          <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7"></path>
+          <path d="m7.5 4.27 9 5.15"></path>
         </svg>
       ),
       dropdown: [
@@ -56,8 +65,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'services',
       title: 'Services',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8a4 4 0 100 8 4 4 0 000-8zm-7 7a7 7 0 0114 0"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+          <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+          <rect width="8" height="8" x="13" y="13" rx="2"></rect>
         </svg>
       ),
       href: '/dashboard/services',
@@ -66,8 +77,12 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'files',
       title: 'Files',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zm-2 6h14m-14 4h14"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+          <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+          <path d="M10 9H8"></path>
+          <path d="M16 13H8"></path>
+          <path d="M16 17H8"></path>
         </svg>
       ),
       href: '/dashboard/files',
@@ -76,8 +91,8 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'comments',
       title: 'Comments',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h18v10a2 2 0 01-2 2h-4l-4 4v-4H5a2 2 0 01-2-2V5z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
       ),
       href: '/dashboard/comments',
@@ -89,8 +104,12 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'design',
       title: 'Design Team',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5l7 7-7 7m7-7h10"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
         </svg>
       ),
       href: '/dashboard/team/design',
@@ -99,8 +118,8 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'embroidery',
       title: 'Embroidery Team',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v10m0 0l-3-3m3 3l3-3m-6 3a3 3 0 006 0"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
         </svg>
       ),
       href: '/dashboard/team/embroidery',
@@ -109,8 +128,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'dtf',
       title: 'DTF Team',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16v12H4V6zm4 3h8m-8 3h8"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"></path>
+          <rect x="6" y="14" width="12" height="8" rx="1"></rect>
         </svg>
       ),
       href: '/dashboard/team/dtf',
@@ -119,8 +140,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'sublimation',
       title: 'Sublimation Team',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 7h14v10H5V7zm2 2v6m10-6v6"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
         </svg>
       ),
       href: '/dashboard/team/sublimation',
@@ -129,8 +152,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'production',
       title: 'Production Team',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18v2l-3 3h-3l-3-3h-6l-3 3v2h18"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
         </svg>
       ),
       href: '/dashboard/team/production',
@@ -142,8 +166,10 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'bigscreen',
       title: 'BigScreen',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h18v14H3V5zm2 2v10h14V7H5z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
         </svg>
       ),
       href: '/dashboard/bigscreen',
@@ -152,8 +178,9 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'notifications',
       title: 'Notifications',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M7 21h10a2 2 0 002-2V9a6 6 0 10-12 0v10a2 2 0 002 2z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
         </svg>
       ),
       href: '/dashboard/notifications',
@@ -162,8 +189,8 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       id: 'user-management',
       title: 'User Management',
       icon: (
-        <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4a4 4 0 110 8 4 4 0 010-8zm-7 14a3 3 0 013-3h8a3 3 0 013 3v2H5v-2z"></path>
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
         </svg>
       ),
       href: '/dashboard/user-management',

@@ -1,10 +1,13 @@
 'use client';
+import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
+import OrderList from '@/app/components/CreateOrder/OrderList';
 import React from 'react';
 
 export default function OrderListPage() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium text-gray-800">Order List Content</h3>
+    <div className="p-6">
+      <Breadcrumbs pageName="Order List" />
+      <OrderList />
     </div>
   );
 }

@@ -403,7 +403,7 @@ export default function CustomerList({ onCustomerUpdated }) {
     <>
       <div className="bg-white rounded-[10px] p-6 border-[1px] border-[#e5e7eb]">
         <h2 className="font-medium text-gray-800 text-[24px]">Customer Directory</h2>
-        <p className="text-[18px] text-[#9ca3af] mb-4">Search and filter customer accounts</p>
+        <p className="text-[18px] text-[#9ca3af] mb-4">Search customer accounts</p>
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <input
             type="text"

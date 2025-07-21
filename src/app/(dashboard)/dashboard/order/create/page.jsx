@@ -1,10 +1,13 @@
 'use client';
+import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
+import Create from '@/app/components/CreateOrder/Create';
 import React from 'react';
 
 export default function OrderCreatePage() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium text-gray-800">Order Create Content</h3>
+    <div className="p-6">
+      <Breadcrumbs pageName="Create Order" />
+      <Create />
     </div>
   );
 }

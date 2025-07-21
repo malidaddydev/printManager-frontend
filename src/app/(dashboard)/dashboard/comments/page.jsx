@@ -1,10 +1,13 @@
 'use client';
+import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
+import Comments from '@/app/components/Comments/Comments';
 import React from 'react';
 
 export default function CommentsPage() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium text-gray-800">Comments Content</h3>
+    <div className="p-6">
+      <Breadcrumbs pageName="Comments" />
+      <Comments />
     </div>
   );
 }

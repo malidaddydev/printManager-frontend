@@ -1,10 +1,13 @@
 'use client';
+import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
+import Design from '@/app/components/Team/Design/Design';
 import React from 'react';
 
 export default function DesignPage() {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium text-gray-800">Design Content</h3>
+    <div className="p-6">
+      <Breadcrumbs pageName="Design" />
+      <Design />
     </div>
   );
 }
