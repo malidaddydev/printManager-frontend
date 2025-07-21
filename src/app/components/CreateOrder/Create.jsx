@@ -4,25 +4,31 @@ import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 
 const CustomerSearchDropdown = ({ customers, menuOpen, menuPosition, onSelectCustomer }) => {
-  if (!menuOpen || !customers || customers.length === 0) return null;
+  if (!menuOpen || !customers) return null;
+
+  const validCustomers = customers.filter(customer => customer && customer.id);
 
   return createPortal(
     <div
       className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 max-h-[200px] overflow-y-auto dropdown-menu"
       style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
     >
-      {customers.map((customer) => (
-        <button
-          key={customer.id}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectCustomer(customer);
-          }}
-          className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-        >
-          <span className="font-medium">{customer.name || 'N/A'}</span> - {customer.email || 'N/A'}
-        </button>
-      ))}
+      {validCustomers.length === 0 ? (
+        <div className="px-4 py-2 text-sm text-[#111928]">Customer not found</div>
+      ) : (
+        validCustomers.map((customer) => (
+          <button
+            key={customer.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelectCustomer(customer);
+            }}
+            className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+          >
+            <span className="font-medium">{customer.name || 'N/A'}</span> - {customer.email || 'N/A'}
+          </button>
+        ))
+      )}
     </div>,
     document.getElementById('dropdown-portal') || document.body
   );

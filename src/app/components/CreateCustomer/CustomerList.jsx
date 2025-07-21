@@ -341,6 +341,7 @@ export default function CustomerList({ onCustomerUpdated }) {
 
   // Filter customers
   const filteredCustomers = customers.filter((customer) => {
+    if (!searchTerm.trim()) return true;
     const matchesSearch =
       (customer.id && customer.id.toString().includes(searchTerm)) ||
       (customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
@@ -407,7 +408,7 @@ export default function CustomerList({ onCustomerUpdated }) {
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <input
             type="text"
-            placeholder="Search by name, email, or company"
+            placeholder="Search by id, name, email, or company"
             className="w-full sm:w-1/3 px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
