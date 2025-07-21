@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }) {
         {/* Navbar */}
         <Navbar toggleSidebar={toggleSidebar} />
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 lg:ml-[290px] pt-[80px] md:pt-[100px]">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 lg:ml-[290px] pt-[100px] md:pt-[120px]">
           {children}
         </main>
       </div>
