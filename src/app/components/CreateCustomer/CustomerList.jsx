@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -304,6 +305,7 @@ export default function CustomerList({ onCustomerUpdated }) {
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   // Fetch customers from API
   useEffect(() => {
@@ -403,8 +405,35 @@ export default function CustomerList({ onCustomerUpdated }) {
   return (
     <>
       <div className="bg-white rounded-[10px] p-6 border-[1px] border-[#e5e7eb]">
-        <h2 className="font-medium text-gray-800 text-[24px]">Customer Directory</h2>
-        <p className="text-[18px] text-[#9ca3af] mb-4">Search customer accounts</p>
+        <div className="flex justify-between">
+          <div>
+              <h2 className="font-medium text-gray-800 text-[24px]">Customer Directory</h2>
+              <p className="text-[18px] text-[#9ca3af] mb-4">Search customer accounts</p>
+          </div>
+          <div>
+              <button
+                onClick={() => router.push('/dashboard/customer/create')}
+                className="bg-[#5750f1] text-white py-[13px] px-[35px] rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
+                >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-white"
+                >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Customer
+                </button>
+            </div>
+        </div>
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <input
             type="text"

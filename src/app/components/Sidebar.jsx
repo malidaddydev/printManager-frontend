@@ -62,8 +62,33 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       ],
     },
     {
-      id: 'services',
-      title: 'Services',
+      id: 'createStage',
+      title: 'Create Stage',
+      icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M8 12h8"></path>
+          <path d="M12 8v8"></path>
+        </svg>
+      ),
+      href: '/dashboard/stage',
+    },
+    {
+      id: 'createWorkFlow',
+      title: 'Create Workflow',
+      icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="18" cy="18" r="3"></circle>
+          <circle cx="6" cy="6" r="3"></circle>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+          <line x1="6" x2="6" y1="9" y2="21"></line>
+        </svg>
+      ),
+      href: '/dashboard/workflow',
+    },
+    {
+      id: 'createServices',
+      title: 'Create Services',
       icon: (
         <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect width="8" height="8" x="3" y="3" rx="2"></rect>
@@ -72,6 +97,20 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       href: '/dashboard/services',
+    },
+    {
+      id: 'products',
+      title: 'Products',
+      icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+          <path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+      ),
+      dropdown: [
+        { title: 'Create Product', href: '/dashboard/products/create' },
+        { title: 'Product List', href: '/dashboard/products/list' },
+      ],
     },
     {
       id: 'files',

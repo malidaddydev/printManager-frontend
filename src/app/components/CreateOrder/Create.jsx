@@ -1,626 +1,595 @@
+"use client";
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
-
-const CustomerSearchDropdown = ({ customers, menuOpen, menuPosition, onSelectCustomer }) => {
-  if (!menuOpen || !customers) return null;
-
-  const validCustomers = customers.filter(customer => customer && customer.id);
-
-  return createPortal(
-    <div
-      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 max-h-[200px] overflow-y-auto dropdown-menu"
-      style={{ top: `${menuPosition.top}px`, left: `${menuPosition.left}px` }}
-    >
-      {validCustomers.length === 0 ? (
-        <div className="px-4 py-2 text-sm text-[#111928]">Customer not found</div>
-      ) : (
-        validCustomers.map((customer) => (
-          <button
-            key={customer.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectCustomer(customer);
-            }}
-            className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-          >
-            <span className="font-medium">{customer.name || 'N/A'}</span> - {customer.email || 'N/A'}
-          </button>
-        ))
-      )}
-    </div>,
-    document.getElementById('dropdown-portal') || document.body
-  );
-};
-
-const OrderItem = ({ itemId, onRemove }) => {
-  return (
-    <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb] mb-7">
-      <div className="flex justify-between items-center mb-3 ">
-        <h4 className="text-lg font-semibold text-[#111928]">Order Item #{itemId}</h4>
-        <button
-          onClick={() => {
-            onRemove(itemId);
-          }}
-          className="py-2 px-4 bg-[#ef4444] text-white rounded-lg hover:bg-red-700"
-        >
-          Remove
-        </button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Product Title</label>
-          <input
-            type="text"
-            name={`product-title-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Price (cents)</label>
-          <input
-            type="number"
-            name={`product-price-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Color</label>
-          <input
-            type="text"
-            name={`product-color-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Category</label>
-          <select
-            name={`product-category-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          >
-            <option value="Goods with Service">Goods with Service</option>
-            <option value="Service Only">Service Only</option>
-            <option value="Goods Only">Goods Only</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Service</label>
-          <select
-            name={`product-service-id-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          >
-            <option value="1">Sublimation</option>
-            <option value="2">Embroidery</option>
-            <option value="3">DTF</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">SKU</label>
-          <input
-            type="text"
-            name={`product-sku-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Turnaround Days</label>
-          <input
-            type="number"
-            name={`product-turnaround-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Quantity</label>
-          <input
-            type="number"
-            name={`item-quantity-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Size Breakdown</label>
-          <input
-            type="text"
-            name={`item-size-breakdown-${itemId}`}
-            placeholder="e.g., S:3,M:5,L:2"
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Item Notes</label>
-          <textarea
-            name={`item-notes-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            rows="3"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#111928]">Requires Customer Garment</label>
-          <select
-            name={`product-customer-garment-${itemId}`}
-            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-            required
-          >
-            <option value="false">No</option>
-            <option value="true">Yes</option>
-          </select>
-        </div>
-      </div>
-      <div className="mt-7">
-        <h4 className="text-lg font-semibold text-[#111928] mb-2">Production Stages</h4>
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Stage Name</label>
-              <input
-                type="text"
-                name={`stage-name-${itemId}`}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">State</label>
-              <input
-                type="text"
-                name={`stage-state-${itemId}`}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Due Days</label>
-              <input
-                type="number"
-                name={`stage-due-days-${itemId}`}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreateOrder() {
- const router = useRouter();
-  const [customerId, setCustomerId] = useState('');
-  const [customers, setCustomers] = useState([]);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const [customerData, setCustomerData] = useState({
-    name: '',
-    email: '',
-    mobile: '',
-    mobile2: '',
-    company: '',
-    address: '',
-  });
-  const [isCustomerSelected, setIsCustomerSelected] = useState(false);
+  const router = useRouter();
   const [orderData, setOrderData] = useState({
-    orderTitle: '',
-    dueDate: '',
+    customerId: '',
+    orderNumber: '',
+    title: '',
     status: 'Draft',
+    startDate: '',
+    dueDate: '',
     notes: '',
+    items: [],
+    total: 0,
+    totalQuantity: 0,
+    files: null,
   });
-  const [orderItems, setOrderItems] = useState([1]);
-  const [itemCounter, setItemCounter] = useState(1);
+  const [products, setProducts] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState(null);
+  const fileInputRef = useRef(null);
 
-  const handleSearchCustomer = async () => {
-    if (!customerId) {
-      toast.error('Please enter a customer ID');
-      setCustomers([]);
-      setMenuOpen(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await fetch(`https://printmanager-api.onrender.com/api/customers/${customerId}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Customer not found');
+  // Fetch products and services
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const productsRes = await fetch('https://printmanager-api.onrender.com/api/products');
+        if (!productsRes.ok) throw new Error('Failed to fetch products');
+        const productsData = await productsRes.json();
+        setProducts(Array.isArray(productsData) ? productsData : productsData.products || []);
+
+        const servicesRes = await fetch('https://printmanager-api.onrender.com/api/services');
+        if (!servicesRes.ok) throw new Error('Failed to fetch services');
+        const servicesData = await servicesRes.json();
+        setServices(Array.isArray(servicesData) ? servicesData : servicesData.services || []);
+      } catch (err) {
+        toast.error(err.message || 'Error fetching data');
       }
-      const customer = await response.json();
-      setCustomers([customer]);
-      setMenuOpen(true);
+    };
+    fetchData();
+  }, []);
+
+  // Handle customer ID search
+  const handleCustomerSearch = async (customerId) => {
+    if (!customerId) return;
+    try {
+      const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${customerId}`);
+      if (!res.ok) throw new Error('Customer not found');
+      const data = await res.json();
+      setCustomerInfo(data);
+      setOrderData(prev => ({ ...prev, customerId }));
     } catch (err) {
-      toast.error(err.message || 'Failed to fetch customer');
-      setCustomers([]);
-      setMenuOpen(false);
-    } finally {
-      setLoading(false);
+      toast.error(err.message || 'Error fetching customer');
+      setCustomerInfo(null);
     }
   };
 
-  const handleSelectCustomer = (customer) => {
-    setCustomerData({
-      name: customer.name || '',
-      email: customer.email || '',
-      mobile: customer.mobile || '',
-      mobile2: customer.mobile2 || '',
-      company: customer.company || '',
-      address: customer.address || '',
-    });
-    setIsCustomerSelected(true);
-    setMenuOpen(false);
-    setCustomerId('');
-    setCustomers([]);
-  };
-
-  const handleClearCustomer = () => {
-    setCustomerData({
-      name: '',
-      email: '',
-      mobile: '',
-      mobile2: '',
-      company: '',
-      address: '',
-    });
-    setIsCustomerSelected(false);
-    setCustomerId('');
-    setCustomers([]);
-    setMenuOpen(false);
-  };
-
-  const handleCustomerChange = (e) => {
+  // Handle input changes
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setCustomerData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'customerId') {
+      handleCustomerSearch(value);
+    } else {
+      setOrderData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleOrderChange = (e) => {
-    const { name, value } = e.target;
-    setOrderData((prev) => ({ ...prev, [name]: value }));
+  // Handle file upload
+  const handleFileChange = (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      for (let file of files) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('File size must be less than 5MB');
+          return;
+        }
+      }
+      setOrderData(prev => ({ ...prev, files }));
+    }
   };
 
-  const addOrderItem = () => {
-    setItemCounter((prev) => prev + 1);
-    setOrderItems((prev) => [...prev, itemCounter + 1]);
+  // Add new item
+  const addItem = () => {
+    setOrderData(prev => ({
+      ...prev,
+      items: [...prev.items, {
+        productId: '',
+        color: '',
+        sizeQuantities: [],
+        productTitle: '',
+        serviceTitle: '',
+        image: '',
+        total: 0,
+        quantity: 0
+      }]
+    }));
   };
 
-  const removeOrderItem = (itemId) => {
-    setOrderItems((prev) => prev.filter((id) => id !== itemId));
+  // Remove item
+  const removeItem = (index) => {
+    if (orderData.items.length > 1) {
+      setOrderData(prev => {
+        const newItems = [...prev.items];
+        newItems.splice(index, 1);
+        return updateTotals({ ...prev, items: newItems });
+      });
+    }
   };
 
+  // Add size to item
+  const addSize = (itemIndex) => {
+    setOrderData(prev => {
+      const newItems = [...prev.items];
+      // Ensure only one size is added
+      newItems[itemIndex] = {
+        ...newItems[itemIndex],
+        sizeQuantities: [...newItems[itemIndex].sizeQuantities, { Size: '', Price: 0, Quantity: 0 }]
+      };
+      return updateTotals({ ...prev, items: newItems });
+    });
+  };
+
+  // Remove size
+  const removeSize = (itemIndex, sizeIndex) => {
+    setOrderData(prev => {
+      const newItems = [...prev.items];
+      newItems[itemIndex].sizeQuantities.splice(sizeIndex, 1);
+      return updateTotals({ ...prev, items: newItems });
+    });
+  };
+
+  // Handle item changes
+  const handleItemChange = (itemIndex, field, value) => {
+    setOrderData(prev => {
+      const newItems = [...prev.items];
+      if (field === 'productId') {
+        const product = products.find(p => p.id === parseInt(value));
+        if (product) {
+          newItems[itemIndex] = {
+            ...newItems[itemIndex],
+            productId: value,
+            productTitle: product.title,
+            serviceTitle: services.find(s => s.id === product.serviceId)?.title || '',
+            image: product.imageUrl || '',
+            colorOptions: product.colorOptions || [],
+            color: '',
+            unitPrice: product.unitPrice || 0
+          };
+        }
+      } else {
+        newItems[itemIndex][field] = value;
+      }
+      return updateTotals({ ...prev, items: newItems });
+    });
+  };
+
+  // Handle size quantity changes
+  const handleSizeChange = (itemIndex, sizeIndex, field, value) => {
+    setOrderData(prev => {
+      const newItems = [...prev.items];
+      newItems[itemIndex].sizeQuantities[sizeIndex][field] = 
+        field === 'Price' || field === 'Quantity' ? parseFloat(value) || 0 : value;
+      if (field === 'Quantity' && value) {
+        newItems[itemIndex].sizeQuantities[sizeIndex].Quantity = parseInt(value) || 0;
+        newItems[itemIndex].sizeQuantities[sizeIndex].Price = newItems[itemIndex].unitPrice || 0;
+      }
+      return updateTotals({ ...prev, items: newItems });
+    });
+  };
+
+  // Update totals
+  const updateTotals = (data) => {
+    let total = 0;
+    let totalQuantity = 0;
+    const updatedItems = data.items.map(item => {
+      const itemTotal = item.sizeQuantities.reduce((sum, size) => {
+        return sum + (size.Price * size.Quantity);
+      }, 0);
+      const itemQuantity = item.sizeQuantities.reduce((sum, size) => sum + size.Quantity, 0);
+      total += itemTotal;
+      totalQuantity += itemQuantity;
+      return { 
+        ...item, 
+        total: itemTotal, 
+        quantity: itemQuantity,
+        price: itemTotal,
+        quantity: itemQuantity
+      };
+    });
+    return { ...data, items: updatedItems, total, totalQuantity };
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (orderItems.length === 0) {
-      toast.error('Please add at least one order item');
+    if (!orderData.customerId || !orderData.orderNumber || !orderData.title || !orderData.dueDate || !orderData.items.length) {
+      toast.error('Please fill in all required fields');
       return;
     }
-    setLoading(true);
 
-    const formData = {
-      customer: customerData,
-      order: {
-        order_title: orderData.orderTitle,
-        due_date: orderData.dueDate,
-        status: orderData.status,
-        notes: orderData.notes,
-        order_items: orderItems.map((itemId) => ({
-          product: {
-            title: document.querySelector(`[name="product-title-${itemId}"]`).value,
-            price: parseInt(document.querySelector(`[name="product-price-${itemId}"]`).value),
-            color: document.querySelector(`[name="product-color-${itemId}"]`).value,
-            category: document.querySelector(`[name="product-category-${itemId}"]`).value,
-            service_id: parseInt(document.querySelector(`[name="product-service-id-${itemId}"]`).value),
-            sku: document.querySelector(`[name="product-sku-${itemId}"]`).value,
-            turnaround_days: parseInt(document.querySelector(`[name="product-turnaround-${itemId}"]`).value),
-            requires_customer_garment: document.querySelector(`[name="product-customer-garment-${itemId}"]`).value === 'true',
-            stages: [
-              {
-                state: document.querySelector(`[name="stage-state-${itemId}"]`).value,
-                name: document.querySelector(`[name="stage-name-${itemId}"]`).value,
-                dueDays: parseInt(document.querySelector(`[name="stage-due-days-${itemId}"]`).value),
-              },
-            ],
-          },
-          quantity: parseInt(document.querySelector(`[name="item-quantity-${itemId}"]`).value),
-          size_breakdown: document.querySelector(`[name="item-size-breakdown-${itemId}"]`).value,
-          item_notes: document.querySelector(`[name="item-notes-${itemId}"]`).value,
-        })),
-      },
-    };
+    setLoading(true);
+    const formData = new FormData();
+    
+    // Add individual fields
+    formData.append('customerId', parseInt(orderData.customerId));
+    formData.append('orderNumber', orderData.orderNumber);
+    formData.append('title', orderData.title);
+    formData.append('status', orderData.status);
+    if (orderData.startDate) {
+      formData.append('startDate', new Date(orderData.startDate).toISOString());
+    }
+    formData.append('dueDate', new Date(orderData.dueDate).toISOString());
+    if (orderData.notes) {
+      formData.append('notes', orderData.notes);
+    }
+
+    // Add items as JSON string
+    const itemsData = orderData.items.map(item => ({
+      productId: parseInt(item.productId),
+      color: item.color,
+      quantity: item.quantity,
+      price: item.total,
+      sizeQuantities: item.sizeQuantities.map(size => ({
+        Size: size.Size,
+        Price: parseFloat(size.Price),
+        Quantity: parseInt(size.Quantity)
+      }))
+    }));
+    formData.append('items', JSON.stringify(itemsData));
+
+    // Add files
+    if (orderData.files) {
+      for (let file of orderData.files) {
+        formData.append('files', file);
+      }
+    }
 
     try {
-      const response = await fetch('https://printmanager-api.onrender.com/api/orders/create', {
+      const response = await fetch('https://printmanager-api.onrender.com/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: formData,
       });
-      const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create order');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create order');
       }
-      setCustomerData({ name: '', email: '', mobile: '', mobile2: '', company: '', address: '' });
-      setIsCustomerSelected(false);
-      setOrderData({ orderTitle: '', dueDate: '', status: 'Draft', notes: '' });
-      setOrderItems([1]);
-      setItemCounter(1);
-      setCustomerId('');
-      setCustomers([]);
       toast.success('Order created successfully');
-      setTimeout(() => {
-       router.push('/dashboard/order/list');
-      }, 3000);
+      setOrderData({
+        customerId: '',
+        orderNumber: '',
+        title: '',
+        status: 'Draft',
+        startDate: '',
+        dueDate: '',
+        notes: '',
+        items: [],
+        total: 0,
+        totalQuantity: 0,
+        files: null
+      });
+      setCustomerInfo(null);
+      fileInputRef.current.value = '';
+      setTimeout(() => router.push('/dashboard/order/list'), 2000);
     } catch (err) {
-      toast.error(err.message || 'An error occurred while creating the order');
+      toast.error(err.message || 'Error creating order');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle outside click to close dropdown
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (!event.target.closest('.dropdown-menu') && !event.target.closest('.customer-search')) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
-
-  // Add initial order item
-  useEffect(() => {
-    setOrderItems([1]);
-    setItemCounter(1);
-  }, []);
-
-  // Handle customer search input focus for positioning
-  const handleSearchFocus = (e) => {
-    const rect = e.target.getBoundingClientRect();
-    setMenuPosition({
-      top: rect.bottom + window.scrollY,
-      left: rect.left + window.scrollX,
-    });
-  };
-
-//   className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]"
-
   return (
-    <>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-        {/* Customer Information */}
-        <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-          <h3 className="text-lg font-semibold text-[#111928] mb-4">Customer Information</h3>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-[#111928] mb-2">Search Customer by ID</label>
-            <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+              Customer ID
+            </label>
+            <input
+              type="number"
+              name="customerId"
+              value={orderData.customerId}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+            {customerInfo && (
+              <div className="mt-2 text-sm text-[#111928]">
+                Customer: {customerInfo.name} {customerInfo.email && `(${customerInfo.email})`}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+              Order Number
+            </label>
+            <input
+              type="text"
+              name="orderNumber"
+              value={orderData.orderNumber}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={orderData.title}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Status</label>
+            <select
+              name="status"
+              value={orderData.status}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+            >
+              <option value="Draft">Draft</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              value={orderData.startDate}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+              Due Date
+            </label>
+            <input
+              type="date"
+              name="dueDate"
+              value={orderData.dueDate}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-[#111928]">Notes</label>
+            <textarea
+              name="notes"
+              value={orderData.notes}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+            />
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-[#111928]">Upload Files</label>
               <input
-                type="text"
-                value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
-                onFocus={handleSearchFocus}
-                placeholder="Enter Customer ID"
-                className="customer-search w-full sm:w-1/3 px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg"
               />
-              <button
-                type="button"
-                onClick={handleSearchCustomer}
-                className={`py-2 px-4 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center ${
-                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-                }`}
-                disabled={loading}
-              >
-                {loading ? (
-                    <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                ) : null}
-                {loading ? 'Searching...' : 'Search Customer'}
-              </button>
-              {isCustomerSelected && (
-                <button
-                  type="button"
-                  onClick={handleClearCustomer}
-                  className="py-2 px-4 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
-                >
-                  Clear Customer
-                </button>
+              {orderData.files && (
+                <div className="mt-2">
+                  {Array.from(orderData.files).map((file, index) => (
+                    <div key={index} className="flex justify-between p-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
+                      <span>{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOrderData(prev => ({
+                            ...prev,
+                            files: Array.from(prev.files).filter((_, i) => i !== index)
+                          }));
+                        }}
+                        className="text-[#ef4444]"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
-          <CustomerSearchDropdown
-            customers={customers}
-            menuOpen={menuOpen}
-            menuPosition={menuPosition}
-            onSelectCustomer={handleSelectCustomer}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={customerData.name}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                disabled={isCustomerSelected}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={customerData.email}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                disabled={isCustomerSelected}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Mobile</label>
-              <input
-                type="tel"
-                name="mobile"
-                value={customerData.mobile}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                disabled={isCustomerSelected}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Mobile 2</label>
-              <input
-                type="tel"
-                name="mobile2"
-                value={customerData.mobile2}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                disabled={isCustomerSelected}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Company</label>
-              <input
-                type="text"
-                name="company"
-                value={customerData.company}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                disabled={isCustomerSelected}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Address</label>
-              <textarea
-                name="address"
-                value={customerData.address}
-                onChange={handleCustomerChange}
-                className={`w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${
-                  isCustomerSelected ? 'bg-gray-100 cursor-not-allowed' : ''
-                }`}
-                rows="3"
-                disabled={isCustomerSelected}
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Order Details */}
-        <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-          <h3 className="text-lg font-semibold text-[#111928] mb-4">Order Details</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Order Title</label>
-              <input
-                type="text"
-                name="orderTitle"
-                value={orderData.orderTitle}
-                onChange={handleOrderChange}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Due Date</label>
-              <input
-                type="date"
-                name="dueDate"
-                value={orderData.dueDate}
-                onChange={handleOrderChange}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Status</label>
-              <select
-                name="status"
-                value={orderData.status}
-                onChange={handleOrderChange}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                required
-              >
-                <option value="Draft">Draft</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#111928]">Order Notes</label>
-              <textarea
-                name="notes"
-                value={orderData.notes}
-                onChange={handleOrderChange}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                rows="3"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Order Items */}
-        <div>
-          <div className="bg-white flex justify-between items-center mb-7 p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-            <h3 className="text-lg font-semibold text-[#111928]">Order Items</h3>
+        <div className="mt-8 border-t pt-6 border-[#e5e7eb]">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium text-[#111928]">Order Items</h2>
             <button
               type="button"
-              onClick={addOrderItem}
-              className="py-2 px-4 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+              onClick={addItem}
+              className="py-2 px-4 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700"
             >
               Add Item
             </button>
           </div>
-          {orderItems.map((itemId) => (
-            <OrderItem key={itemId} itemId={itemId} onRemove={removeOrderItem} />
+
+          {orderData.items.map((item, itemIndex) => (
+            <div key={itemIndex} className="mb-4 p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-md font-medium text-[#111928]">Item #{itemIndex + 1}</h3>
+                {orderData.items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(itemIndex)}
+                    className="text-[#ef4444] text-sm"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+                    Product ID
+                  </label>
+                  <select
+                    value={item.productId}
+                    onChange={(e) => handleItemChange(itemIndex, 'productId', e.target.value)}
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                    required
+                  >
+                    <option value="">Select Product</option>
+                    {products.map(product => (
+                      <option key={product.id} value={product.id}>
+                        {product.id} - {product.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111928]">Color</label>
+                  <select
+                    value={item.color}
+                    onChange={(e) => handleItemChange(itemIndex, 'color', e.target.value)}
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                  >
+                    <option value="">Select Color</option>
+                    {item.colorOptions?.map((color, i) => (
+                      <option key={i} value={color}>
+                        {color}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {item.image && (
+                  <div>
+                    <label className="block text-sm font-medium text-[#111928]">Product Image</label>
+                    <img src={item.image} alt="Product" className="h-24 object-contain" />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111928]">Service</label>
+                  <input
+                    type="text"
+                    value={item.serviceTitle}
+                    readOnly
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111928]">Item Total</label>
+                  <input
+                    type="number"
+                    value={item.total}
+                    readOnly
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111928]">Total Quantity</label>
+                  <input
+                    type="number"
+                    value={item.quantity}
+                    readOnly
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium text-[#111928]">Size Quantities</h4>
+                  <button
+                    type="button"
+                    onClick={() => addSize(itemIndex)}
+                    className="py-1 px-3 bg-[#5750f1] text-white rounded-lg text-sm hover:bg-blue-700"
+                    disabled={loading}
+                  >
+                    Add Size
+                  </button>
+                </div>
+
+                {item.sizeQuantities.map((size, sizeIndex) => (
+                  <div key={sizeIndex} className="flex gap-4 mb-2 items-end">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-[#111928]">Size</label>
+                      <input
+                        type="text"
+                        value={size.Size}
+                        onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Size', e.target.value)}
+                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-[#111928]">Price</label>
+                      <input
+                        type="number"
+                        value={size.Price}
+                        onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Price', e.target.value)}
+                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-[#111928]">Quantity</label>
+                      <input
+                        type="number"
+                        value={size.Quantity}
+                        onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Quantity', e.target.value)}
+                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeSize(itemIndex, sizeIndex)}
+                      className="text-[#ef4444] text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
+        <div className="mt-6 flex justify-between items-center">
+          <div>
+            <span className="text-sm font-medium text-[#111928]">Order Total: ${orderData.total.toFixed(2)}</span>
+            <span className="ml-4 text-sm font-medium text-[#111928]">Total Quantity: {orderData.totalQuantity}</span>
+          </div>
           <button
             type="submit"
-            className={`py-3 px-8 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center ${
-                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-              }`}
+            className={`py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             disabled={loading}
           >
-            {loading ? (
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-            ) : null}
+            {loading && (
+              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            )}
             {loading ? 'Creating Order...' : 'Create Order'}
           </button>
         </div>
-      </form>
+      </div>
       <ToastContainer />
-    </>
+    </form>
   );
 }
