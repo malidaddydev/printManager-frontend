@@ -62,31 +62,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       ],
     },
     {
-      id: 'createStage',
-      title: 'Create Stage',
-      icon: (
-        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M8 12h8"></path>
-          <path d="M12 8v8"></path>
-        </svg>
-      ),
-      href: '/dashboard/stage',
-    },
-    {
-      id: 'createWorkFlow',
-      title: 'Create Workflow',
-      icon: (
-        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="18" cy="18" r="3"></circle>
-          <circle cx="6" cy="6" r="3"></circle>
-          <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
-          <line x1="6" x2="6" y1="9" y2="21"></line>
-        </svg>
-      ),
-      href: '/dashboard/workflow',
-    },
-    {
       id: 'createServices',
       title: 'Create Services',
       icon: (
@@ -202,6 +177,33 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
 
   const otherMenuItems = [
     {
+      id: 'settings',
+      title: 'Settings',
+      icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      ),
+      dropdown: [
+        { title: 'Create Stage', href: '/dashboard/stage', icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M8 12h8"></path>
+          <path d="M12 8v8"></path>
+        </svg>
+      ) },
+        { title: 'Create Workflow', href: '/dashboard/workflow', icon: (
+        <svg className="w-6 h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="18" cy="18" r="3"></circle>
+          <circle cx="6" cy="6" r="3"></circle>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+          <line x1="6" x2="6" y1="9" y2="21"></line>
+        </svg>
+      ) },
+      ],
+    },
+    {
       id: 'bigscreen',
       title: 'BigScreen',
       icon: (
@@ -273,13 +275,14 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
                   <Link
                     key={index}
                     href={subItem.href}
-                    className={`block px-3.5 py-3 rounded-lg text-[16px] ${
+                    className={`flex items-center px-3.5 py-3 rounded-lg text-[16px] ${
                       pathname === subItem.href
                         ? 'bg-[rgba(87,80,241,0.07)] text-[#5750f1]'
                         : 'text-[#4b5563] hover:bg-gray-100 hover:text-black'
                     }`}
                     onClick={() => toggleSidebar()}
                   >
+                    {subItem.icon}
                     {subItem.title}
                   </Link>
                 ))}

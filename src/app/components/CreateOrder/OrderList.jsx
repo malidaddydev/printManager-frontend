@@ -1,12 +1,82 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const DropdownMenu = ({ orderId, menuPosition, menuOpen }) => {
-  if (menuOpen !== orderId) return null;
+const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        toast.error('Failed to delete order');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete order');
+      }
+      toast.success('Order deleted successfully');
+      onDelete(orderId);
+      onClose();
+    } catch (error) {
+      toast.error(`Error deleting order: ${error.message}`);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
+        <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this order?</p>
+        {error && (
+          <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={() => {
+              onClose();
+            }}
+            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className={`py-[13px] px-6 bg-[#ef4444] text-white rounded-lg hover:bg-red-700 flex items-center justify-center cursor-pointer ${
+              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
+            }`}
+          >
+            {loading && (
+              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {loading ? 'Deleting...' : 'Delete Order'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onEdit, onDelete }) => {
+  if (menuOpen !== orderId) return null;
+  return createPortal(
     <div
       className="absolute top-0 bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
       style={{
@@ -15,18 +85,34 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen }) => {
       }}
     >
       <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onView(orderId);
+        }}
         className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-        disabled
+      >
+        View Order
+      </button>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(orderId);
+        }}
+        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         Edit Order
       </button>
       <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(orderId);
+        }}
         className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-        disabled
       >
         Delete Order
       </button>
-    </div>
+    </div>,
+    document.getElementById('dropdown-portal') || document.body
   );
 };
 
@@ -38,6 +124,7 @@ export default function OrderList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const [deleteOrder, setDeleteOrder] = useState({ isOpen: false, orderId: null });
   const [customerNames, setCustomerNames] = useState({});
 
   // Fetch orders and customer names
@@ -51,7 +138,7 @@ export default function OrderList() {
           throw new Error(errorData.message || 'Failed to fetch orders');
         }
         const data = await response.json();
-        console.log(data)
+        console.log(data);
         const ordersArray = Array.isArray(data) ? data : [];
         setOrders(ordersArray);
 
@@ -109,6 +196,27 @@ export default function OrderList() {
       })
     : [];
 
+  // Action handlers
+  const handleViewOrder = (orderId) => {
+    router.push(`/dashboard/order/view/${orderId}`);
+    setMenuOpen(null);
+  };
+
+  const handleEditOrder = (orderId) => {
+    router.push(`/dashboard/order/edit/${orderId}`);
+    setMenuOpen(null);
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    setDeleteOrder({ isOpen: true, orderId });
+    setMenuOpen(null);
+  };
+
+  const handleDeleteOrderConfirmed = (orderId) => {
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    setMenuOpen(null);
+  };
+
   // Handle menu open and position
   const handleMenuClick = (orderId, event) => {
     event.preventDefault();
@@ -138,12 +246,12 @@ export default function OrderList() {
   };
 
   return (
-    <div className="flex flex-col gap-7">
-      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+    <>
+      <div className="bg-white rounded-[10px] p-6 border-[1px] border-[#e5e7eb]">
         <div className="flex justify-between">
           <div>
-            <h2 className="font-medium text-gray-800 text-[24px] mb-2">Order Directory</h2>
-            <p className="text-[18px] text-[#9ca3af] mb-6">Search and filter orders</p>
+            <h2 className="font-medium text-gray-800 text-[24px]">Order Directory</h2>
+            <p className="text-[18px] text-[#9ca3af] mb-4">Search and filter orders</p>
           </div>
           <div>
             <button
@@ -169,7 +277,7 @@ export default function OrderList() {
             </button>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <input
             type="text"
             placeholder="Search by order number, title, customer name, or status"
@@ -179,7 +287,7 @@ export default function OrderList() {
           />
         </div>
       </div>
-      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+      <div className="mt-6 rounded-[10px] bg-white p-6 border-[1px] border-[#e5e7eb]">
         <div className="relative w-full overflow-auto">
           {isLoading ? (
             <div className="flex justify-center items-center py-10">
@@ -279,17 +387,25 @@ export default function OrderList() {
                           className="dropdown-button hover:text-[#2563eb] transition"
                           onClick={(e) => handleMenuClick(order.id, e)}
                         >
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
                             <circle cx="10" cy="4" r="2" />
                             <circle cx="10" cy="10" r="2" />
                             <circle cx="10" cy="16" r="2" />
                           </svg>
                         </button>
-                        {/* <DropdownMenu
+                        <DropdownMenu
                           orderId={order.id}
                           menuPosition={menuPosition}
                           menuOpen={menuOpen}
-                        /> */}
+                          onView={handleViewOrder}
+                          onEdit={handleEditOrder}
+                          onDelete={handleDeleteOrder}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -299,7 +415,15 @@ export default function OrderList() {
           )}
         </div>
       </div>
+      <DeleteOrderPopup
+        isOpen={deleteOrder.isOpen}
+        onClose={() => {
+          setDeleteOrder({ isOpen: false, orderId: null });
+        }}
+        orderId={deleteOrder.orderId}
+        onDelete={handleDeleteOrderConfirmed}
+      />
       <ToastContainer />
-    </div>
+    </>
   );
 }
