@@ -343,6 +343,8 @@ export default function CreateOrder() {
     }
   };
 
+  console.log(orderData);
+
   return (
     <form className="flex flex-col gap-7">
       <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
@@ -572,7 +574,6 @@ export default function CreateOrder() {
                         ))}
                       </select>
                     </div>
-
                     {item.image && (
                       <div>
                         <label className="block text-sm font-medium text-[#111928]">Product Image</label>

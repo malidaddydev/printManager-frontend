@@ -96,15 +96,6 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onEdit, onDelet
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onEdit(orderId);
-        }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-      >
-        Edit Order
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
           onDelete(orderId);
         }}
         className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
@@ -199,11 +190,6 @@ export default function OrderList() {
   // Action handlers
   const handleViewOrder = (orderId) => {
     router.push(`/dashboard/order/view/${orderId}`);
-    setMenuOpen(null);
-  };
-
-  const handleEditOrder = (orderId) => {
-    router.push(`/dashboard/order/edit/${orderId}`);
     setMenuOpen(null);
   };
 
@@ -403,7 +389,6 @@ export default function OrderList() {
                           menuPosition={menuPosition}
                           menuOpen={menuOpen}
                           onView={handleViewOrder}
-                          onEdit={handleEditOrder}
                           onDelete={handleDeleteOrder}
                         />
                       </div>
