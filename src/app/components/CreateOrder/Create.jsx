@@ -8,6 +8,7 @@ export default function CreateOrder() {
   const router = useRouter();
   const [orderData, setOrderData] = useState({
     customerId: '',
+    customerName: '',
     orderNumber: '',
     title: '',
     status: 'Draft',
@@ -17,7 +18,8 @@ export default function CreateOrder() {
     items: [],
     total: 0,
     totalQuantity: 0,
-    files: null,
+    files: [],
+    createdBy:''
   });
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
@@ -26,7 +28,8 @@ export default function CreateOrder() {
   const [customerInfo, setCustomerInfo] = useState(null);
   const [customerSearchResults, setCustomerSearchResults] = useState([]);
   const [productSearchResults, setProductSearchResults] = useState([]);
-  const fileInputRef = useRef(null);
+  const fileInputRefs = useRef([]);
+  const [fileInputs, setFileInputs] = useState([0]);
   const [isItemCollapsed, setIsItemCollapsed] = useState({});
 
   // Generate order number
@@ -87,7 +90,7 @@ export default function CreateOrder() {
       if (!res.ok) throw new Error('Customer not found');
       const data = await res.json();
       setCustomerInfo(data);
-      setOrderData(prev => ({ ...prev, customerId: customer.id.toString() }));
+      setOrderData(prev => ({ ...prev, customerId: customer.id.toString(), customerName: customer.name }));
       setCustomerSearchResults([]);
     } catch (err) {
       toast.error(err.message || 'Error fetching customer');
@@ -115,8 +118,8 @@ export default function CreateOrder() {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'customerId') {
-      setOrderData(prev => ({ ...prev, customerId: value }));
+    if (name === 'customerName') {
+      setOrderData(prev => ({ ...prev, customerName: value }));
       handleCustomerSearch(value);
     } else {
       setOrderData(prev => ({ ...prev, [name]: value }));
@@ -124,7 +127,7 @@ export default function CreateOrder() {
   };
 
   // Handle file upload
-  const handleFileChange = (e) => {
+  const handleFileChange = (e, index) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       for (let file of files) {
@@ -133,7 +136,27 @@ export default function CreateOrder() {
           return;
         }
       }
-      setOrderData(prev => ({ ...prev, files }));
+      setOrderData(prev => {
+        const newFiles = [...prev.files];
+        newFiles[index] = files[0];
+        return { ...prev, files: newFiles };
+      });
+    }
+  };
+
+  // Add new file input
+  const addFileInput = () => {
+    setFileInputs(prev => [...prev, prev.length]);
+  };
+
+  // Remove file input
+  const removeFileInput = (index) => {
+    if (fileInputs.length > 1) {
+      setFileInputs(prev => prev.filter((_, i) => i !== index));
+      setOrderData(prev => {
+        const newFiles = prev.files.filter((_, i) => i !== index);
+        return { ...prev, files: newFiles };
+      });
     }
   };
 
@@ -143,7 +166,7 @@ export default function CreateOrder() {
       const newItems = [...prev.items, {
         productId: '',
         color: '',
-        size: '', // Initialize size field
+        size: '',
         sizeQuantities: [],
         productTitle: '',
         serviceTitle: '',
@@ -219,9 +242,9 @@ export default function CreateOrder() {
               ? `https://printmanager-api.onrender.com${product.files[0].filePath}`
               : '',
             colorOptions: product.colorOptions || [],
-            sizeOptions: product.sizeOptions || [], // Fetch sizeOptions
+            sizeOptions: product.sizeOptions || [],
             color: '',
-            size: '', // Initialize size
+            size: '',
             unitPrice: product.unitPrice || 0
           };
           return updateTotals({ ...prev, items: newItems });
@@ -290,6 +313,7 @@ export default function CreateOrder() {
     formData.append('orderNumber', orderData.orderNumber);
     formData.append('title', orderData.title);
     formData.append('status', orderData.status);
+    formData.append('createdBy', sessionStorage.getItem('username'));
     if (orderData.startDate) {
       formData.append('startDate', new Date(orderData.startDate).toISOString());
     }
@@ -301,7 +325,7 @@ export default function CreateOrder() {
     const itemsData = orderData.items.map(item => ({
       productId: parseInt(item.productId),
       color: item.color,
-      size: item.size, // Include size in itemsData
+      size: item.size,
       quantity: item.quantity,
       price: item.total,
       sizeQuantities: item.sizeQuantities.map(size => ({
@@ -314,7 +338,9 @@ export default function CreateOrder() {
 
     if (orderData.files) {
       for (let file of orderData.files) {
-        formData.append('files', file);
+        if (file) {
+          formData.append('files', file);
+        }
       }
     }
 
@@ -330,6 +356,7 @@ export default function CreateOrder() {
       toast.success('Order created successfully');
       setOrderData({
         customerId: '',
+        customerName: '',
         orderNumber: `OR#${Math.floor(1000 + Math.random() * 9000)}`,
         title: '',
         status: 'Draft',
@@ -339,12 +366,13 @@ export default function CreateOrder() {
         items: [],
         total: 0,
         totalQuantity: 0,
-        files: null
+        files: []
       });
       setCustomerInfo(null);
       setCustomerSearchResults([]);
       setProductSearchResults({});
-      fileInputRef.current.value = '';
+      setFileInputs([0]);
+      fileInputRefs.current.forEach(ref => ref && (ref.value = ''));
       setTimeout(() => router.push('/dashboard/order/list'), 2000);
     } catch (err) {
       toast.error(err.message || 'Error creating order');
@@ -363,8 +391,8 @@ export default function CreateOrder() {
             </label>
             <input
               type="text"
-              name="customerId"
-              value={orderData.customerId}
+              name="customerName"
+              value={orderData.customerName}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
@@ -384,7 +412,7 @@ export default function CreateOrder() {
             )}
             {customerInfo && (
               <div className="mt-2 text-sm text-[#111928]">
-                Customer: {customerInfo.name} {customerInfo.email && `(${customerInfo.email})`}
+                Customer: {customerInfo.name} {customerInfo.email && `(${customerInfo.email})`} {`(${customerInfo.mobile})`}
               </div>
             )}
           </div>
@@ -425,11 +453,11 @@ export default function CreateOrder() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
             >
-              <option value="Draft">Draft</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="draft">Draft</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="in progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
@@ -467,32 +495,53 @@ export default function CreateOrder() {
             />
             <div className="mt-2">
               <label className="block text-sm font-medium text-[#111928]">Upload Files</label>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                multiple
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg"
-              />
-              {orderData.files && (
+              {fileInputs.map((_, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="file"
+                    ref={el => fileInputRefs.current[index] = el}
+                    onChange={(e) => handleFileChange(e, index)}
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg"
+                  />
+                  {fileInputs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeFileInput(index)}
+                      className="text-[#ef4444] text-sm"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addFileInput}
+                className="mt-2 py-1 px-3 bg-[#5750f1] text-white rounded-lg text-sm hover:bg-blue-700"
+              >
+                More Files
+              </button>
+              {orderData.files.length > 0 && (
                 <div className="mt-2">
-                  {Array.from(orderData.files).map((file, index) => (
-                    <div key={index} className="flex justify-between p-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
-                      <span>{file.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOrderData(prev => ({
-                            ...prev,
-                            files: Array.from(prev.files).filter((_, i) => i !== index)
-                          }));
-                        }}
-                        className="text-[#ef4444]"
-                      >
-                        Remove
-                      </button>
-                    </div>
+                  {orderData.files.map((file, index) => (
+                    file && (
+                      <div key={index} className="flex justify-between p-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg">
+                        <span>{file.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOrderData(prev => ({
+                              ...prev,
+                              files: prev.files.filter((_, i) => i !== index)
+                            }));
+                          }}
+                          className="text-[#ef4444]"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )
                   ))}
                 </div>
               )}
@@ -511,7 +560,9 @@ export default function CreateOrder() {
                 className="flex justify-between items-center p-6 cursor-pointer"
                 onClick={() => toggleItemCollapse(itemIndex)}
               >
-                <h3 className="text-md font-medium text-[#111928]">Item #{itemIndex + 1}</h3>
+                <h3 className="text-md font-medium text-[#111928]">
+                  Item {item.productTitle ? `- ${item.productTitle}` : `#${itemIndex + 1}`}
+                </h3>
                 <span className="w-[35px] h-[35px] rounded-full flex justify-center items-center text-[20px] font-normal border-[2px] border-[#5750f1] text-[#5750f1]">{isItemCollapsed[itemIndex] ? '+' : '−'}</span>
               </div>
               <div

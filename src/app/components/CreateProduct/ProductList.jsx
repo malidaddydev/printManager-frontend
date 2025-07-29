@@ -72,21 +72,23 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
     setError(null);
   };
 
-  const handleColorChange = (e) => {
-    const selectedColors = Array.from(e.target.selectedOptions).map(option => option.value);
-    setFormData((prev) => ({
-      ...prev,
-      colorOptions: selectedColors,
-    }));
+  const handleColorChange = (color) => {
+    setFormData((prev) => {
+      const newColors = prev.colorOptions.includes(color)
+        ? prev.colorOptions.filter((c) => c !== color)
+        : [...prev.colorOptions, color];
+      return { ...prev, colorOptions: newColors };
+    });
     setError(null);
   };
 
-  const handleSizeChange = (e) => {
-    const selectedSizes = Array.from(e.target.selectedOptions).map(option => option.value);
-    setFormData((prev) => ({
-      ...prev,
-      sizeOptions: selectedSizes,
-    }));
+  const handleSizeChange = (size) => {
+    setFormData((prev) => {
+      const newSizes = prev.sizeOptions.includes(size)
+        ? prev.sizeOptions.filter((s) => s !== size)
+        : [...prev.sizeOptions, size];
+      return { ...prev, sizeOptions: newSizes };
+    });
     setError(null);
   };
 
@@ -269,39 +271,41 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Colors</label>
-            <select
-              name="colorOptions"
-              multiple
-              value={formData.colorOptions}
-              onChange={handleColorChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              required
-            >
-              {colorOptions.map((color, index) => (
-                <option key={index} value={color}>
-                  {color}
-                </option>
-              ))}
-            </select>
-            <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple colors</p>
+            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
+              <div>
+                {colorOptions.map((color, index) => (
+                  <label key={index} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      value={color}
+                      checked={formData.colorOptions.includes(color)}
+                      onChange={() => handleColorChange(color)}
+                      className="mr-2 h-4 w-4 text-[#5750f1] focus:ring-[#5750f1] border-[#e5e7eb]"
+                    />
+                    {color}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Sizes</label>
-            <select
-              name="sizeOptions"
-              multiple
-              value={formData.sizeOptions}
-              onChange={handleSizeChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              required
-            >
-              {sizeOptions.map((size, index) => (
-                <option key={index} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-            <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple sizes</p>
+            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
+              <div>
+                {sizeOptions.map((size, index) => (
+                  <label key={index} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      value={size}
+                      checked={formData.sizeOptions.includes(size)}
+                      onChange={() => handleSizeChange(size)}
+                      className="mr-2 h-4 w-4 text-[#5750f1] focus:ring-[#5750f1] border-[#e5e7eb]"
+                    />
+                    {size}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Service</label>
