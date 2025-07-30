@@ -32,6 +32,55 @@ const ViewImagePopup = ({ isOpen, onClose, filePath }) => {
   );
 };
 
+export function CheckIcon({ className }) {
+  return (
+    <svg
+      width="11"
+      height="8"
+      viewBox="0 0 11 8"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M10.2355 0.812752L10.2452 0.824547C10.4585 1.08224 10.4617 1.48728 10.1855 1.74621L4.85633 7.09869C4.66442 7.29617 4.41535 7.4001 4.14693 7.4001C3.89823 7.4001 3.63296 7.29979 3.43735 7.09851L0.788615 4.43129C0.536589 4.1703 0.536617 3.758 0.788643 3.49701C1.04747 3.22897 1.4675 3.22816 1.72731 3.49457L4.16182 5.94608L9.28643 0.799032C9.54626 0.532887 9.96609 0.533789 10.2248 0.801737L10.2355 0.812752Z"
+        fill=""
+      />
+    </svg>
+  );
+}
+
+function CustomCheckbox({ label, checked, onChange, name }) {
+  const id = React.useId();
+
+  return (
+    <div className="mb-2">
+      <label
+        htmlFor={id}
+        className="flex cursor-pointer select-none items-center text-sm text-[#111928]"
+      >
+        <div className="relative">
+          <input
+            type="checkbox"
+            name={name}
+            id={id}
+            checked={checked}
+            onChange={onChange}
+            className="peer sr-only"
+          />
+          <div
+            className="mr-2 flex size-5 items-center justify-center rounded border border-[#e5e7eb] peer-checked:border-[#5750f1] peer-checked:bg-[#f3f4f6] [&>*]:text-[#5750f1] peer-checked:[&>*]:block"
+          >
+            <CheckIcon className="hidden text-[#5750f1]" />
+          </div>
+        </div>
+        <span>{label}</span>
+      </label>
+    </div>
+  );
+}
+
 const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -274,16 +323,13 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
             <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
               <div>
                 {colorOptions.map((color, index) => (
-                  <label key={index} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      value={color}
-                      checked={formData.colorOptions.includes(color)}
-                      onChange={() => handleColorChange(color)}
-                      className="mr-2 h-4 w-4 text-[#5750f1] focus:ring-[#5750f1] border-[#e5e7eb]"
-                    />
-                    {color}
-                  </label>
+                  <CustomCheckbox
+                    key={index}
+                    label={color}
+                    checked={formData.colorOptions.includes(color)}
+                    onChange={() => handleColorChange(color)}
+                    name={`color-${color}`}
+                  />
                 ))}
               </div>
             </div>
@@ -293,16 +339,13 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
             <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
               <div>
                 {sizeOptions.map((size, index) => (
-                  <label key={index} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      value={size}
-                      checked={formData.sizeOptions.includes(size)}
-                      onChange={() => handleSizeChange(size)}
-                      className="mr-2 h-4 w-4 text-[#5750f1] focus:ring-[#5750f1] border-[#e5e7eb]"
-                    />
-                    {size}
-                  </label>
+                  <CustomCheckbox
+                    key={index}
+                    label={size}
+                    checked={formData.sizeOptions.includes(size)}
+                    onChange={() => handleSizeChange(size)}
+                    name={`size-${size}`}
+                  />
                 ))}
               </div>
             </div>
