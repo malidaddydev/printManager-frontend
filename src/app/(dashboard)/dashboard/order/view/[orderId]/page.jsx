@@ -90,6 +90,7 @@ export default function ViewOrder() {
     Price: '',
     Quantity: '',
   });
+  const [sizeOptions, setSizeOptions] = useState([]);
 
   const router = useRouter();
   const [orderData, setOrderData] = useState(null);
@@ -121,32 +122,33 @@ export default function ViewOrder() {
   const [itemEditingCommentId, setItemEditingCommentId] = useState({}); // { [itemId]: commentId }
   const [itemEditingCommentText, setItemEditingCommentText] = useState({}); // { [itemId]: text }
   const [deleteCommentModal, setDeleteCommentModal] = useState({ open: false, commentId: null });
+  const [loading, setLoading] = useState(false);
 
-  // Fetch size quantities when modal opens
-  const openSizeModal = async (orderItemId, productPrice) => {
+
+const openSizeModal = async (orderItemId, productPrice, productId) => {
   setIsSizeModalOpen(true);
   setCurrentOrderItemId(orderItemId); // Store the current order item ID
 
-  if (orderItemId) {
-    setNewSize(prev => ({
-      ...prev,
-      Price: productPrice || 40
-    }));
+  // Find the product associated with the order item
+  const orderItem = orderData.items.find(item => item.id === orderItemId);
+  const product = orderItem?.product;
 
-    try {
-      const response = await axios.get(
-        `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`
-      );
-      setSizeQuantities(response.data);
-    } catch (error) {
-      console.error("Error fetching sizes:", error);
-      toast.error("Failed to load size quantities");
-    }
-  } else {
-    setNewSize(prev => ({
-      ...prev,
-      Price: productPrice || 40
-    }));
+  // Set size options from the product
+  setSizeOptions(product?.sizeOptions || []);
+
+  // Initialize newSize with the product's unit price
+  setNewSize({
+    Size: '',
+    Price: productPrice || product?.unitPrice,
+    Quantity: ''
+  });
+
+  try {
+    const response = await axios.get(
+      `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`
+    );
+    setSizeQuantities(response.data);
+  } catch (error) {
   }
 };
 
@@ -455,6 +457,7 @@ const handleDeleteFiles = async () => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.put(
         `https://printmanager-api.onrender.com/api/orders/${orderId}`,
@@ -469,6 +472,8 @@ const handleDeleteFiles = async () => {
     } catch (error) {
       console.error('Error updating order:', error);
       toast.error(error.message || "Error updating order");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -983,8 +988,8 @@ const handleDeleteFiles = async () => {
                                           onChange={async () => {
                                             const newStage = stage.title;
                                             try {
-                                              await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}/stage`, {
-                                                stage: newStage,
+                                              await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}`, {
+                                                currentStage: newStage,
                                                 updatedBy: sessionStorage.getItem("username"),
                                               });
                                               setOrderData(prev => ({
@@ -994,6 +999,9 @@ const handleDeleteFiles = async () => {
                                                 )
                                               }));
                                               toast.success("Stage updated successfully");
+                                              setTimeout(() => {
+                                                window.location.reload();
+                                              }, 3000);
                                             } catch (error) {
                                               toast.error("Failed to update stage");
                                             }
@@ -1011,8 +1019,7 @@ const handleDeleteFiles = async () => {
                                     <h5 className="font-medium text-gray-900">Size Quantities</h5>
                                     <button
                                       onClick={() => {
-                                        openSizeModal(item.sizeQuantities.id, item.product.unitPrice);
-                                        setCurrentOrderItemId(item.id);
+                                        openSizeModal(item.id, item.product.unitPrice, item.product.id);
                                       }}
                                       className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
                                     >
@@ -1059,6 +1066,7 @@ const handleDeleteFiles = async () => {
                                       onClick={() => {
                                         setIsSizeModalOpen(false);
                                         setEditingSize(null);
+                                        setSizeOptions([]); // Reset size options when closing
                                       }}
                                       className="text-gray-400 hover:text-gray-500"
                                     >
@@ -1077,14 +1085,19 @@ const handleDeleteFiles = async () => {
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                           <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                                          <input
-                                            type="text"
+                                          <select
                                             name="Size"
                                             value={editingSize?.Size || newSize.Size}
                                             onChange={handleSizeChange}
                                             className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                                            placeholder="e.g., S, M, L"
-                                          />
+                                          >
+                                            <option value="">Select Size</option>
+                                            {sizeOptions.map((size, i) => (
+                                              <option key={i} value={size}>
+                                                {size}
+                                              </option>
+                                            ))}
+                                          </select>
                                         </div>
                                         <div>
                                           <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
@@ -1190,24 +1203,30 @@ const handleDeleteFiles = async () => {
                             )}
 
                             {activeItemTab === "workflow" && (
-                              <div>
-                                <h5 className="font-medium text-gray-900 mb-2">Workflow Stages</h5>
-                                <div className="space-y-2">
-                                  {item.product?.service?.workflow?.stages.map((stage, stageIndex) => (
-                                    <div key={stageIndex} className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4">
-                                      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: stage.color }}></span>
-                                      <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-900">{stage.title}</p>
-                                        <p className="text-xs text-gray-500">{stage.days} days</p>
+                                <div>
+                                  <h5 className="font-medium text-gray-900 mb-2">Workflow Stages</h5>
+                                  <div className="space-y-2">
+                                    {item.product?.service?.workflow?.stages.map((stage, stageIndex) => (
+                                      <div
+                                        key={stageIndex}
+                                        className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4"
+                                      >
+                                        <span
+                                          className="h-3 w-3 rounded-full"
+                                          style={{ backgroundColor: stage.color }}
+                                        ></span>
+                                        <div className="flex-1">
+                                          <p className="text-sm font-medium text-gray-900">{stage.title}</p>
+                                          <p className="text-xs text-gray-500">{stage.days} days</p>
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          {stage.title === item.currentStage ? "Current" : ""}
+                                        </div>
                                       </div>
-                                      <div className="text-xs text-gray-500">
-                                        {stageIndex === 0 ? "Current" : ""}
-                                      </div>
-                                    </div>
-                                  ))}
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
                             {activeItemTab === "files" && (
                               <div>
@@ -1844,9 +1863,18 @@ const handleDeleteFiles = async () => {
                 </button>
                 <button
                   type="submit"
-                  className="py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center"
+                   disabled={loading}
+                    className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+                      loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                    }`}
                 >
-                  Save Changes
+                  {loading && (
+                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {loading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

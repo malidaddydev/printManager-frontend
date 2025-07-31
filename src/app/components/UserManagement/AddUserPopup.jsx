@@ -79,7 +79,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] h-[500px] overflow-y-scroll shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
         <h2 className="text-2xl font-bold text-[#111928] mb-6">Add New User</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

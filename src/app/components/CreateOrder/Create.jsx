@@ -734,10 +734,11 @@ export default function CreateOrder() {
                         <div className="flex-1">
                           <label className="block text-sm font-medium text-[#111928]">Price</label>
                           <input
-                            type="number"
+                            type="text"
                             value={size.Price}
                             onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Price', e.target.value)}
                             className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                            disabled
                           />
                         </div>
                         <div className="flex-1">

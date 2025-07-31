@@ -122,7 +122,7 @@ export default function Create() {
         )}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="name" className="block text-[#111928] font-medium mb-2">Name *</label>
+            <label htmlFor="name" className="block text-[#111928] font-medium mb-2">Full Name *</label>
             <input
               type="text"
               id="name"

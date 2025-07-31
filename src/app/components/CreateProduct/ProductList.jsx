@@ -233,7 +233,7 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-8 rounded-lg w-full h-[500px] overflow-y-scroll max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
         <h2 className="text-xl font-bold text-[#111928] mb-4">Edit Product</h2>
         {error && (
           <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
