@@ -59,7 +59,7 @@ export default function ViewOrder() {
     startDate: "",
     dueDate: "",
     notes: "",
-    updatedBy:"",
+    updatedBy: "",
   });
   const { orderId } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
@@ -124,33 +124,52 @@ export default function ViewOrder() {
   const [deleteCommentModal, setDeleteCommentModal] = useState({ open: false, commentId: null });
   const [loading, setLoading] = useState(false);
 
-
-const openSizeModal = async (orderItemId, productPrice, productId) => {
-  setIsSizeModalOpen(true);
-  setCurrentOrderItemId(orderItemId); // Store the current order item ID
-
-  // Find the product associated with the order item
-  const orderItem = orderData.items.find(item => item.id === orderItemId);
-  const product = orderItem?.product;
-
-  // Set size options from the product
-  setSizeOptions(product?.sizeOptions || []);
-
-  // Initialize newSize with the product's unit price
-  setNewSize({
-    Size: '',
-    Price: productPrice || product?.unitPrice,
-    Quantity: ''
-  });
-
+  const handleAskApproval = async (fileId) => {
+    setLoading(true);
   try {
-    const response = await axios.get(
-      `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`
-    );
-    setSizeQuantities(response.data);
-  } catch (error) {
+    const response = await fetch(`https://printmanager-api.onrender.com/api/customerApprovals/${fileId}`, {
+      method: 'POST'
+    });
+    const data = await response.json();
+    if (response.ok) {
+      toast.success('Approval email sent successfully!');
+    } else {
+      toast.error(`Failed to send email: ${data.message}`);
+    }
+  } catch (err) {
+    toast.error('Error sending approval request');
+    console.error(err);
+  } finally {
+    setLoading(false);
   }
 };
+
+  const openSizeModal = async (orderItemId, productPrice, productId) => {
+    setIsSizeModalOpen(true);
+    setCurrentOrderItemId(orderItemId);
+
+    // Find the product associated with the order item
+    const orderItem = orderData.items.find(item => item.id === orderItemId);
+    const product = orderItem?.product;
+
+    // Set size options from the product
+    setSizeOptions(product?.sizeOptions || []);
+
+    // Initialize newSize with the product's unit price
+    setNewSize({
+      Size: '',
+      Price: productPrice || product?.unitPrice,
+      Quantity: ''
+    });
+
+    try {
+      const response = await axios.get(
+        `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`
+      );
+      setSizeQuantities(response.data);
+    } catch (error) {
+    }
+  };
 
   // Handle input changes for new/edit size
   const handleSizeChange = (e) => {
@@ -163,101 +182,116 @@ const openSizeModal = async (orderItemId, productPrice, productId) => {
   };
 
   // Create new size quantity
-const handleAddSize = async () => {
-  try {
-    const response = await axios.post(
-      'https://printmanager-api.onrender.com/api/sizeQuantities',
-      {
-        ...newSize,
-        orderitemId: currentOrderItemId,
-        createdBy: sessionStorage.getItem("username"),
-        Price: parseFloat(newSize.Price),
-        Quantity: parseInt(newSize.Quantity),
-      }
-    );
+  const handleAddSize = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        'https://printmanager-api.onrender.com/api/sizeQuantities',
+        {
+          ...newSize,
+          orderitemId: currentOrderItemId,
+          createdBy: sessionStorage.getItem("username"),
+          Price: parseFloat(newSize.Price),
+          Quantity: parseInt(newSize.Quantity),
+        }
+      );
 
-    // Update local state immediately
-    setOrderData(prev => ({
-      ...prev,
-      items: prev.items.map(item => 
-        item.id === currentOrderItemId
-          ? {
+      // Update local state immediately
+      setOrderData(prev => ({
+        ...prev,
+        items: prev.items.map(item =>
+          item.id === currentOrderItemId
+            ? {
               ...item,
               sizeQuantities: [...item.sizeQuantities, response.data]
             }
-          : item
-      )
-    }));
+            : item
+        )
+      }));
 
-    setNewSize({ Size: '', Price: '', Quantity: '' });
-    toast.success("Size added successfully");
-  } catch (error) {
-    console.error("Error adding size:", error);
-    toast.error("Failed to add size");
-  }
-};
+      setNewSize({ Size: '', Price: '', Quantity: '' });
+      toast.success("Size added successfully");
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error("Error adding size:", error);
+      toast.error("Failed to add size");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleUpdateSize = async () => {
-  try {
-    const response = await axios.put(
-      `https://printmanager-api.onrender.com/api/sizeQuantities/${editingSize.id}`,
-      {
-        ...editingSize,
-        Price: parseFloat(editingSize.Price),
-        Quantity: parseInt(editingSize.Quantity),
-        updatedBy:sessionStorage.getItem("username")
-      }
-    );
+  const handleUpdateSize = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.put(
+        `https://printmanager-api.onrender.com/api/sizeQuantities/${editingSize.id}`,
+        {
+          ...editingSize,
+          Price: parseFloat(editingSize.Price),
+          Quantity: parseInt(editingSize.Quantity),
+          updatedBy: sessionStorage.getItem("username")
+        }
+      );
 
-    // Update local state immediately
-    setOrderData(prev => ({
-      ...prev,
-      items: prev.items.map(item => 
-        item.id === currentOrderItemId
-          ? {
+      // Update local state immediately
+      setOrderData(prev => ({
+        ...prev,
+        items: prev.items.map(item =>
+          item.id === currentOrderItemId
+            ? {
               ...item,
-              sizeQuantities: item.sizeQuantities.map(size => 
+              sizeQuantities: item.sizeQuantities.map(size =>
                 size.id === editingSize.id ? response.data : size
               )
             }
-          : item
-      )
-    }));
+            : item
+        )
+      }));
 
-    setEditingSize(null);
-    toast.success("Size updated successfully");
-  } catch (error) {
-    console.error("Error updating size:", error);
-    toast.error("Failed to update size");
-  }
-};
+      setEditingSize(null);
+      toast.success("Size updated successfully");
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error("Error updating size:", error);
+      toast.error("Failed to update size");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleDeleteSize = async (sizeId) => {
-  try {
-    await axios.delete(
-      `https://printmanager-api.onrender.com/api/sizeQuantities/${sizeId}`
-    );
+  const handleDeleteSize = async (sizeId) => {
+    try {
+      await axios.delete(
+        `https://printmanager-api.onrender.com/api/sizeQuantities/${sizeId}`
+      );
 
-    // Update local state immediately
-    setOrderData(prev => ({
-      ...prev,
-      items: prev.items.map(item => 
-        item.id === currentOrderItemId
-          ? {
+      // Update local state immediately
+      setOrderData(prev => ({
+        ...prev,
+        items: prev.items.map(item =>
+          item.id === currentOrderItemId
+            ? {
               ...item,
               sizeQuantities: item.sizeQuantities.filter(size => size.id !== sizeId)
             }
-          : item
-      )
-    }));
+            : item
+        )
+      }));
 
-    toast.success("Size deleted successfully");
-    setIsSizeModalOpen(false);
-  } catch (error) {
-    console.error("Error deleting size:", error);
-    toast.error("Failed to delete size");
-  }
-};
+      toast.success("Size deleted successfully");
+      setIsSizeModalOpen(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } catch (error) {
+      console.error("Error deleting size:", error);
+      toast.error("Failed to delete size");
+    }
+  };
 
   const handleFileChange = (e) => {
     setNewFile(e.target.files[0]);
@@ -272,156 +306,160 @@ const handleDeleteSize = async (sizeId) => {
   };
 
   // For Order Files
-const handleAddFile = async () => {
-  if (!newFile) {
-    toast.error("Please select a file first");
-    return;
-  }
+  const handleAddFile = async () => {
+    if (!newFile) {
+      toast.error("Please select a file first");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append('file', newFile);
-  formData.append('orderId', orderId);
-  formData.append('uploadedBy',sessionStorage.getItem("username") );
+    const formData = new FormData();
+    formData.append('file', newFile);
+    formData.append('orderId', orderId);
+    formData.append('uploadedBy', sessionStorage.getItem("username"));
 
-  try {
-    setUploadProgress(0);
-    const response = await axios.post(
-      'https://printmanager-api.onrender.com/api/orderFiles',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
-        },
-      }
-    );
+    try {
+      setUploadProgress(0);
+      const response = await axios.post(
+        'https://printmanager-api.onrender.com/api/orderFiles',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          },
+        }
+      );
 
-    // Update local state immediately
-    setOrderData(prev => ({
-      ...prev,
-      files: [...prev.files, response.data]
-    }));
-    
-    setNewFile(null);
-    toast.success("File uploaded successfully");
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    toast.error("Failed to upload file");
-  } finally {
-    setUploadProgress(0);
-  }
-};
+      // Update local state immediately
+      setOrderData(prev => ({
+        ...prev,
+        files: [...prev.files, response.data]
+      }));
 
-// For Product Files
-const handleAddFileProduct = async () => {
-  if (!newFile || !currentProductId) {
-    toast.error("Please select a file and ensure product is selected");
-    return;
-  }
+      setNewFile(null);
+      toast.success("File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setUploadProgress(0);
+    }
+  };
 
-  const formData = new FormData();
-  formData.append('file', newFile);
-  formData.append('productId', currentProductId);
-  formData.append('orderItemId', currentOrderItemId);
-  formData.append('uploadedBy',sessionStorage.getItem("username"));
+  // For Product Files
+  const handleAddFileProduct = async () => {
+    if (!newFile || !currentProductId) {
+      toast.error("Please select a file and ensure product is selected");
+      return;
+    }
 
-  try {
-    setUploadProgress(0);
-    const response = await axios.post(
-      'https://printmanager-api.onrender.com/api/orderFiles',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
-        },
-      }
-    );
+    const formData = new FormData();
+    formData.append('file', newFile);
+    formData.append('productId', currentProductId);
+    formData.append('orderItemId', currentOrderItemId);
+    formData.append('uploadedBy', sessionStorage.getItem("username"));
 
-    // Update local state immediately
-    setOrderData(prev => ({
-      ...prev,
-      items: prev.items.map(item =>
-        item.product.id === currentProductId
-          ? {
+    try {
+      setUploadProgress(0);
+      const response = await axios.post(
+        'https://printmanager-api.onrender.com/api/orderFiles',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          },
+        }
+      );
+
+      // Update local state immediately
+      setOrderData(prev => ({
+        ...prev,
+        items: prev.items.map(item =>
+          item.product.id === currentProductId
+            ? {
               ...item,
               product: {
                 ...item.product,
                 files: [...(item.product.files || []), response.data]
               }
             }
-          : item
-      )
-    }));
+            : item
+        )
+      }));
 
-    setNewFile(null);
-    toast.success("File uploaded successfully");
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    toast.error("Failed to upload file");
-  } finally {
-    setUploadProgress(0);
-  }
-};
+      setNewFile(null);
+      toast.success("File uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setUploadProgress(0);
+    }
+  };
 
-const handleDeleteFiles = async () => {
-  if (filesToDelete.length === 0) {
-    toast.error("No files selected for deletion");
-    return;
-  }
+  const handleDeleteFiles = async () => {
+    if (filesToDelete.length === 0) {
+      toast.error("No files selected for deletion");
+      return;
+    }
 
-  try {
-    await Promise.all(
-      filesToDelete.map(fileId =>
-        axios.delete(`https://printmanager-api.onrender.com/api/orderFiles/${fileId}`)
-      )
-    );
+    setLoading(true);
 
-    // Update local state immediately - handles both order files and product files
-    setOrderData(prev => {
-      // Check if we're deleting order files or product files
-      const isProductFile = prev.items.some(item => 
-        item.product?.files?.some(f => filesToDelete.includes(f.id))
+    try {
+      await Promise.all(
+        filesToDelete.map(fileId =>
+          axios.delete(`https://printmanager-api.onrender.com/api/orderFiles/${fileId}`)
+        )
       );
 
-      if (isProductFile) {
-        // Product files deletion
-        return {
-          ...prev,
-          items: prev.items.map(item => ({
-            ...item,
-            product: {
-              ...item.product,
-              files: item.product.files?.filter(file => !filesToDelete.includes(file.id)) || []
-            }
-          }))
-        };
-      } else {
-        // Order files deletion
-        return {
-          ...prev,
-          files: prev.files.filter(file => !filesToDelete.includes(file.id))
-        };
-      }
-    });
+      // Update local state immediately - handles both order files and product files
+      setOrderData(prev => {
+        // Check if we're deleting order files or product files
+        const isProductFile = prev.items.some(item =>
+          item.product?.files?.some(f => filesToDelete.includes(f.id))
+        );
 
-    setFilesToDelete([]);
-    toast.success("Files deleted successfully");
-  } catch (error) {
-    console.error("Error deleting files:", error);
-    toast.error("Failed to delete files");
-  }
-};
+        if (isProductFile) {
+          // Product files deletion
+          return {
+            ...prev,
+            items: prev.items.map(item => ({
+              ...item,
+              product: {
+                ...item.product,
+                files: item.product.files?.filter(file => !filesToDelete.includes(file.id)) || []
+              }
+            }))
+          };
+        } else {
+          // Order files deletion
+          return {
+            ...prev,
+            files: prev.files.filter(file => !filesToDelete.includes(file.id))
+          };
+        }
+      });
+
+      setFilesToDelete([]);
+      toast.success("Files deleted successfully");
+    } catch (error) {
+      console.error("Error deleting files:", error);
+      toast.error("Failed to delete files");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openEditModal = () => {
     setEditedData({
@@ -504,36 +542,59 @@ const handleDeleteFiles = async () => {
   }, [orderId]);
 
   useEffect(() => {
-  async function fetchActivityLogs() {
-    try {
-      const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/order/${orderId}`);
-      if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
-      const logsData = await logsRes.json();
-      setActivityLogs(Array.isArray(logsData) ? logsData : []);
-    } catch (error) {
-      console.error("Error fetching activity logs:", error);
-      toast.error(error.message || "Error loading activity logs");
+    async function fetchActivityLogs() {
+      try {
+        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/order/${orderId}`);
+        if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
+        const logsData = await logsRes.json();
+        setActivityLogs(Array.isArray(logsData) ? logsData : []);
+      } catch (error) {
+        console.error("Error fetching activity logs:", error);
+        toast.error(error.message || "Error loading activity logs");
+      }
     }
-  }
 
-  if (orderId) fetchActivityLogs();
+    if (orderId) fetchActivityLogs();
 
-  async function fetchItemActivityLogs() {
-    try {
-      const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/orderitem/${orderId}`);
-      if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
-      const logsData = await logsRes.json();
-      setItemActivityLogs(Array.isArray(logsData) ? logsData : []);
-    } catch (error) {
-      console.error("Error fetching activity logs:", error);
-      toast.error(error.message || "Error loading activity logs");
+    async function fetchItemActivityLogs() {
+      try {
+        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/orderitem/${orderId}`);
+        if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
+        const logsData = await logsRes.json();
+        setItemActivityLogs(Array.isArray(logsData) ? logsData : []);
+      } catch (error) {
+        console.error("Error fetching activity logs:", error);
+        toast.error(error.message || "Error loading activity logs");
+      }
     }
-  }
 
-  if (orderId) fetchItemActivityLogs();
-}, [orderId]);
+    if (orderId) fetchItemActivityLogs();
+  }, [orderId]);
 
-  if (!orderData) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (!orderData) return <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center py-10">
+        <svg
+          className="animate-spin h-8 w-8 text-[#5750f1]"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div>
+    </div>;
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -609,6 +670,7 @@ const handleDeleteFiles = async () => {
   };
 
   const handleAddComment = async (e) => {
+    setLoading(true);
     e.preventDefault();
     if (!newComment.commentText) {
       toast.error("Comment text is required");
@@ -635,6 +697,8 @@ const handleDeleteFiles = async () => {
     } catch (error) {
       console.error("Error adding comment:", error);
       toast.error(error.message || "Error adding comment");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -651,6 +715,7 @@ const handleDeleteFiles = async () => {
   };
 
   const handleAddItemComment = (itemId) => async (e) => {
+    setLoading(true);
     e.preventDefault();
     const commentText = itemNewComment[itemId]?.commentText;
     if (!commentText) {
@@ -677,6 +742,8 @@ const handleDeleteFiles = async () => {
       toast.success("Comment added successfully");
     } catch (error) {
       toast.error(error.message || "Error adding comment");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -808,8 +875,12 @@ const handleDeleteFiles = async () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
               <div className="w-full grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-4">
                 <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Name</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.name || "N/A"}</h5>
+                  <h5 className="font-bold text-[#111928] text-[16px]">First Name</h5>
+                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.firstName || "N/A"}</h5>
+                </div>
+                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                  <h5 className="font-bold text-[#111928] text-[16px]">Last Name</h5>
+                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.lastName || "N/A"}</h5>
                 </div>
                 <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
                   <h5 className="font-bold text-[#111928] text-[16px]">Email</h5>
@@ -873,40 +944,40 @@ const handleDeleteFiles = async () => {
                 {activeTab === "overview" && (
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-4">Order Overview</h3>
-                      <div>
-                          <div className="flex justify-end items-center mb-4">
-                            <button
-                              onClick={openEditModal}
-                              className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Edit
-                            </button>
-                          </div>
-                          {/* className="border border-[#e5e7eb] px-5 py-4 bg-white" */}
+                    <div>
+                      <div className="flex justify-end items-center mb-4">
+                        <button
+                          onClick={openEditModal}
+                          className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                      </div>
+                      {/* className="border border-[#e5e7eb] px-5 py-4 bg-white" */}
 
-                          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                              <h5 className="font-bold text-[#111928] text-[16px]">Title:</h5>
-                              <h5 className="text-[#6b7280] text-[15px]">{orderData.title || "N/A"}</h5>
-                            </div>
-                            <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                              <h5 className="font-bold text-[#111928] text-[16px]">Start Date:</h5>
-                              <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.startDate).toLocaleDateString() || "N/A"}</h5>
-                            </div>
-                            <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                              <h5 className="font-bold text-[#111928] text-[16px]">Due Date:</h5>
-                              <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.dueDate).toLocaleDateString() || "N/A"}</h5>
-                            </div>
-                            <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                              <h5 className="font-bold text-[#111928] text-[16px]">Notes:</h5>
-                              <h5 className="text-[#6b7280] text-[15px]">{orderData.notes || "N/A"}</h5>
-                            </div>
-                          </div>
+                      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                          <h5 className="font-bold text-[#111928] text-[16px]">Title:</h5>
+                          <h5 className="text-[#6b7280] text-[15px]">{orderData.title || "N/A"}</h5>
                         </div>
+                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                          <h5 className="font-bold text-[#111928] text-[16px]">Start Date:</h5>
+                          <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.startDate).toLocaleDateString() || "N/A"}</h5>
+                        </div>
+                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                          <h5 className="font-bold text-[#111928] text-[16px]">Due Date:</h5>
+                          <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.dueDate).toLocaleDateString() || "N/A"}</h5>
+                        </div>
+                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                          <h5 className="font-bold text-[#111928] text-[16px]">Notes:</h5>
+                          <h5 className="text-[#6b7280] text-[15px]">{orderData.notes || "N/A"}</h5>
+                        </div>
+                      </div>
                     </div>
+                  </div>
                 )}
 
                 {activeTab === "items" && (
@@ -966,52 +1037,52 @@ const handleDeleteFiles = async () => {
 
                             {activeItemTab === "details" && (
                               <div className="flex flex-col gap-4">
-                              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Product:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.title || "N/A"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Color:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.color || "N/A"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Quantity:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.quantity || "N/A"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Price:</h5> <h5 className="text-[#6b7280] text-[15px]">${item.price || "0"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Service:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.title || "N/A"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Workflow:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.workflow?.title || "N/A"}</h5></div>
-                                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Current Stage:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.currentStage || "N/A"}</h5></div>
-                                {/* Stage Change Radio Buttons */}
-                                {item.product?.service?.workflow?.stages && (
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                                    <h5 className="font-bold text-[#111928] text-[16px]">Change Stage:</h5>
-                                    <div className="flex flex-wrap gap-4">
-                                      {item.product?.service?.workflow?.stages.map((stage, idx) => (
-                                        <CustomStageRadio
-                                          key={idx}
-                                          label={stage.title}
-                                          checked={item.currentStage === stage.title}
-                                          name={`stage-${item.id}`}
-                                          onChange={async () => {
-                                            const newStage = stage.title;
-                                            try {
-                                              await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}`, {
-                                                currentStage: newStage,
-                                                updatedBy: sessionStorage.getItem("username"),
-                                              });
-                                              setOrderData(prev => ({
-                                                ...prev,
-                                                items: prev.items.map(itm =>
-                                                  itm.id === item.id ? { ...itm, currentStage: newStage } : itm
-                                                )
-                                              }));
-                                              toast.success("Stage updated successfully");
-                                              setTimeout(() => {
-                                                window.location.reload();
-                                              }, 3000);
-                                            } catch (error) {
-                                              toast.error("Failed to update stage");
-                                            }
-                                          }}
-                                        />
-                                      ))}
+                                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Product:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.title || "N/A"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Color:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.color || "N/A"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Quantity:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.quantity || "N/A"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Price:</h5> <h5 className="text-[#6b7280] text-[15px]">${item.price || "0"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Service:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.title || "N/A"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Workflow:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.workflow?.title || "N/A"}</h5></div>
+                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Current Stage:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.currentStage || "N/A"}</h5></div>
+                                  {/* Stage Change Radio Buttons */}
+                                  {item.product?.service?.workflow?.stages && (
+                                    <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
+                                      <h5 className="font-bold text-[#111928] text-[16px]">Change Stage:</h5>
+                                      <div className="flex flex-wrap gap-4">
+                                        {item.product?.service?.workflow?.stages.map((stage, idx) => (
+                                          <CustomStageRadio
+                                            key={idx}
+                                            label={stage.title}
+                                            checked={item.currentStage === stage.title}
+                                            name={`stage-${item.id}`}
+                                            onChange={async () => {
+                                              const newStage = stage.title;
+                                              try {
+                                                await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}`, {
+                                                  currentStage: newStage,
+                                                  updatedBy: sessionStorage.getItem("username"),
+                                                });
+                                                setOrderData(prev => ({
+                                                  ...prev,
+                                                  items: prev.items.map(itm =>
+                                                    itm.id === item.id ? { ...itm, currentStage: newStage } : itm
+                                                  )
+                                                }));
+                                                toast.success("Stage updated successfully");
+                                                setTimeout(() => {
+                                                  window.location.reload();
+                                                }, 3000);
+                                              } catch (error) {
+                                                toast.error("Failed to update stage");
+                                              }
+                                            }}
+                                          />
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                              </div>
+                                  )}
+                                </div>
 
                                 {/* Size Quantities */}
                                 <div className="md:col-span-2">
@@ -1135,18 +1206,34 @@ const handleDeleteFiles = async () => {
                                               Cancel
                                             </button>
                                             <button
-                                              onClick={handleUpdateSize}
-                                              className="py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center"
-                                            >
-                                              Update Size
-                                            </button>
+                                            onClick={handleUpdateSize}
+                                            disabled={loading}
+                                            className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                                              }`}
+                                          >
+                                            {loading && (
+                                              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                              </svg>
+                                            )}
+                                            {loading ? 'Updating...' : 'Update Size'}
+                                          </button>
                                           </>
                                         ) : (
                                           <button
                                             onClick={handleAddSize}
-                                            className="py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center"
+                                            disabled={loading}
+                                            className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                                              }`}
                                           >
-                                            Add Size
+                                            {loading && (
+                                              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                              </svg>
+                                            )}
+                                            {loading ? 'Adding...' : 'Add Size'}
                                           </button>
                                         )}
                                       </div>
@@ -1203,30 +1290,30 @@ const handleDeleteFiles = async () => {
                             )}
 
                             {activeItemTab === "workflow" && (
-                                <div>
-                                  <h5 className="font-medium text-gray-900 mb-2">Workflow Stages</h5>
-                                  <div className="space-y-2">
-                                    {item.product?.service?.workflow?.stages.map((stage, stageIndex) => (
-                                      <div
-                                        key={stageIndex}
-                                        className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4"
-                                      >
-                                        <span
-                                          className="h-3 w-3 rounded-full"
-                                          style={{ backgroundColor: stage.color }}
-                                        ></span>
-                                        <div className="flex-1">
-                                          <p className="text-sm font-medium text-gray-900">{stage.title}</p>
-                                          <p className="text-xs text-gray-500">{stage.days} days</p>
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          {stage.title === item.currentStage ? "Current" : ""}
-                                        </div>
+                              <div>
+                                <h5 className="font-medium text-gray-900 mb-2">Workflow Stages</h5>
+                                <div className="space-y-2">
+                                  {item.product?.service?.workflow?.stages.map((stage, stageIndex) => (
+                                    <div
+                                      key={stageIndex}
+                                      className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4"
+                                    >
+                                      <span
+                                        className="h-3 w-3 rounded-full"
+                                        style={{ backgroundColor: stage.color }}
+                                      ></span>
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium text-gray-900">{stage.title}</p>
+                                        <p className="text-xs text-gray-500">{stage.days} days</p>
                                       </div>
-                                    ))}
-                                  </div>
+                                      <div className="text-xs text-gray-500">
+                                        {stage.title === item.currentStage ? "Current" : ""}
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              )}
+                              </div>
+                            )}
 
                             {activeItemTab === "files" && (
                               <div>
@@ -1350,7 +1437,7 @@ const handleDeleteFiles = async () => {
                                         name="commentText"
                                         value={itemNewComment[item.id]?.commentText || ""}
                                         onChange={(e) => handleItemCommentChange(item.id, e)}
-                                         className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
                                         placeholder="Enter your comment"
                                         required
                                       />
@@ -1374,9 +1461,18 @@ const handleDeleteFiles = async () => {
                                     </div>
                                     <button
                                       type="submit"
-                                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                      className={`bg-[#5750f1] text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+                                        loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                                      }`}
+                                      disabled={loading}
                                     >
-                                      Post Comment
+                                      {loading && (
+                                        <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                      )}
+                                      {loading ? "Posting..." : "Post Comment"}
                                     </button>
                                   </form>
                                 </div>
@@ -1443,6 +1539,31 @@ const handleDeleteFiles = async () => {
                                   Uploaded: {new Date(file.uploadedAt).toLocaleString()}
                                 </p>
                               </div>
+
+                              {/* Status badge */}
+                              {file.status && (
+                                <span
+                                  className={`text-xs font-semibold px-2 py-1 rounded-full ${file.status === "Approved"
+                                      ? "bg-green-100 text-green-700"
+                                      : file.status === "Rejected"
+                                        ? "bg-red-100 text-red-700"
+                                        : "bg-yellow-100 text-yellow-700"
+                                    }`}
+                                >
+                                  {file.status}
+                                </span>
+
+                              )}
+
+                              <button
+                                onClick={() => handleAskApproval(file.id, orderData.token, orderData.customer.email)}
+                                className="text-xs text-indigo-600 hover:text-indigo-800"
+                                disabled={loading}
+                              >
+                                {loading ? "Asking..." : "Ask Approval"}
+                              </button>
+
+                              {/* View button for images */}
                               {isImage && (
                                 <button
                                   onClick={() => openImageViewer(file.filePath)}
@@ -1456,6 +1577,7 @@ const handleDeleteFiles = async () => {
                                 </button>
                               )}
                             </div>
+
                           );
                         })}
                       </div>
@@ -1567,9 +1689,18 @@ const handleDeleteFiles = async () => {
                         </div>
                         <button
                           type="submit"
-                          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          className={`bg-[#5750f1] text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+                            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                          }`}
+                          disabled={loading}
                         >
-                          Post Comment
+                          {loading && (
+                            <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          )}
+                          {loading ? "Posting..." : "Post Comment"}
                         </button>
                       </form>
                     </div>
@@ -1606,7 +1737,7 @@ const handleDeleteFiles = async () => {
       </div>
 
       {/* Size Modal */}
-      
+
 
       {/* Files Modal */}
       {isFilesModalOpen && (
@@ -1640,7 +1771,7 @@ const handleDeleteFiles = async () => {
                   />
                   <button
                     onClick={handleAddFile}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="px-4 py-2 border border-transparent flex items-center gap-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                     disabled={!newFile || uploadProgress > 0}
                   >
                     {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Upload'}
@@ -1677,10 +1808,16 @@ const handleDeleteFiles = async () => {
                 {orderData.files.length > 0 && (
                   <button
                     onClick={handleDeleteFiles}
-                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                    disabled={filesToDelete.length === 0}
+                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
+                    disabled={filesToDelete.length === 0 || loading}
                   >
-                    Delete Selected ({filesToDelete.length})
+                    {loading && (
+                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                    {loading ? "Deleting..." : `Delete Selected (${filesToDelete.length})`}
                   </button>
                 )}
               </div>
@@ -1758,10 +1895,16 @@ const handleDeleteFiles = async () => {
                 {orderData.items.find(item => item.product.id === currentProductId)?.product?.files?.length > 0 && (
                   <button
                     onClick={handleDeleteFiles}
-                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                    disabled={filesToDelete.length === 0}
+                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
+                    disabled={filesToDelete.length === 0 || loading}
                   >
-                    Delete Selected ({filesToDelete.length})
+                    {loading && (
+                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {loading ? "Deleting..." : `Delete Selected (${filesToDelete.length})`}
                   </button>
                 )}
               </div>
@@ -1810,11 +1953,11 @@ const handleDeleteFiles = async () => {
                         onChange={handleEditInputChange}
                         className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
                       >
-                          <option value="draft">Draft</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="in progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
+                        <option value="draft">Draft</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="in progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                     </div>
                     <div>
@@ -1863,9 +2006,8 @@ const handleDeleteFiles = async () => {
                 </button>
                 <button
                   type="submit"
-                   disabled={loading}
-                    className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
-                      loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                  disabled={loading}
+                  className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
                     }`}
                 >
                   {loading && (
@@ -1895,9 +2037,9 @@ const handleDeleteFiles = async () => {
               </svg>
             </button>
             <div className="p-2 rounded-lg">
-              <img 
-                src={`https://printmanager-api.onrender.com${selectedImage}`} 
-                alt="Order File" 
+              <img
+                src={`https://printmanager-api.onrender.com${selectedImage}`}
+                alt="Order File"
                 className="max-h-[80vh] max-w-full object-contain mx-auto"
               />
             </div>

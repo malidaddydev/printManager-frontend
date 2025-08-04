@@ -9,7 +9,9 @@ import {
   useSensor,
   useSensors,
   useDroppable,
-  DragOverlay
+  DragOverlay,
+  useDroppableContext,
+  DragOverEvent
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -39,20 +41,39 @@ const fetchData = async (url) => {
 
 const updateOrderItemStage = async (itemId, newStage) => {
   try {
-    const res = await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${itemId}`, {
+    await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${itemId}`, {
       currentStage: newStage,
       updatedBy: sessionStorage.getItem("username"),
     });
-    return res.data;
   } catch (err) {
     console.error("Update error:", err);
-    return null;
   }
 };
 
 const SortableItem = ({ id, order, stageColor }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
+
+    
+    const now = new Date();
+    const dueDate = order.dueDate ? parseISO(order.dueDate) : null;
+    const daysDiff = dueDate ? differenceInDays(dueDate, now) : null;
+    const hoursDiff = dueDate ? differenceInHours(dueDate, now) % 24 : null;
+    const minutesDiff = dueDate ? differenceInMinutes(dueDate, now) % 60 : null;
+    const isOverdue = dueDate && dueDate < now;
+    const isDueTomorrow = dueDate && differenceInDays(dueDate, now) === 1;
+    const cardClass = isOverdue
+    ? "bg-white text-red-600"
+    : isDueTomorrow
+    ? "bg-yellow-100"
+    : "bg-white";
+
+  const shadowColor = isOverdue
+    ? "rgba(255, 0, 0, 0.4)" // red
+    : isDueTomorrow
+    ? "rgba(255, 204, 0, 0.4)" // yellow
+    : stageColor;
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -61,22 +82,8 @@ const SortableItem = ({ id, order, stageColor }) => {
     userSelect: "none",
     WebkitTapHighlightColor: "transparent",
     cursor: "grab",
-    borderColor: stageColor,
+    boxShadow: `0 1px 15px -5px ${shadowColor}`,
   };
-
-  const now = new Date();
-  const dueDate = order.dueDate ? parseISO(order.dueDate) : null;
-  const daysDiff = dueDate ? differenceInDays(dueDate, now) : null;
-  const hoursDiff = dueDate ? differenceInHours(dueDate, now) % 24 : null;
-  const minutesDiff = dueDate ? differenceInMinutes(dueDate, now) % 60 : null;
-  const isOverdue = dueDate && dueDate < now;
-  const isDueTomorrow = dueDate && differenceInDays(dueDate, now) === 1;
-
-  const cardClass = isOverdue
-    ? "border-red-500 bg-red-100"
-    : isDueTomorrow
-    ? "border-yellow-400 bg-yellow-100"
-    : `border-[${stageColor}] bg-white`;
 
   const dueDisplay = isOverdue
     ? "(Due date passed)"
@@ -90,33 +97,36 @@ const SortableItem = ({ id, order, stageColor }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`select-none p-4 rounded-lg shadow-md border cursor-grab active:cursor-grabbing ${cardClass}`}
+      className={`select-none p-4 rounded-lg cursor-grab active:cursor-grabbing ${cardClass}`}
     >
       <h3 className="font-bold">
-        Order: {order.orderId} - {order.product?.title}
+        {order.orderId}
+      </h3>
+      <h3 className="font-bold">
+        {order.product?.title}
       </h3>
       <p className="text-sm text-gray-700">
-        Customer: {order.customer?.name}
+        {order.customer?.name}
       </p>
       <p className="text-sm text-gray-700">
         Due: {dueDate ? format(dueDate, "PP") : "N/A"} {dueDisplay}
       </p>
-      <p className="text-sm">Quantity: {order.quantity}</p>
-      <p className="text-sm">Size: {order.sizeQuantities?.[0]?.Size}</p>
-      <p className="text-sm">Service: {order.product?.service?.title}</p>
-      <p className="text-sm text-blue-600">Stage: {order.currentStage}</p>
+      <p className="text-sm">Quty: {order.quantity}</p>
+      <p className="text-sm">(S-{order.sizeQuantities?.[0]?.Size})</p>
+      <p className="text-sm">{order.product?.service?.title}</p>
+      <p className="text-sm text-blue-600">{order.currentStage}</p>
     </div>
   );
 };
 
-const SortableStage = ({ stage, orders }) => {
+const SortableStage = ({ stage, orders, isOverTarget }) => {
   const { setNodeRef } = useDroppable({ id: stage.title });
+  const highlightStyle = isOverTarget ? "bg-blue-50 border-blue-400" : "bg-white border-[#e2e8f0]";
 
   return (
     <div
       ref={setNodeRef}
-      className="bg-gray-50 p-4 rounded-lg border"
-      style={{ borderColor: stage.color }}
+      className={`p-4 border flex flex-col items-center transition-colors duration-200 ${highlightStyle}`}
     >
       <h2 className="text-lg font-semibold mb-4" style={{ color: stage.color }}>
         {stage.title} ({orders.length})
@@ -126,7 +136,7 @@ const SortableStage = ({ stage, orders }) => {
         items={orders.map((order) => order.id.toString())}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {orders.map((order) => (
             <SortableItem key={order.id} id={order.id.toString()} order={order} stageColor={stage.color} />
           ))}
@@ -143,6 +153,7 @@ export default function BigScreen() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeId, setActiveId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
 
   const activeItem = orderItems.find((item) => item.id.toString() === activeId);
 
@@ -195,22 +206,22 @@ export default function BigScreen() {
   const onDragEnd = async (event) => {
     const { active, over } = event;
     setActiveId(null);
+    setDragOverId(null);
     if (!over || active.id === over.id) return;
 
-    const activeItem = orderItems.find((item) => item.id.toString() === active.id);
-    const overStage = selectedService.workflow.stages.find(s => s.title === over.id);
+    const draggedIndex = orderItems.findIndex((item) => item.id.toString() === active.id);
+    if (draggedIndex === -1) return;
 
-    if (!overStage) return;
+    const updatedItem = {
+      ...orderItems[draggedIndex],
+      currentStage: over.id,
+    };
 
-    if (activeItem && activeItem.currentStage !== overStage.title) {
-      const res = await updateOrderItemStage(activeItem.id, overStage.title);
-      if (res) {
-        toast.success("Stage updated successfully via drag and drop");
-        await fetchAllData();
-      } else {
-        toast.error("Failed to update stage via drag and drop");
-      }
-    }
+    const newOrderItems = [...orderItems];
+    newOrderItems[draggedIndex] = updatedItem;
+    setOrderItems(newOrderItems);
+
+    updateOrderItemStage(updatedItem.id, over.id);
   };
 
   const filteredOrderItems = selectedService && selectedService.workflow
@@ -218,7 +229,7 @@ export default function BigScreen() {
         (item) =>
           item.product?.serviceId === selectedService.id &&
           selectedService.workflow.stages.some((s) => s.title === item.currentStage)
-      )
+)
     : [];
 
   const getOrderItemsByStage = (stageTitle) =>
@@ -226,19 +237,15 @@ export default function BigScreen() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-100 p-6">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
+      <div className="">
+        <div className="bg-white px-8 pb-8">
+          <div className="flex justify-between items-center mb-8 w-full border-[#e2e8f0] border p-6 shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
             <h1 className="text-2xl font-bold">
               Title: {selectedService?.title} Workflow
             </h1>
-            <div className="text-lg">{format(currentTime, "PPpp")}</div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-lg font-medium mb-2">Select Service:</label>
+            <div className="w-full max-w-xs">
             <select
-              className="w-full max-w-xs p-2 border rounded-md"
+              className="w-full max-w-xs px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               value={selectedService?.id || ""}
               onChange={(e) => {
                 const service = services.find((s) => s.id === parseInt(e.target.value));
@@ -254,6 +261,7 @@ export default function BigScreen() {
                 </option>
               ))}
             </select>
+            </div>
           </div>
 
           {loading ? (
@@ -266,19 +274,21 @@ export default function BigScreen() {
               collisionDetection={closestCenter}
               onDragEnd={onDragEnd}
               onDragStart={({ active }) => setActiveId(active.id)}
+              onDragOver={({ over }) => setDragOverId(over?.id || null)}
             >
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {selectedService.workflow.stages.map((stage) => (
                   <SortableStage
                     key={stage.id}
                     stage={stage}
                     orders={getOrderItemsByStage(stage.title)}
+                    isOverTarget={dragOverId === stage.title}
                   />
                 ))}
               </div>
               <DragOverlay>
                 {activeItem ? (
-                  <div className="p-4 bg-white border shadow-md rounded-md">
+                  <div className="p-4 bg-white border border-[#e2e8f0] shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
                     {activeItem.product?.title}
                   </div>
                 ) : null}
@@ -288,6 +298,11 @@ export default function BigScreen() {
         </div>
       </div>
       <ToastContainer />
+      <div className="bg-white w-full z-50 p-8 flex justify-end items-center ">
+        <div className="gap-2 border flex items-center px-[20px] py-[5px] rounded-full border-[#e2e8f0]">
+          <div className="w-[12px] h-[12px] bg-green-500 rounded-full animate-pulse"></div>Auto-refresh: 30s
+        </div>
+      </div>
     </>
   );
 }

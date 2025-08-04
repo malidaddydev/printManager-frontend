@@ -74,7 +74,7 @@ const UserCard = () => {
 
         // Simulate Teams API (replace with actual API later)
         // For now, using a random number as a placeholder
-        const teamsCount = 6; // Replace with actual API fetch when available
+        const teamsCount = 5; // Replace with actual API fetch when available
 
         // Update stats state
         setStats([

@@ -1,12 +1,10 @@
 'use client';
-import BigScreen from '@/app/components/BigScreen/BigScreen';
-import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
+import BigScreen from '@/app/components/BigScreen/BigScreennnn';
 import React from 'react';
 
 export default function BigScreenPage() {
   return (
-    <div className="p-6">
-      <Breadcrumbs pageName="Big Screen" />
+    <div className="absolute top-0 left-0 w-full h-full z-50 bg-white">
       <BigScreen />
     </div>
   );

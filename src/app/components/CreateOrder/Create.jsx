@@ -8,8 +8,8 @@ export default function CreateOrder() {
   const router = useRouter();
   const [orderData, setOrderData] = useState({
     customerId: '',
-    customerName: '',
-    orderNumber: '',
+    firstName: '',
+    lastName: '',
     title: '',
     status: 'Draft',
     startDate: new Date().toISOString().split('T')[0],
@@ -19,7 +19,7 @@ export default function CreateOrder() {
     total: 0,
     totalQuantity: 0,
     files: [],
-    createdBy:''
+    createdBy: ''
   });
   const [products, setProducts] = useState([]);
   const [services, setServices] = useState([]);
@@ -32,15 +32,6 @@ export default function CreateOrder() {
   const fileInputRefs = useRef([]);
   const [fileInputs, setFileInputs] = useState([0]);
   const [isItemCollapsed, setIsItemCollapsed] = useState({});
-
-  // Generate order number
-  useEffect(() => {
-    const generateOrderNumber = () => {
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      setOrderData(prev => ({ ...prev, orderNumber: `OR#${randomNum}` }));
-    };
-    generateOrderNumber();
-  }, []);
 
   // Fetch customers, products, and services
   useEffect(() => {
@@ -76,7 +67,8 @@ export default function CreateOrder() {
     const lowerSearch = searchTerm.toLowerCase();
     const results = customers.filter(customer =>
       customer.id.toString().includes(searchTerm) ||
-      (customer.name && customer.name.toLowerCase().includes(lowerSearch)) ||
+      (customer.firstName && customer.firstName.toLowerCase().includes(lowerSearch)) ||
+      (customer.lastName && customer.lastName.toLowerCase().includes(lowerSearch)) ||
       (customer.company && customer.company.toLowerCase().includes(lowerSearch)) ||
       (customer.email && customer.email.toLowerCase().includes(lowerSearch)) ||
       (customer.mobile && customer.mobile.toLowerCase().includes(lowerSearch))
@@ -91,7 +83,12 @@ export default function CreateOrder() {
       if (!res.ok) throw new Error('Customer not found');
       const data = await res.json();
       setCustomerInfo(data);
-      setOrderData(prev => ({ ...prev, customerId: customer.id.toString(), customerName: customer.name }));
+      setOrderData(prev => ({
+        ...prev,
+        customerId: customer.id.toString(),
+        firstName: customer.firstName || '',
+        lastName: customer.lastName || ''
+      }));
       setCustomerSearchResults([]);
     } catch (err) {
       toast.error(err.message || 'Error fetching customer');
@@ -148,8 +145,8 @@ export default function CreateOrder() {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'customerName') {
-      setOrderData(prev => ({ ...prev, customerName: value }));
+    if (name === 'customerSearch') {
+      setOrderData(prev => ({ ...prev, firstName: value, lastName: '' }));
       handleCustomerSearch(value);
     } else {
       setOrderData(prev => ({ ...prev, [name]: value }));
@@ -332,7 +329,7 @@ export default function CreateOrder() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!orderData.customerId || !orderData.orderNumber || !orderData.title || !orderData.dueDate || !orderData.items.length) {
+    if (!orderData.customerId || !orderData.title || !orderData.dueDate || !orderData.items.length) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -341,7 +338,6 @@ export default function CreateOrder() {
     const formData = new FormData();
     
     formData.append('customerId', parseInt(orderData.customerId));
-    formData.append('orderNumber', orderData.orderNumber);
     formData.append('title', orderData.title);
     formData.append('status', orderData.status);
     formData.append('createdBy', sessionStorage.getItem('username'));
@@ -387,8 +383,8 @@ export default function CreateOrder() {
       toast.success('Order created successfully');
       setOrderData({
         customerId: '',
-        customerName: '',
-        orderNumber: `OR#${Math.floor(1000 + Math.random() * 9000)}`,
+        firstName: '',
+        lastName: '',
         title: '',
         status: 'Draft',
         startDate: new Date().toISOString().split('T')[0],
@@ -397,7 +393,8 @@ export default function CreateOrder() {
         items: [],
         total: 0,
         totalQuantity: 0,
-        files: []
+        files: [],
+        createdBy: ''
       });
       setCustomerInfo(null);
       setCustomerSearchResults([]);
@@ -413,57 +410,44 @@ export default function CreateOrder() {
   };
 
   return (
-    <form className="flex flex-col gap-7">
-      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form className="flex flex-col gap-4 sm:gap-6 md:gap-7 w-full mx-auto">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
           <div className="relative">
-            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
               Customer
             </label>
             <input
               type="text"
-              name="customerName"
-              value={orderData.customerName}
+              name="customerSearch"
+              value={orderData.firstName}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
+              placeholder="Search by first name, last name, company, email, or mobile"
             />
             {customerSearchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-60 overflow-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-[40vh] sm:max-h-[50vh] overflow-auto">
                 {customerSearchResults.map(customer => (
                   <div
                     key={customer.id}
-                    className="px-4 py-2 hover:bg-[#f8fafc] cursor-pointer"
+                    className="px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer text-xs sm:text-sm"
                     onClick={() => selectCustomer(customer)}
                   >
-                    {customer.name} ({customer.company}, {customer.email}, {customer.mobile})
+                    {customer.firstName} {customer.lastName} ({customer.company}, {customer.email}, {customer.mobile})
                   </div>
                 ))}
               </div>
             )}
             {customerInfo && (
-              <div className="mt-2 text-sm text-[#111928]">
-                Customer: {customerInfo.name} {customerInfo.email && `(${customerInfo.email})`} {`(${customerInfo.mobile})`}
+              <div className="mt-2 text-xs sm:text-sm text-[#111928]">
+                Customer: {customerInfo.firstName} {customerInfo.lastName} {customerInfo.email && `(${customerInfo.email})`} {`(${customerInfo.mobile})`}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
-              Order Number
-            </label>
-            <input
-              type="text"
-              name="orderNumber"
-              value={orderData.orderNumber}
-              readOnly
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
               Title
             </label>
             <input
@@ -471,18 +455,18 @@ export default function CreateOrder() {
               name="title"
               value={orderData.title}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Status</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928]">Status</label>
             <select
               name="status"
               value={orderData.status}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             >
               <option value="draft">Draft</option>
               <option value="confirmed">Confirmed</option>
@@ -493,18 +477,18 @@ export default function CreateOrder() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Start Date</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928]">Start Date</label>
             <input
               type="date"
               name="startDate"
               value={orderData.startDate}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
               Due Date
             </label>
             <input
@@ -512,34 +496,34 @@ export default function CreateOrder() {
               name="dueDate"
               value={orderData.dueDate}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-[#111928]">Notes</label>
+          <div className="md:col-span-2">
+            <label className="block text-xs sm:text-sm font-medium text-[#111928]">Notes</label>
             <textarea
               name="notes"
               value={orderData.notes}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             />
-            <div className="mt-2">
-              <label className="block text-sm font-medium text-[#111928]">Upload Files</label>
+            <div className="mt-2 sm:mt-3">
+              <label className="block text-xs sm:text-sm font-medium text-[#111928]">Upload Files</label>
               {fileInputs.map((_, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
+                <div key={index} className="flex items-center gap-2 mb-2 sm:mb-3">
                   <input
                     type="file"
                     ref={el => fileInputRefs.current[index] = el}
                     onChange={(e) => handleFileChange(e, index)}
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg text-xs sm:text-sm"
                   />
                   {fileInputs.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeFileInput(index)}
-                      className="text-[#ef4444] text-sm"
+                      className="text-[#ef4444] text-xs sm:text-sm"
                     >
                       Remove
                     </button>
@@ -549,15 +533,15 @@ export default function CreateOrder() {
               <button
                 type="button"
                 onClick={addFileInput}
-                className="mt-2 py-1 px-3 bg-[#5750f1] text-white rounded-lg text-sm hover:bg-blue-700"
+                className="mt-1 sm:mt-2 py-1 sm:py-1.5 px-2 sm:px-3 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm hover:bg-blue-700"
               >
                 More Files
               </button>
               {orderData.files.length > 0 && (
-                <div className="mt-2">
+                <div className="mt-2 sm:mt-3">
                   {orderData.files.map((file, index) => (
                     file && (
-                      <div key={index} className="flex justify-between p-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg mb-2">
+                      <div key={index} className="flex justify-between p-2 sm:p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg mb-2 text-xs sm:text-sm">
                         <span>{file.name}</span>
                         <button
                           type="button"
@@ -580,41 +564,41 @@ export default function CreateOrder() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-[#e2e8f0] border-t-[2px]">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#111928]">Order Items</h2>
+        <div className="mt-4 sm:mt-6 md:mt-8 pt-4 sm:pt-5 md:pt-6 border-[#e2e8f0] border-t-[2px]">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-medium text-[#111928]">Order Items</h2>
           </div>
 
           {orderData.items.map((item, itemIndex) => (
-            <div key={itemIndex} className="mb-4 bg-white border border-[#e2e8f0] rounded-lg shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
+            <div key={itemIndex} className="mb-3 sm:mb-4 bg-white border border-[#e2e8f0] rounded-lg shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
               <div
-                className="flex justify-between items-center p-6 cursor-pointer"
+                className="flex justify-between items-center p-4 sm:p-5 md:p-6 cursor-pointer"
                 onClick={() => toggleItemCollapse(itemIndex)}
               >
-                <h3 className="text-md font-medium text-[#111928]">
+                <h3 className="text-sm sm:text-md md:text-lg font-medium text-[#111928]">
                   Item {item.productTitle ? `- ${item.productTitle}` : `#${itemIndex + 1}`}
                 </h3>
-                <span className="w-[35px] h-[35px] rounded-full flex justify-center items-center text-[20px] font-normal border-[2px] border-[#5750f1] text-[#5750f1]">{isItemCollapsed[itemIndex] ? '+' : '−'}</span>
+                <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex justify-center items-center text-lg sm:text-xl font-normal border-[2px] border-[#5750f1] text-[#5750f1]">{isItemCollapsed[itemIndex] ? '+' : '−'}</span>
               </div>
               <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  isItemCollapsed[itemIndex] ? 'max-h-0' : 'max-h-[1000px]'
+                  isItemCollapsed[itemIndex] ? 'max-h-0' : 'max-h-[1500px]'
                 }`}
               >
-                <div className="p-4 mt-2">
+                <div className="p-3 sm:p-4 md:p-5 mt-1 sm:mt-2">
                   {orderData.items.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeItem(itemIndex)}
-                      className="text-[#ef4444] text-sm mb-4 block cursor-pointer"
+                      className="text-[#ef4444] text-xs sm:text-sm mb-3 sm:mb-4 block cursor-pointer"
                     >
                       Remove
                     </button>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                     <div className="relative">
-                      <label className="block text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
+                      <label className="block text-xs sm:text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
                         Product
                       </label>
                       <input
@@ -624,16 +608,16 @@ export default function CreateOrder() {
                           handleItemChange(itemIndex, 'productTitle', e.target.value);
                           handleProductSearch(e.target.value, itemIndex);
                         }}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
                         required
                         placeholder="Search by product or service"
                       />
                       {productSearchResults[itemIndex]?.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-60 overflow-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-[40vh] sm:max-h-[50vh] overflow-auto">
                           {productSearchResults[itemIndex].map((service, serviceIndex) => (
                             <div key={serviceIndex} className="border-b border-[#e5e7eb]">
                               <div
-                                className="px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex justify-between items-center"
+                                className="px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex justify-between items-center text-xs sm:text-sm"
                                 onClick={() => toggleServiceDropdown(itemIndex, serviceIndex)}
                               >
                                 <span>{service.title}</span>
@@ -644,10 +628,10 @@ export default function CreateOrder() {
                                   {service.products.map(product => (
                                     <div
                                       key={product.id}
-                                      className="w-full px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex items-center gap-3"
+                                      className="w-full px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex items-center gap-2 sm:gap-3 text-xs sm:text-sm"
                                       onClick={() => handleItemChange(itemIndex, 'productId', product.id.toString())}
                                     >
-                                      <div className="w-[15px] h-[15px] bg-[#5750f1] rounded-full"></div>
+                                      <div className="w-3 h-3 sm:w-4 sm:h-4 bg-[#5750f1] rounded-full"></div>
                                       {product.title}
                                     </div>
                                   ))}
@@ -660,11 +644,11 @@ export default function CreateOrder() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-[#111928]">Color</label>
+                      <label className="block text-xs sm:text-sm font-medium text-[#111928]">Color</label>
                       <select
                         value={item.color}
                         onChange={(e) => handleItemChange(itemIndex, 'color', e.target.value)}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
                       >
                         <option value="">Select Color</option>
                         {item.colorOptions?.map((color, i) => (
@@ -675,39 +659,45 @@ export default function CreateOrder() {
                       </select>
                     </div>
                   </div>
-                    <div className="w-full my-10 rounded-[10px] border border-[#e5e7eb] p-5 flex gap-6 items-center">
-                        {item.image ? (
-                        <div>
-                          <img src={item.image} alt={item.productTitle} className=" w-[120px] object-contain rounded-[10px] border-[#e5e7eb] border" />
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="h-24 flex items-center justify-center text-sm text-[#6b7280]">
-                            No image available
-                          </div>
-                        </div>
-                      )}
+                  <div className="w-full my-6 sm:my-8 md:my-10 rounded-lg border border-[#e5e7eb] p-3 sm:p-4 md:p-5 flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
+                    {item.image ? (
                       <div>
-                        <div className="text-[18px] text-[#111928]">{item.productTitle}</div>
-                        <div className="flex gap-4">
-                          <div className="text-[#6b7280] text-[14px]">Color: {item.color || 'Not selected'}</div>
-                          <div className="text-[#6b7280] text-[14px]">Service: {item.serviceTitle || 'N/A'}</div>
+                        <img src={item.image} alt={item.productTitle} className="w-20 sm:w-24 md:w-[120px] object-contain rounded-lg border-[#e5e7eb] border" />
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="h-16 sm:h-20 md:h-24 flex items-center justify-center text-xs sm:text-sm text-[#6b7280]">
+                          No image available
                         </div>
                       </div>
+                    )}
+                    <div>
+                      <div className="text-sm sm:text-base md:text-[18px] text-[#111928]">{item.productTitle}</div>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
+                        <div className="text-[#6b7280]">Color: {item.color || 'Not selected'}</div>
+                        <div className="text-[#6b7280]">Service: {item.serviceTitle || 'N/A'}</div>
+                      </div>
                     </div>
-
-                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Total:</h5> <h5 className="text-[#6b7280] text-[15px]">${item.total}</h5></div>
-                      <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Quantity:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.quantity}</h5></div>
                   </div>
 
-                  <div className="mt-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-sm font-medium text-[#111928]">Size Quantities</h4>
+                  <div className="w-full grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
+                    <div className="border border-[#e5e7eb] px-3 sm:px-4 py-2 sm:py-3 flex flex-col gap-1 sm:gap-2">
+                      <h5 className="font-bold text-[#111928] text-sm sm:text-[16px]">Total:</h5>
+                      <h5 className="text-[#6b7280] text-xs sm:text-[15px]">${item.total}</h5>
+                    </div>
+                    <div className="border border-[#e5e7eb] px-3 sm:px-4 py-2 sm:py-3 flex flex-col gap-1 sm:gap-2">
+                      <h5 className="font-bold text-[#111928] text-sm sm:text-[16px]">Quantity:</h5>
+                      <h5 className="text-[#6b7280] text-xs sm:text-[15px]">{item.quantity}</h5>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 sm:mt-4">
+                    <div className="flex justify-between items-center mb-2 sm:mb-3">
+                      <h4 className="text-xs sm:text-sm font-medium text-[#111928]">Size Quantities</h4>
                       <button
                         type="button"
                         onClick={() => addSize(itemIndex)}
-                        className="py-1 px-3 bg-[#5750f1] text-white rounded-lg text-sm hover:bg-blue-700"
+                        className="py-1 sm:py-1.5 px-2 sm:px-3 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm hover:bg-blue-700"
                         disabled={loading}
                       >
                         Add Size
@@ -715,13 +705,13 @@ export default function CreateOrder() {
                     </div>
 
                     {item.sizeQuantities.map((size, sizeIndex) => (
-                      <div key={sizeIndex} className="flex gap-4 mb-2 items-end">
+                      <div key={sizeIndex} className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-2 sm:mb-3 items-start sm:items-end">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-[#111928]">Size</label>
+                          <label className="block text-xs sm:text-sm font-medium text-[#111928]">Size</label>
                           <select
                             value={size.Size}
                             onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Size', e.target.value)}
-                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
                           >
                             <option value="">Select Size</option>
                             {item.sizeOptions?.map((size, i) => (
@@ -732,28 +722,28 @@ export default function CreateOrder() {
                           </select>
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-[#111928]">Price</label>
+                          <label className="block text-xs sm:text-sm font-medium text-[#111928]">Price</label>
                           <input
                             type="text"
                             value={size.Price}
                             onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Price', e.target.value)}
-                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
                             disabled
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-[#111928]">Quantity</label>
+                          <label className="block text-xs sm:text-sm font-medium text-[#111928]">Quantity</label>
                           <input
                             type="number"
                             value={size.Quantity}
                             onChange={(e) => handleSizeChange(itemIndex, sizeIndex, 'Quantity', e.target.value)}
-                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3]"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={() => removeSize(itemIndex, sizeIndex)}
-                          className="text-[#ef4444] text-sm cursor-pointer"
+                          className="text-[#ef4444] text-xs sm:text-sm cursor-pointer"
                         >
                           Remove
                         </button>
@@ -769,36 +759,42 @@ export default function CreateOrder() {
           <button
             type="button"
             onClick={addItem}
-            className="py-2 px-4 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700"
+            className="py-1.5 sm:py-2 px-3 sm:px-4 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm hover:bg-blue-700"
           >
             Add Item
           </button>
         </div>
 
-        <div className="mt-6 w-full flex flex-col items-end gap-8">
-          <div className='w-[25%]'>
-            <div className="text-sm font-medium text-[#111928] flex justify-between w-full mb-4"><h5 className="text-[#111928] font-medium text-[17px]">Total Quantity:</h5> <h5 className="text-[#111928] font-medium text-[17px]">{orderData.totalQuantity}</h5></div>
-            <div className="text-sm font-medium text-[#111928] flex justify-between w-full border-t border-[#e5e7eb] pt-[15px]"><h5 className="text-[#111928] font-medium text-[17px]">Order Total:</h5> <h5 className="text-[#111928] font-medium text-[17px]">${orderData.total}</h5></div>
+        <div className="mt-4 sm:mt-6 w-full flex flex-col items-end gap-4 sm:gap-6 md:gap-8">
+          <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+            <div className="text-xs sm:text-sm font-medium text-[#111928] flex justify-between w-full mb-3 sm:mb-4">
+              <h5 className="text-[#111928] font-medium text-sm sm:text-[17px]">Total Quantity:</h5>
+              <h5 className="text-[#111928] font-medium text-sm sm:text-[17px]">{orderData.totalQuantity}</h5>
+            </div>
+            <div className="text-xs sm:text-sm font-medium text-[#111928] flex justify-between w-full border-t border-[#e5e7eb] pt-3 sm:pt-4">
+              <h5 className="text-[#111928] font-medium text-sm sm:text-[17px]">Order Total:</h5>
+              <h5 className="text-[#111928] font-medium text-sm sm:text-[17px]">${orderData.total}</h5>
+            </div>
           </div>
           <div className="flex justify-end">
             <button
-            type="submit"
-            onClick={handleSubmit}
-            className={`py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
-            disabled={loading}
-          >
-            {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-            {loading ? 'Creating Order...' : 'Create Order'}
-          </button>
+              type="submit"
+              onClick={handleSubmit}
+              className={`py-2 sm:py-3 px-6 sm:px-8 bg-[#5750f1] text-white rounded-lg flex items-center text-xs sm:text-sm ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+              disabled={loading}
+            >
+              {loading && (
+                <svg className="animate-spin h-4 sm:h-5 w-4 sm:w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+              {loading ? 'Creating Order...' : 'Create Order'}
+            </button>
           </div>
         </div>
       </div>

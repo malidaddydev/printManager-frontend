@@ -10,11 +10,15 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
   const [error, setError] = useState(null);
 
   const handleDelete = async () => {
+    const token = sessionStorage.getItem('authToken');
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (!response.ok) {
         toast.error('Failed to delete order');
@@ -36,11 +40,11 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
-        <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this order?</p>
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] md:max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Delete</h2>
+        <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">Are you sure you want to delete this order?</p>
         {error && (
-          <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
+          <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-xs sm:text-sm">
             {error}
           </div>
         )}
@@ -49,19 +53,19 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
             onClick={() => {
               onClose();
             }}
-            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300 cursor-pointer"
+            className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className={`py-[13px] px-6 bg-[#ef4444] text-white rounded-lg hover:bg-red-700 flex items-center justify-center cursor-pointer ${
+            className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#ef4444] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center cursor-pointer ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
             }`}
           >
             {loading && (
-              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -74,11 +78,11 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
   );
 };
 
-const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onEdit, onDelete }) => {
+const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onDelete }) => {
   if (menuOpen !== orderId) return null;
   return createPortal(
     <div
-      className="absolute top-0 bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
+      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[120px] sm:min-w-[150px] overflow-hidden dropdown-menu"
       style={{
         top: `${menuPosition.top}px`,
         right: `${menuPosition.right}px`,
@@ -89,7 +93,7 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onEdit, onDelet
           e.stopPropagation();
           onView(orderId);
         }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         View Order
       </button>
@@ -98,7 +102,7 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onEdit, onDelet
           e.stopPropagation();
           onDelete(orderId);
         }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         Delete Order
       </button>
@@ -129,7 +133,6 @@ export default function OrderList() {
           throw new Error(errorData.message || 'Failed to fetch orders');
         }
         const data = await response.json();
-        console.log(data);
         const ordersArray = Array.isArray(data) ? data : [];
         setOrders(ordersArray);
 
@@ -140,15 +143,19 @@ export default function OrderList() {
             const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${id}`);
             if (!res.ok) throw new Error(`Failed to fetch customer ${id}`);
             const customerData = await res.json();
-            return { id, name: customerData.name || 'N/A' };
+            return { 
+              id, 
+              firstName: customerData.firstName || '', 
+              lastName: customerData.lastName || '' 
+            };
           } catch (err) {
             console.error(err);
-            return { id, name: 'N/A' };
+            return { id, firstName: '', lastName: '' };
           }
         });
         const customers = await Promise.all(customerPromises);
-        const customerMap = customers.reduce((acc, { id, name }) => {
-          acc[id] = name;
+        const customerMap = customers.reduce((acc, { id, firstName, lastName }) => {
+          acc[id] = `${firstName} ${lastName}`.trim() || 'N/A';
           return acc;
         }, {});
         setCustomerNames(customerMap);
@@ -178,10 +185,11 @@ export default function OrderList() {
   const filteredOrders = Array.isArray(orders)
     ? orders.filter((order) => {
         if (!searchTerm.trim()) return true;
+        const customerName = customerNames[order.customerId]?.toLowerCase() || '';
         return (
           (order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
           (order.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-          (customerNames[order.customerId]?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+          (customerName.includes(searchTerm.toLowerCase()) || false) ||
           (order.status?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
         );
       })
@@ -233,21 +241,21 @@ export default function OrderList() {
 
   return (
     <>
-      <div className="bg-white rounded-[10px] p-6 border-[1px] border-[#e5e7eb]">
-        <div className="flex justify-between">
+      <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border-[1px] border-[#e5e7eb] w-full">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="font-medium text-gray-800 text-[24px]">Order Directory</h2>
-            <p className="text-[18px] text-[#9ca3af] mb-4">Search and filter orders</p>
+            <h2 className="font-medium text-gray-800 text-lg sm:text-xl md:text-2xl">Order Directory</h2>
+            <p className="text-sm sm:text-base text-[#9ca3af] mb-3 sm:mb-4">Search and filter orders</p>
           </div>
-          <div>
+          <div className="sm:mb-0 mb-[20px]">
             <button
               onClick={() => router.push('/dashboard/order/create')}
-              className="bg-[#5750f1] text-white py-[13px] px-[35px] rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
+              className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -263,22 +271,22 @@ export default function OrderList() {
             </button>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col gap-3 sm:gap-4">
           <input
             type="text"
-            placeholder="Search by order number, title, customer name, or status"
-            className="w-full sm:w-1/3 px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+            placeholder="Search by order number, title, customer first name, customer last name, or status"
+            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
-      <div className="mt-6 rounded-[10px] bg-white p-6 border-[1px] border-[#e5e7eb]">
-        <div className="relative w-full overflow-auto">
+      <div className="mt-4 sm:mt-5 md:mt-6 rounded-lg bg-white p-4 sm:p-5 md:p-6 border-[1px] border-[#e5e7eb] w-full">
+        <div className="relative w-full overflow-x-auto">
           {isLoading ? (
-            <div className="flex justify-center items-center py-10">
+            <div className="flex justify-center items-center py-8 sm:py-10">
               <svg
-                className="animate-spin h-8 w-8 text-[#5750f1]"
+                className="animate-spin h-6 sm:h-8 w-6 sm:w-8 text-[#5750f1]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -299,36 +307,36 @@ export default function OrderList() {
               </svg>
             </div>
           ) : error ? (
-            <div className="text-center py-10 text-[#ef4444] text-lg">
+            <div className="text-center py-8 sm:py-10 text-[#ef4444] text-sm sm:text-lg">
               Error: {error}
             </div>
           ) : filteredOrders.length === 0 ? (
-            <div className="text-center py-10 text-[#9ca3af] text-lg">
+            <div className="text-center py-8 sm:py-10 text-[#9ca3af] text-sm sm:text-lg">
               No Data Found
             </div>
           ) : (
-            <table className="w-full caption-bottom text-sm">
+            <table className="w-full caption-bottom text-xs sm:text-sm">
               <thead>
-                <tr className="border-none bg-[#F7F9FC] py-4 text-base text-[#111928]">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-7.5">
+                <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-6">
                     Order Number
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
                     Customer Name
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
                     Order Title
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
                     Order Date
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
                     Delivery Date
                   </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
                     Order Status
                   </th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-neutral-500 xl:pr-7.5">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
                     Actions
                   </th>
                 </tr>
@@ -339,43 +347,43 @@ export default function OrderList() {
                     key={order.id}
                     className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
                   >
-                    <td className="p-4 align-middle min-w-[100px] xl:pl-7.5">
-                      <p className="text-[#111928]">{order.orderNumber || 'N/A'}</p>
+                    <td className="p-3 sm:p-4 align-middle min-w-[100px] xl:pl-6">
+                      <p className="text-[#111928] text-xs sm:text-sm">{order.orderNumber || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
-                      <p className="text-[#111928]">{customerNames[order.customerId] || 'N/A'}</p>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">{customerNames[order.customerId] || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
-                      <p className="text-[#111928]">{order.title || 'N/A'}</p>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">{order.title || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
-                      <p className="text-[#111928]">
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">
                         {order.startDate ? new Date(order.startDate).toLocaleDateString() : 'N/A'}
                       </p>
                     </td>
-                    <td className="p-4 align-middle">
-                      <p className="text-[#111928]">
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">
                         {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : 'N/A'}
                       </p>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle">
                       <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusStyles(
+                        className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
                           order.status
                         )}`}
                       >
                         {order.status || 'N/A'}
                       </span>
                     </td>
-                    <td className="p-4 align-middle xl:pr-7.5">
+                    <td className="p-3 sm:p-4 align-middle xl:pr-6">
                       <div className="relative flex justify-end">
                         <button
                           className="dropdown-button hover:text-[#2563eb] transition"
                           onClick={(e) => handleMenuClick(order.id, e)}
                         >
                           <svg
-                            width="20"
-                            height="20"
+                            width="18"
+                            height="18"
                             viewBox="0 0 20 20"
                             fill="currentColor"
                           >
