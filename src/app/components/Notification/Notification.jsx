@@ -197,9 +197,9 @@ export default function Notification() {
                           Mark Read
                         </button>
                       )}
-                      {notification.orderNumber && (
+                      {notification.orderId && (
                         <button
-                          onClick={() => handleViewOrder(notification.orderNumber)}
+                          onClick={() => handleViewOrder(notification.orderId)}
                           className="px-2 py-1 border border-[#e5e7eb] rounded-lg text-xs text-[#2563eb] hover:text-blue-700 w-full sm:w-auto"
                         >
                           View Order
