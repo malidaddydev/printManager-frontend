@@ -361,11 +361,11 @@ export default function Services() {
                     <div key={index} className="flex items-center space-x-4">
                       <div
                         className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: stage.color || '#000000' }}
+                        style={{ backgroundColor: stage.stage.color || '#000000' }}
                       />
-                      <span className="text-sm text-[#111928]">{stage.title}</span>
+                      <span className="text-sm text-[#111928]">{stage.stage.name}</span>
                       <span className="ml-auto text-sm text-[#111928] border-[1px] border-[#e5e7eb] rounded-full px-[20px] py-[2px]">
-                        {stage.days}d
+                        {stage.stage.days}d
                       </span>
                     </div>
                   ))

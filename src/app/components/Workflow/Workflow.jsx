@@ -6,8 +6,25 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
   const [workflowTitle, setWorkflowTitle] = useState('');
+  const [stages, setStages] = useState([]);
+  const [selectedStageIds, setSelectedStageIds] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Fetch stages from API
+  useEffect(() => {
+    if (isOpen) {
+      fetch('https://printmanager-api.onrender.com/api/stages/')
+        .then(res => res.json())
+        .then(data => setStages(data))
+        .catch(() => toast.error('Failed to load stages'));
+    }
+  }, [isOpen]);
+
+  const handleCheckboxChange = (stageId) => {
+    setSelectedStageIds(prev => prev.includes(stageId)? prev.filter(id => id !== stageId): [...prev, stageId]
+    );
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +37,11 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
       const response = await fetch('https://printmanager-api.onrender.com/api/workflows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: workflowTitle }),
+        body: JSON.stringify({
+          title: workflowTitle,
+          createdBy:sessionStorage.getItem("username"),
+          stageIds: selectedStageIds, // send selected stages
+        }),
       });
       if (!response.ok) throw new Error('Failed to create workflow');
       const newWorkflow = await response.json();
@@ -32,7 +53,7 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
       toast.error('Failed to create workflow');
       setError('Failed to create workflow');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -40,7 +61,7 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-8 rounded-lg w-full max-w-[700px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-bold text-[#111928] mb-4">Create Workflow</h2>
         {error && <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +75,37 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
               required
             />
           </div>
-          <div className="flex justify-end space-x-2">
+
+          <div>
+            <label className="block text-sm font-medium text-[#111928] mb-2">Select Stages</label>
+            <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2">
+              {stages.map((stage) => (
+                <label
+                  key={stage.id}
+                  className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedStageIds.includes(stage.id)}
+                    onChange={() => handleCheckboxChange(stage.id)}
+                  />
+                  <span
+                    className="w-4 h-4 rounded-full inline-block"
+                    style={{ backgroundColor: stage.color }}
+                    title={stage.color}
+                  ></span>
+                  <div>
+                    <p className="font-medium text-sm">{stage.name}</p>
+                    <p className="text-xs text-gray-500">
+                      State: {stage.state} • Team: {stage.team} • Duedays: {stage.days} 
+                    </p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
               onClick={onClose}
@@ -65,21 +116,21 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
             <button
               type="submit"
               disabled={loading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center ${
+              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg flex items-center justify-center ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
               }`}
             >
               {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-            {loading ? 'Creating...' : 'Create Workflow'}
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+              {loading ? 'Creating...' : 'Create Workflow'}
             </button>
           </div>
         </form>
@@ -268,10 +319,13 @@ export default function Workflow() {
       ) : (
       <div className="space-y-6">
         {workflows.map((workflow) => (
+          
           <div key={workflow.id} className="bg-white p-6 rounded-lg border-[1px] border-[#e5e7eb] relative">
             <div className="flex gap-4 items-center mb-4">
               <h3 className="text-[24px] font-semibold text-[#111928]">
                 {workflow.title}
+                {console.log(workflow)
+                }
               </h3> 
               <span className="text-sm text-[#111928] border-[1px] border-[#e5e7eb] rounded-full px-[18px] py-[2px]">
                 {workflow.stages ? workflow.stages.length : 0} steps
@@ -285,11 +339,11 @@ export default function Workflow() {
                   <div className="flex flex-col items-center gap-[10px] w-[170px] p-[20px] rounded-lg border-[1px] border-[#e5e7eb]">
                     <div
                       className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: stage.color }}
+                      style={{ backgroundColor: stage.stage.color }}
                     />
-                    <span className="text-sm font-medium text-[#111928]">{stage.title}</span>
+                    <span className="text-sm font-medium text-[#111928]">{stage.stage.name}</span>
                     <span className="text-sm text-[#111928] border-[1px] border-[#e5e7eb] rounded-full px-[20px] py-[2px]">
-                      {stage.days}d
+                      {stage.stage.days}d
                     </span>
                   </div>
                   {index < workflow.stages.length - 1 && (

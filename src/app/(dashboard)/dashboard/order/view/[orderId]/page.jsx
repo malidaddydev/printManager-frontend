@@ -352,61 +352,60 @@ export default function ViewOrder() {
   };
 
   // For Product Files
-  const handleAddFileProduct = async () => {
-    if (!newFile || !currentProductId) {
-      toast.error("Please select a file and ensure product is selected");
-      return;
-    }
+ const handleAddFileProduct = async () => {
+  if (!newFile || !currentProductId) {
+    toast.error("Please select a file and ensure product is selected");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('file', newFile);
-    formData.append('productId', currentProductId);
-    formData.append('orderItemId', currentOrderItemId);
-    formData.append('uploadedBy', sessionStorage.getItem("username"));
+  const formData = new FormData();
+  formData.append('file', newFile);
+  formData.append('productId', currentProductId);
+  formData.append('orderItemId', currentOrderItemId);
+  formData.append('uploadedBy',sessionStorage.getItem("username"));
 
-    try {
-      setUploadProgress(0);
-      const response = await axios.post(
-        'https://printmanager-api.onrender.com/api/orderFiles',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          },
-        }
-      );
+  try {
+    setUploadProgress(0);
+    const response = await axios.post(
+      'https://printmanager-api.onrender.com/api/orderFiles',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      }
+    );
 
-      // Update local state immediately
-      setOrderData(prev => ({
-        ...prev,
-        items: prev.items.map(item =>
-          item.product.id === currentProductId
-            ? {
+    // Update local state immediately
+    setOrderData(prev => ({
+      ...prev,
+      items: prev.items.map(item =>
+        item.id === currentOrderItemId
+          ? {
               ...item,
-              product: {
-                ...item.product,
-                files: [...(item.product.files || []), response.data]
-              }
+              
+                files: [...(item.files || []), response.data]
+              
             }
-            : item
-        )
-      }));
+          : item
+      )
+    }));
 
-      setNewFile(null);
-      toast.success("File uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
-    } finally {
-      setUploadProgress(0);
-    }
-  };
+    setNewFile(null);
+    toast.success("File uploaded successfully");
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    toast.error("Failed to upload file");
+  } finally {
+    setUploadProgress(0);
+  }
+};
 
   const handleDeleteFiles = async () => {
     if (filesToDelete.length === 0) {
@@ -1053,11 +1052,11 @@ export default function ViewOrder() {
                                         {item.product?.service?.workflow?.stages.map((stage, idx) => (
                                           <CustomStageRadio
                                             key={idx}
-                                            label={stage.title}
-                                            checked={item.currentStage === stage.title}
+                                            label={stage.stage.name}
+                                            checked={item.currentStage === stage.stage.name}
                                             name={`stage-${item.id}`}
                                             onChange={async () => {
-                                              const newStage = stage.title;
+                                              const newStage = stage.stage.name;
                                               try {
                                                 await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}`, {
                                                   currentStage: newStage,
@@ -1300,14 +1299,14 @@ export default function ViewOrder() {
                                     >
                                       <span
                                         className="h-3 w-3 rounded-full"
-                                        style={{ backgroundColor: stage.color }}
+                                        style={{ backgroundColor: stage.stage.color }}
                                       ></span>
                                       <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-900">{stage.title}</p>
-                                        <p className="text-xs text-gray-500">{stage.days} days</p>
+                                        <p className="text-sm font-medium text-gray-900">{stage.stage.name}</p>
+                                        <p className="text-xs text-gray-500">{stage.stage.days} days</p>
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        {stage.title === item.currentStage ? "Current" : ""}
+                                        {stage.stage.name === item.currentStage ? "Current" : ""}
                                       </div>
                                     </div>
                                   ))}
@@ -1333,9 +1332,12 @@ export default function ViewOrder() {
                                     Add Files
                                   </button>
                                 </div>
-                                {item.product?.files.length > 0 ? (
+                                {Array.isArray(item.files) && item.files.length > 0 ? (
+                                  
                                   <div className="space-y-2">
-                                    {item.product?.files.map((file, fileIndex) => {
+                                    {console.log(item)}
+                                    {item.files.map((file, fileIndex) => {
+                                      
                                       const isImage = ["jpg", "jpeg", "png"].includes(
                                         file.fileName.split('.').pop().toLowerCase()
                                       );
@@ -1365,7 +1367,9 @@ export default function ViewOrder() {
                                     })}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-gray-500">No files available for this product</p>
+                                  <p className="text-sm text-gray-500">No files available for this product {console.log(orderData)
+                                  }</p>
+                                  
                                 )}
                               </div>
                             )}
@@ -1873,8 +1877,9 @@ export default function ViewOrder() {
                   <p className="text-gray-500 text-sm">No files available</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {orderData.items.find(item => item.product.id === currentProductId)?.product?.files?.map((file) => (
-                      <div key={file.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
+                    {orderData.items.map((item) => (
+                      item.files.map((file)=>(
+                        <div key={file.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
                         <input
                           type="checkbox"
                           checked={filesToDelete.includes(file.id)}
@@ -1888,6 +1893,7 @@ export default function ViewOrder() {
                           </p>
                         </div>
                       </div>
+                      ))
                     ))}
                   </div>
                 )}
@@ -1895,16 +1901,10 @@ export default function ViewOrder() {
                 {orderData.items.find(item => item.product.id === currentProductId)?.product?.files?.length > 0 && (
                   <button
                     onClick={handleDeleteFiles}
-                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
-                    disabled={filesToDelete.length === 0 || loading}
+                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    disabled={filesToDelete.length === 0}
                   >
-                    {loading && (
-                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                  {loading ? "Deleting..." : `Delete Selected (${filesToDelete.length})`}
+                    Delete Selected ({filesToDelete.length})
                   </button>
                 )}
               </div>

@@ -6,7 +6,9 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
-    title: '',
+    state: '',
+    name: '',
+    team: '',
     color: '#000000',
     days: 1,
     workflowId: '',
@@ -176,7 +178,9 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
 
 const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
   const [formData, setFormData] = useState({
-    title: stage?.title || '',
+    state: stage?.state || '',
+    name: stage?.name || '',
+    team: stage?.team || '',
     color: stage?.color || '#000000',
     days: stage?.days || 1,
     workflowId: stage?.workflowId || '',
@@ -203,7 +207,9 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
   useEffect(() => {
     if (stage) {
       setFormData({
-        title: stage.title || '',
+         state: stage?.state || '',
+        name: stage?.name || '',
+        team: stage?.team || '',
         color: stage.color || '#000000',
         days: stage.days || 1,
         workflowId: stage.workflowId || '',
@@ -540,10 +546,12 @@ export default function Stage() {
                   className="w-4 h-4 rounded-full"
                   style={{ backgroundColor: stage.color }}
                 />
-              <h3 className="text-lg font-semibold text-[#111928]">{stage.title}</h3>
+              <h3 className="text-lg font-semibold text-[#111928]">{stage.state}</h3>
               </div>
               <div className="space-y-2 mt-2">
-                  <span className="text-sm text-[#9ca3af]">Days: {stage.days}</span>
+              <div className="text-sm text-[#9ca3af]"> Name: {stage.name}</div>
+              <div className="text-sm text-[#9ca3af]">Team: {stage.team}</div>
+                  <div className="text-sm text-[#9ca3af]">Days: {stage.days}</div>
               </div>
               <div className="absolute top-4 right-4">
                 <button
