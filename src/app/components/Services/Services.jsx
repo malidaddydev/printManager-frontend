@@ -39,7 +39,10 @@ const CreateServicePopup = ({ isOpen, onClose, onSave, workflows }) => {
     try {
       const response = await fetch('https://printmanager-api.onrender.com/api/services', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error('Failed to create service');
@@ -59,29 +62,33 @@ const CreateServicePopup = ({ isOpen, onClose, onSave, workflows }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Create Service</h2>
-        {error && <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Create Service</h2>
+        {error && (
+          <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-xs sm:text-sm">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Title</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Title *</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Workflow</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Workflow *</label>
             <select
               name="workflowId"
               value={formData.workflowId}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             >
               <option value="">Select a Workflow</option>
@@ -96,19 +103,19 @@ const CreateServicePopup = ({ isOpen, onClose, onSave, workflows }) => {
             <button
               type="button"
               onClick={onClose}
-              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+              className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg flex items-center justify-center ${
+              className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center transition ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
               }`}
             >
               {loading && (
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 sm:h-5 w-4 sm:w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path
                     className="opacity-75"
@@ -134,6 +141,9 @@ const DeleteServicePopup = ({ isOpen, onClose, serviceId, onDelete }) => {
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/services/${serviceId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!response.ok) throw new Error('Failed to delete service');
       onDelete(serviceId);
@@ -150,26 +160,26 @@ const DeleteServicePopup = ({ isOpen, onClose, serviceId, onDelete }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
-        <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this service?</p>
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Delete</h2>
+        <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">Are you sure you want to delete this service?</p>
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+            className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className={`py-[13px] px-6 bg-[#ef4444] text-white rounded-lg flex items-center justify-center ${
+            className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#ef4444] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center transition ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
             }`}
           >
             {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 sm:h-5 w-4 sm:w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
@@ -190,19 +200,19 @@ const DropdownMenu = ({ serviceId, menuPosition, menuOpen, onDelete, setMenuOpen
   if (menuOpen !== serviceId) return null;
   return createPortal(
     <div
-      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
+      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[120px] sm:min-w-[150px] overflow-hidden dropdown-menu"
       style={{
         top: `${menuPosition.top}px`,
-        right: `${menuPosition.right}px`,
+        right: `${Math.max(16, menuPosition.right)}px`, // Ensure minimum 16px from right edge
       }}
     >
       <button
         onClick={(e) => {
           e.stopPropagation();
           onDelete(serviceId);
-          setMenuOpen(null); // Close the dropdown menu
+          setMenuOpen(null);
         }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         Delete Service
       </button>
@@ -226,7 +236,11 @@ export default function Services() {
     const fetchServices = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/services');
+        const response = await fetch('https://printmanager-api.onrender.com/api/services', {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch services');
         const data = await response.json();
         setServices(Array.isArray(data) ? data : data.services || []);
@@ -245,7 +259,11 @@ export default function Services() {
   useEffect(() => {
     const fetchWorkflows = async () => {
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/workflows');
+        const response = await fetch('https://printmanager-api.onrender.com/api/workflows', {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch workflows');
         const data = await response.json();
         setWorkflows(Array.isArray(data) ? data : data.workflows || []);
@@ -271,27 +289,27 @@ export default function Services() {
 
   const handleCreateService = async (newService, workflowId) => {
     try {
-      // Check if workflow data is already available in the workflows state
       let workflow = workflows.find((w) => w.id === workflowId);
       if (!workflow) {
-        // Fetch the workflow if not found in state
-        const response = await fetch(`https://printmanager-api.onrender.com/api/workflows/${workflowId}`);
+        const response = await fetch(`https://printmanager-api.onrender.com/api/workflows/${workflowId}`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch workflow');
         workflow = await response.json();
       }
-      // Merge workflow data into the new service
       const enrichedService = {
         ...newService,
         workflow: workflow || { title: 'N/A', stages: [] },
       };
       setServices((prevServices) => {
         const updatedServices = [...prevServices, enrichedService];
-        return updatedServices.sort((a, b) => a.id - b.id); // Sort by ID for consistency
+        return updatedServices.sort((a, b) => a.id - b.id);
       });
     } catch (error) {
       console.error('Error enriching service with workflow:', error);
       toast.error('Failed to load workflow data');
-      // Fallback: Add service without workflow data
       setServices((prevServices) => [
         ...prevServices,
         { ...newService, workflow: { title: 'N/A', stages: [] } },
@@ -308,100 +326,104 @@ export default function Services() {
     const rect = event.currentTarget.getBoundingClientRect();
     const newPosition = {
       top: rect.bottom + window.scrollY,
-      right: window.innerWidth - rect.right + window.scrollX,
+      right: Math.max(16, window.innerWidth - rect.right + window.scrollX),
     };
     setMenuPosition(newPosition);
     setMenuOpen(menuOpen === serviceId ? null : serviceId);
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-      <div className="flex justify-end mb-6">
-        <button
-          onClick={() => setCreatePopupOpen(true)}
-          className="py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700"
-        >
-          Create Service
-        </button>
-      </div>
-      {isLoading ? (
-        <div className="flex justify-center items-center py-10">
-          <svg
-            className="animate-spin h-8 w-8 text-[#5750f1]"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
+    <div>
+      <div className="bg-white p-4 sm:p-5 md:p-6 rounded-lg border border-[#e5e7eb] mt-4 sm:mt-6">
+        <div className="flex justify-end mb-4 sm:mb-5">
+          <button
+            onClick={() => setCreatePopupOpen(true)}
+            className="py-2 sm:py-2.5 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
+            Create Service
+          </button>
         </div>
-      ) : services.length === 0 ? (
-        <div className="text-center py-10 text-[#9ca3af] text-lg">Data Not Found</div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-1 sm:gap-4 xl:grid-cols-3 2xl:gap-7.5">
-          {services.map((service) => (
-            <div key={service.id} className="bg-white p-6 rounded-lg border-[1px] border-[#e5e7eb] relative">
-              <h3 className="text-lg font-semibold text-[#111928] mb-2">Service: {service.title}</h3>
-              <p className="text-[16px] text-[#111928] mb-2">Workflow: {service.workflow?.title || 'N/A'}</p>
-              <div className="space-y-2">
-                {service.workflow?.stages?.length > 0 ? (
-                  service.workflow.stages.map((stage, index) => (
-                    <div key={index} className="flex items-center space-x-4">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: stage.stage.color || '#000000' }}
-                      />
-                      <span className="text-sm text-[#111928]">{stage.stage.name}</span>
-                      <span className="ml-auto text-sm text-[#111928] border-[1px] border-[#e5e7eb] rounded-full px-[20px] py-[2px]">
-                        {stage.stage.days}d
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-[#9ca3af]">No stages available</p>
-                )}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8 sm:py-10">
+            <svg
+              className="animate-spin h-6 sm:h-8 w-6 sm:w-8 text-[#5750f1]"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+        ) : services.length === 0 ? (
+          <div className="text-center py-8 sm:py-10 text-[#9ca3af] text-sm sm:text-base">
+            Data Not Found
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:gap-6">
+            {services.map((service) => (
+              <div key={service.id} className="bg-white p-4 sm:p-5 md:p-6 rounded-lg border border-[#e5e7eb] relative">
+                <h3 className="text-base sm:text-lg font-semibold text-[#111928] mb-2">Service: {service.title}</h3>
+                <p className="text-sm sm:text-base text-[#111928] mb-2">Workflow: {service.workflow?.title || 'N/A'}</p>
+                <div className="space-y-2">
+                  {service.workflow?.stages?.length > 0 ? (
+                    service.workflow.stages.map((stage, index) => (
+                      <div key={index} className="flex items-center space-x-3 sm:space-x-4">
+                        <div
+                          className="w-3 sm:w-4 h-3 sm:h-4 rounded-full"
+                          style={{ backgroundColor: stage.stage.color || '#000000' }}
+                        />
+                        <span className="text-xs sm:text-sm text-[#111928]">{stage.stage.name}</span>
+                        <span className="ml-auto text-xs sm:text-sm text-[#111928] border border-[#e5e7eb] rounded-full px-3 sm:px-4 py-0.5 sm:py-1">
+                          {stage.stage.days}d
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs sm:text-sm text-[#9ca3af]">No stages available</p>
+                  )}
+                </div>
+                <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                  <button
+                    className="dropdown-button hover:text-[#2563eb] transition"
+                    onClick={(e) => handleMenuClick(service.id, e)}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                      <circle cx="10" cy="4" r="2" />
+                      <circle cx="10" cy="10" r="2" />
+                      <circle cx="10" cy="16" r="2" />
+                    </svg>
+                  </button>
+                  <DropdownMenu
+                    serviceId={service.id}
+                    menuPosition={menuPosition}
+                    menuOpen={menuOpen}
+                    onDelete={() => {
+                      setSelectedService(service);
+                      setDeletePopupOpen(true);
+                    }}
+                    setMenuOpen={setMenuOpen}
+                  />
+                </div>
               </div>
-              <div className="absolute top-4 right-4">
-                <button
-                  className="dropdown-button hover:text-[#2563eb] transition"
-                  onClick={(e) => handleMenuClick(service.id, e)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <circle cx="10" cy="4" r="2" />
-                    <circle cx="10" cy="10" r="2" />
-                    <circle cx="10" cy="16" r="2" />
-                  </svg>
-                </button>
-                <DropdownMenu
-                  serviceId={service.id}
-                  menuPosition={menuPosition}
-                  menuOpen={menuOpen}
-                  onDelete={() => {
-                    setSelectedService(service);
-                    setDeletePopupOpen(true);
-                  }}
-                  setMenuOpen={setMenuOpen}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
       <CreateServicePopup
         isOpen={createPopupOpen}
-        onClose={() => setCreatePopupOpen(false) }
+        onClose={() => setCreatePopupOpen(false)}
         onSave={handleCreateService}
         workflows={workflows}
       />

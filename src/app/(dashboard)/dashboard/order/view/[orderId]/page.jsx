@@ -847,209 +847,192 @@ export default function ViewOrder() {
     <div className="p-6">
       <div>
         {/* Header */}
-        <div className="flex justify-between items-center mb-6 p-6 rounded-lg bg-white border border-[#e5e7eb]">
+        <div className="flex mb-4 flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 p-4 sm:p-5 md:p-6 rounded-lg bg-white border border-[#e5e7eb]">
           <button
-            onClick={() => router.push("/dashboard/order/list")}
-            className="py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+            onClick={() => router.push('/dashboard/order/list')}
+            className="py-2 sm:py-2.5 px-3 sm:px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 sm:h-5 w-4 sm:w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
             </svg>
             Back to Orders
           </button>
-          <div className="text-center">
-            <h2 className="font-semibold text-gray-800 text-2xl">Order No: {orderData.orderNumber}</h2>
+          <div className="text-center sm:text-left">
+            <h2 className="font-semibold text-gray-800 text-lg sm:text-xl md:text-2xl">
+              Order No: {orderData.orderNumber || 'N/A'}
+            </h2>
           </div>
-          <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(orderData.status)}`}>
-            {orderData.status || "N/A"}
+          <div
+            className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(
+              orderData.status
+            )}`}
+          >
+            {orderData.status || 'N/A'}
           </div>
         </div>
 
         {/* Main Content */}
         <div className="flex flex-col gap-4">
-          {/* Left Sidebar - Order Summary */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Customer Information */}
-            <div className="bg-white p-6 rounded-lg border border-[#e5e7eb]">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
-              <div className="w-full grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-4">
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">First Name</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.firstName || "N/A"}</h5>
-                </div>
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Last Name</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.lastName || "N/A"}</h5>
-                </div>
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Email</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.email || "N/A"}</h5>
-                </div>
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Mobile</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.mobile || "N/A"}</h5>
-                </div>
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Company</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.company || "N/A"}</h5>
-                </div>
-                <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                  <h5 className="font-bold text-[#111928] text-[16px]">Address</h5>
-                  <h5 className="text-[#6b7280] text-[15px]">{orderData.customer.address || "N/A"}</h5>
-                </div>
+          {/* Left Sidebar - Customer Information */}
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+            <div className="bg-white p-4 sm:p-5 md:p-6 rounded-lg border border-[#e5e7eb] shadow-sm">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Customer Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                {[
+                  { label: 'First Name', value: orderData.customer?.firstName || 'N/A' },
+                  { label: 'Last Name', value: orderData.customer?.lastName || 'N/A' },
+                  { label: 'Email', value: orderData.customer?.email || 'N/A' },
+                  { label: 'Mobile', value: orderData.customer?.mobile || 'N/A' },
+                  { label: 'Company', value: orderData.customer?.company || 'N/A' },
+                  { label: 'Address', value: orderData.customer?.address || 'N/A' },
+                ].map((field, index) => (
+                  <div key={index} className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-1 sm:gap-2">
+                    <h5 className="font-bold text-[#111928] text-xs sm:text-sm">{field.label}</h5>
+                    <h5 className="text-[#6b7280] text-xs sm:text-sm break-words">{field.value}</h5>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Navigation Tabs */}
-            <div className="bg-white rounded-lg border border-[#e5e7eb]">
-              <nav className="flex border-b border-gray-200">
-                <button
-                  onClick={() => setActiveTab("overview")}
-                  className={`py-4 px-6 text-sm font-medium ${activeTab === "overview" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab("items")}
-                  className={`py-4 px-6 text-sm font-medium ${activeTab === "items" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                >
-                  Order Items
-                </button>
-                <button
-                  onClick={() => setActiveTab("files")}
-                  className={`py-4 px-6 text-sm font-medium ${activeTab === "files" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                >
-                  Files
-                </button>
-                <button
-                  onClick={() => setActiveTab("comments")}
-                  className={`py-4 px-6 text-sm font-medium ${activeTab === "comments" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                >
-                  Comments
-                </button>
-                <button
-                  onClick={() => setActiveTab("logs")}
-                  className={`py-4 px-6 text-sm font-medium ${activeTab === "logs" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                >
-                  Activity Log
-                </button>
+          <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+            <div className="bg-white rounded-lg border border-[#e5e7eb] shadow-sm">
+              <nav className="flex flex-col sm:flex-row border-b border-gray-200">
+                {['overview', 'items', 'files', 'comments', 'logs'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium ${
+                      activeTab === tab
+                        ? 'text-indigo-600 border-b-2 border-indigo-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1).replace('logs', 'Activity Log')}
+                  </button>
+                ))}
               </nav>
 
-              {/* Tab Content */}
-              <div className="p-6">
-                {activeTab === "overview" && (
+              <div className="p-4 sm:p-5 md:p-6">
+                {activeTab === 'overview' && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Order Overview</h3>
-                    <div>
-                      <div className="flex justify-end items-center mb-4">
-                        <button
-                          onClick={openEditModal}
-                          className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Order Overview</h3>
+                    <div className="flex justify-end items-center mb-3 sm:mb-4">
+                      <button
+                        onClick={openEditModal}
+                        className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 sm:h-5 w-4 sm:w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          Edit
-                        </button>
-                      </div>
-                      {/* className="border border-[#e5e7eb] px-5 py-4 bg-white" */}
-
-                      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                          <h5 className="font-bold text-[#111928] text-[16px]">Title:</h5>
-                          <h5 className="text-[#6b7280] text-[15px]">{orderData.title || "N/A"}</h5>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      {[
+                        { label: 'Title', value: orderData.title || 'N/A' },
+                        { label: 'Start Date', value: orderData.startDate ? new Date(orderData.startDate).toLocaleDateString() : 'N/A' },
+                        { label: 'Due Date', value: orderData.dueDate ? new Date(orderData.dueDate).toLocaleDateString() : 'N/A' },
+                        { label: 'Notes', value: orderData.notes || 'N/A' },
+                      ].map((field, index) => (
+                        <div key={index} className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-1 sm:gap-2">
+                          <h5 className="font-bold text-[#111928] text-xs sm:text-sm">{field.label}</h5>
+                          <h5 className="text-[#6b7280] text-xs sm:text-sm break-words">{field.value}</h5>
                         </div>
-                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                          <h5 className="font-bold text-[#111928] text-[16px]">Start Date:</h5>
-                          <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.startDate).toLocaleDateString() || "N/A"}</h5>
-                        </div>
-                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                          <h5 className="font-bold text-[#111928] text-[16px]">Due Date:</h5>
-                          <h5 className="text-[#6b7280] text-[15px]">{new Date(orderData.dueDate).toLocaleDateString() || "N/A"}</h5>
-                        </div>
-                        <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                          <h5 className="font-bold text-[#111928] text-[16px]">Notes:</h5>
-                          <h5 className="text-[#6b7280] text-[15px]">{orderData.notes || "N/A"}</h5>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {activeTab === "items" && (
+                {activeTab === 'items' && (
                   <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium text-gray-900">Order Items</h3>
-                      <span className="text-sm text-gray-500">{orderData.items.length} items</span>
+                    <div className="flex justify-between items-center mb-3 sm:mb-4">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900">Order Items</h3>
+                      <span className="text-xs sm:text-sm text-gray-500">{orderData.items?.length || 0} items</span>
                     </div>
-
-                    {orderData.items.map((item, itemIndex) => (
-                      <div key={item.id} className="mb-6 border border-gray-200 rounded-lg overflow-hidden shadow-lg">
+                    {orderData.items?.map((item, itemIndex) => (
+                      <div key={item.id} className="mb-4 sm:mb-6 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                         <div
-                          className="flex justify-between items-center p-6 cursor-pointer"
+                          className="flex justify-between items-center p-3 sm:p-4 md:p-5 cursor-pointer"
                           onClick={() => toggleItemCollapse(itemIndex)}
                         >
                           <div>
-                            <h4 className="font-medium text-gray-900">Item #{itemIndex + 1} - {item.product?.title || "N/A"}</h4>
-                            <p className="text-sm text-gray-500">Quantity: {item.quantity} | Price: ${item.price}</p>
+                            <h4 className="font-medium text-gray-900 text-sm sm:text-base">
+                              Item #{itemIndex + 1} - {item.product?.title || 'N/A'}
+                            </h4>
+                            <p className="text-xs sm:text-sm text-gray-500">
+                              Quantity: {item.quantity || 'N/A'} | Price: ${item.price || '0.00'}
+                            </p>
                           </div>
-                          <span className="w-[35px] h-[35px] rounded-full flex justify-center items-center text-[20px] font-normal border-[2px] border-[#5750f1] text-[#5750f1]">{isItemCollapsed[itemIndex] ? '+' : '−'}</span>
+                          <span
+                            className={`w-8 sm:w-9 h-8 sm:h-9 rounded-full flex justify-center items-center text-lg sm:text-xl font-normal border-2 border-[#5750f1] text-[#5750f1]`}
+                          >
+                            {isItemCollapsed[itemIndex] ? '+' : '−'}
+                          </span>
                         </div>
-
                         {!isItemCollapsed[itemIndex] && (
-                          <div className="p-6 bg-white">
-                            <nav className="flex border-b border-gray-200 mb-4">
-                              <button
-                                onClick={() => setActiveItemTab("details")}
-                                className={`py-2 px-4 text-sm font-medium ${activeItemTab === "details" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                              >
-                                Details
-                              </button>
-                              <button
-                                onClick={() => setActiveItemTab("workflow")}
-                                className={`py-2 px-4 text-sm font-medium ${activeItemTab === "workflow" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                              >
-                                Workflow
-                              </button>
-                              <button
-                                onClick={() => setActiveItemTab("files")}
-                                className={`py-2 px-4 text-sm font-medium ${activeItemTab === "files" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                              >
-                                Files
-                              </button>
-                              <button
-                                onClick={() => setActiveItemTab("comments")}
-                                className={`py-2 px-4 text-sm font-medium ${activeItemTab === "comments" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                              >
-                                Comments
-                              </button>
-                              <button
-                                onClick={() => setActiveItemTab("activity")}
-                                className={`py-2 px-4 text-sm font-medium ${activeItemTab === "activity" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-500 hover:text-gray-700"}`}
-                              >
-                                Activity Log
-                              </button>
+                          <div className="p-3 sm:p-4 md:p-5 bg-white">
+                            <nav className="flex flex-col sm:flex-row border-b border-gray-200 mb-3 sm:mb-4">
+                              {['details', 'workflow', 'files', 'comments', 'activity'].map((tab) => (
+                                <button
+                                  key={tab}
+                                  onClick={() => setActiveItemTab(tab)}
+                                  className={`py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium ${
+                                    activeItemTab === tab
+                                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                      : 'text-gray-500 hover:text-gray-700'
+                                  }`}
+                                >
+                                  {tab.charAt(0).toUpperCase() + tab.slice(1).replace('activity', 'Activity Log')}
+                                </button>
+                              ))}
                             </nav>
-
-                            {activeItemTab === "details" && (
-                              <div className="flex flex-col gap-4">
-                                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Product:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.title || "N/A"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Color:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.color || "N/A"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Quantity:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.quantity || "N/A"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Price:</h5> <h5 className="text-[#6b7280] text-[15px]">${item.price || "0"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Service:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.title || "N/A"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Workflow:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.product?.service?.workflow?.title || "N/A"}</h5></div>
-                                  <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2"><h5 className="font-bold text-[#111928] text-[16px]">Current Stage:</h5> <h5 className="text-[#6b7280] text-[15px]">{item.currentStage || "N/A"}</h5></div>
-                                  {/* Stage Change Radio Buttons */}
+                            {activeItemTab === 'details' && (
+                              <div className="flex flex-col gap-3 sm:gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                  {[
+                                    { label: 'Product', value: item.product?.title || 'N/A' },
+                                    { label: 'Color', value: item.color || 'N/A' },
+                                    { label: 'Quantity', value: item.quantity || 'N/A' },
+                                    { label: 'Price', value: `$${item.price || '0.00'}` },
+                                    { label: 'Service', value: item.product?.service?.title || 'N/A' },
+                                    { label: 'Workflow', value: item.product?.service?.workflow?.title || 'N/A' },
+                                    { label: 'Current Stage', value: item.currentStage || 'N/A' },
+                                  ].map((field, index) => (
+                                    <div
+                                      key={index}
+                                      className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-1 sm:gap-2"
+                                    >
+                                      <h5 className="font-bold text-[#111928] text-xs sm:text-sm">{field.label}</h5>
+                                      <h5 className="text-[#6b7280] text-xs sm:text-sm break-words">{field.value}</h5>
+                                    </div>
+                                  ))}
                                   {item.product?.service?.workflow?.stages && (
-                                    <div className="border border-[#e5e7eb] px-5 py-4 flex flex-col gap-2">
-                                      <h5 className="font-bold text-[#111928] text-[16px]">Change Stage:</h5>
-                                      <div className="flex flex-wrap gap-4">
-                                        {item.product?.service?.workflow?.stages.map((stage, idx) => (
+                                    <div className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-1 sm:gap-2">
+                                      <h5 className="font-bold text-[#111928] text-xs sm:text-sm">Change Stage</h5>
+                                      <div className="flex flex-wrap gap-2 sm:gap-3">
+                                        {item.product.service.workflow.stages.map((stage, idx) => (
                                           <CustomStageRadio
                                             key={idx}
                                             label={stage.stage.name}
@@ -1058,22 +1041,25 @@ export default function ViewOrder() {
                                             onChange={async () => {
                                               const newStage = stage.stage.name;
                                               try {
-                                                await axios.put(`https://printmanager-api.onrender.com/api/orderItems/${item.id}`, {
-                                                  currentStage: newStage,
-                                                  updatedBy: sessionStorage.getItem("username"),
-                                                });
-                                                setOrderData(prev => ({
+                                                await axios.put(
+                                                  `https://printmanager-api.onrender.com/api/orderItems/${item.id}`,
+                                                  {
+                                                    currentStage: newStage,
+                                                    updatedBy: sessionStorage.getItem('username'),
+                                                  }
+                                                );
+                                                setOrderData((prev) => ({
                                                   ...prev,
-                                                  items: prev.items.map(itm =>
+                                                  items: prev.items.map((itm) =>
                                                     itm.id === item.id ? { ...itm, currentStage: newStage } : itm
-                                                  )
+                                                  ),
                                                 }));
-                                                toast.success("Stage updated successfully");
+                                                toast.success('Stage updated successfully');
                                                 setTimeout(() => {
                                                   window.location.reload();
                                                 }, 3000);
                                               } catch (error) {
-                                                toast.error("Failed to update stage");
+                                                toast.error('Failed to update stage');
                                               }
                                             }}
                                           />
@@ -1082,270 +1068,137 @@ export default function ViewOrder() {
                                     </div>
                                   )}
                                 </div>
-
-                                {/* Size Quantities */}
-                                <div className="md:col-span-2">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <h5 className="font-medium text-gray-900">Size Quantities</h5>
+                                <div className="sm:col-span-2">
+                                  <div className="flex justify-between items-center mb-2 sm:mb-3">
+                                    <h5 className="font-medium text-gray-900 text-sm sm:text-base">Size Quantities</h5>
                                     <button
-                                      onClick={() => {
-                                        openSizeModal(item.id, item.product.unitPrice, item.product.id);
-                                      }}
-                                      className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                                      onClick={() => openSizeModal(item.id, item.product.unitPrice, item.product.id)}
+                                      className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
                                     >
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 sm:h-5 w-4 sm:w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        />
                                       </svg>
                                       Edit Sizes
                                     </button>
                                   </div>
-                                  {item.sizeQuantities.length > 0 ? (
-                                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                  {item.sizeQuantities?.length > 0 ? (
+                                    <div className="overflow-x-auto">
                                       <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                           <tr>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                            <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Size
+                                            </th>
+                                            <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Price
+                                            </th>
+                                            <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                              Quantity
+                                            </th>
                                           </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
                                           {item.sizeQuantities.map((size, sizeIndex) => (
                                             <tr key={sizeIndex}>
-                                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{size.Size || "N/A"}</td>
-                                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${size.Price || "0.00"}</td>
-                                              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{size.Quantity || "0"}</td>
+                                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                {size.Size || 'N/A'}
+                                              </td>
+                                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                ${size.Price || '0.00'}
+                                              </td>
+                                              <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                {size.Quantity || '0'}
+                                              </td>
                                             </tr>
                                           ))}
                                         </tbody>
                                       </table>
                                     </div>
                                   ) : (
-                                    <p className="text-sm text-gray-500">No size quantities available</p>
+                                    <p className="text-xs sm:text-sm text-gray-500">No size quantities available</p>
                                   )}
                                 </div>
                               </div>
                             )}
-
-                            {isSizeModalOpen && (
-                              <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-                                  <div className="flex justify-between items-center border-b border-gray-200 p-4">
-                                    <h3 className="text-lg font-medium text-gray-900">Manage Size Quantities</h3>
-                                    <button
-                                      onClick={() => {
-                                        setIsSizeModalOpen(false);
-                                        setEditingSize(null);
-                                        setSizeOptions([]); // Reset size options when closing
-                                      }}
-                                      className="text-gray-400 hover:text-gray-500"
-                                    >
-                                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                    </button>
-                                  </div>
-
-                                  <div className="p-6">
-                                    {/* Add/Edit Form */}
-                                    <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-                                      <h4 className="font-medium text-gray-900 mb-3">
-                                        {editingSize ? 'Edit Size' : 'Add New Size'}
-                                      </h4>
-                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                                          <select
-                                            name="Size"
-                                            value={editingSize?.Size || newSize.Size}
-                                            onChange={handleSizeChange}
-                                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                                          >
-                                            <option value="">Select Size</option>
-                                            {sizeOptions.map((size, i) => (
-                                              <option key={i} value={size}>
-                                                {size}
-                                              </option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-                                          <input
-                                            type="number"
-                                            name="Price"
-                                            value={editingSize?.Price || newSize.Price}
-                                            onChange={handleSizeChange}
-                                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-gray-100"
-                                            placeholder={newSize.Price || "0.00"}
-                                            step="0.01"
-                                            readOnly
-                                            disabled
-                                          />
-                                        </div>
-                                        <div>
-                                          <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
-                                          <input
-                                            type="number"
-                                            name="Quantity"
-                                            value={editingSize?.Quantity || newSize.Quantity}
-                                            onChange={handleSizeChange}
-                                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-                                            placeholder="0"
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="flex justify-end mt-4 space-x-3">
-                                        {editingSize ? (
-                                          <>
-                                            <button
-                                              onClick={() => setEditingSize(null)}
-                                              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
-                                            >
-                                              Cancel
-                                            </button>
-                                            <button
-                                            onClick={handleUpdateSize}
-                                            disabled={loading}
-                                            className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-                                              }`}
-                                          >
-                                            {loading && (
-                                              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                              </svg>
-                                            )}
-                                            {loading ? 'Updating...' : 'Update Size'}
-                                          </button>
-                                          </>
-                                        ) : (
-                                          <button
-                                            onClick={handleAddSize}
-                                            disabled={loading}
-                                            className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-                                              }`}
-                                          >
-                                            {loading && (
-                                              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                              </svg>
-                                            )}
-                                            {loading ? 'Adding...' : 'Add Size'}
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Size Quantities List */}
-                                    <div>
-                                      <h4 className="font-medium text-gray-900 mb-3">Current Sizes</h4>
-                                      {orderData.items.find(item => item.id === currentOrderItemId)?.sizeQuantities?.length === 0 ? (
-                                        <p className="text-gray-500 text-sm">No sizes available</p>
-                                      ) : (
-                                        <div className="border border-gray-200 rounded-lg overflow-hidden">
-                                          <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                              <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                              {orderData.items.find(item => item.id === currentOrderItemId)?.sizeQuantities?.map((size) => (
-                                                <tr key={size.id}>
-                                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{size.Size}</td>
-                                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${size.Price}</td>
-                                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{size.Quantity}</td>
-                                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                                    <div className="flex space-x-2">
-                                                      <button
-                                                        onClick={() => setEditingSize(size)}
-                                                        className="text-indigo-600 hover:text-indigo-900"
-                                                      >
-                                                        Edit
-                                                      </button>
-                                                      <button
-                                                        onClick={() => handleDeleteSize(size.id)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                      >
-                                                        Delete
-                                                      </button>
-                                                    </div>
-                                                  </td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {activeItemTab === "workflow" && (
+                            {activeItemTab === 'workflow' && (
                               <div>
-                                <h5 className="font-medium text-gray-900 mb-2">Workflow Stages</h5>
-                                <div className="space-y-2">
-                                  {item.product?.service?.workflow?.stages.map((stage, stageIndex) => (
+                                <h5 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Workflow Stages</h5>
+                                <div className="space-y-2 sm:space-y-3">
+                                  {item.product?.service?.workflow?.stages?.map((stage, stageIndex) => (
                                     <div
                                       key={stageIndex}
-                                      className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4"
+                                      className="flex items-center gap-2 sm:gap-3 border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4"
                                     >
                                       <span
-                                        className="h-3 w-3 rounded-full"
+                                        className="h-2 sm:h-3 w-2 sm:w-3 rounded-full"
                                         style={{ backgroundColor: stage.stage.color }}
                                       ></span>
                                       <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-900">{stage.stage.name}</p>
+                                        <p className="text-xs sm:text-sm font-medium text-gray-900">{stage.stage.name}</p>
                                         <p className="text-xs text-gray-500">{stage.stage.days} days</p>
                                       </div>
                                       <div className="text-xs text-gray-500">
-                                        {stage.stage.name === item.currentStage ? "Current" : ""}
+                                        {stage.stage.name === item.currentStage ? 'Current' : ''}
                                       </div>
                                     </div>
                                   ))}
                                 </div>
                               </div>
                             )}
-
-                            {activeItemTab === "files" && (
+                            {activeItemTab === 'files' && (
                               <div>
-                                <div className="flex justify-between items-center mb-4">
-                                  <h5 className="font-medium text-gray-900">Product Files</h5>
+                                <div className="flex justify-between items-center mb-3 sm:mb-4">
+                                  <h5 className="font-medium text-gray-900 text-sm sm:text-base">Product Files</h5>
                                   <button
                                     onClick={() => {
                                       setIsFilesModalOpenProduct(true);
                                       setCurrentProductId(item.product.id);
-                                      setCurrentOrderItemId(item.id)
+                                      setCurrentOrderItemId(item.id);
                                     }}
-                                    className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                                    className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 sm:h-5 w-4 sm:w-5"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                      />
                                     </svg>
                                     Add Files
                                   </button>
                                 </div>
                                 {Array.isArray(item.files) && item.files.length > 0 ? (
-                                  
-                                  <div className="space-y-2">
-                                    {console.log(item)}
+                                  <div className="space-y-2 sm:space-y-3">
                                     {item.files.map((file, fileIndex) => {
-                                      
-                                      const isImage = ["jpg", "jpeg", "png"].includes(
+                                      const isImage = ['jpg', 'jpeg', 'png'].includes(
                                         file.fileName.split('.').pop().toLowerCase()
                                       );
                                       return (
-                                        <div key={fileIndex} className="flex items-center gap-3 border border-[#e5e7eb] px-5 py-4">
+                                        <div
+                                          key={fileIndex}
+                                          className="flex items-center gap-2 sm:gap-3 border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4"
+                                        >
                                           {getFileIcon(file.fileName.split('.').pop())}
                                           <div className="flex-1">
-                                            <p className="text-sm text-gray-900">{file.fileName}</p>
+                                            <p className="text-xs sm:text-sm text-gray-900 break-words">{file.fileName}</p>
                                             <p className="text-xs text-gray-500">
                                               Uploaded: {new Date(file.uploadedAt).toLocaleString()}
                                             </p>
@@ -1353,11 +1206,27 @@ export default function ViewOrder() {
                                           {isImage && (
                                             <button
                                               onClick={() => openImageViewer(file.filePath)}
-                                              className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                                              className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
                                             >
-                                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 sm:h-5 w-4 sm:w-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                />
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                />
                                               </svg>
                                               View
                                             </button>
@@ -1367,134 +1236,221 @@ export default function ViewOrder() {
                                     })}
                                   </div>
                                 ) : (
-                                  <p className="text-sm text-gray-500">No files available for this product {console.log(orderData)
-                                  }</p>
-                                  
+                                  <p className="text-xs sm:text-sm text-gray-500">No files available for this product</p>
                                 )}
                               </div>
                             )}
-
-                            {activeItemTab === "comments" && (
-                              <div className="flex flex-col gap-3">
-                                <h5 className="font-medium text-gray-900 mb-2">Item Comments</h5>
-                                <p className="text-sm text-gray-500 mb-4">Comments specific to this order item.</p>
-                                {/* Item Comments List as chat bubbles */}
-                                <div className="space-y-4">
-                                  {comments.filter(c => c.orderItemId === item.id).length > 0 ? (
-                                    comments.filter(c => c.orderItemId === item.id).map((comment, index) => {
-                                      const isOwn = comment.commentBy === (sessionStorage.getItem("username") || "Anonymous");
-                                      const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
-                                      return (
-                                        <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                                          <div className={`max-w-lg w-fit p-4 rounded-2xl shadow border relative ${comment.is_internal ? 'bg-purple-50 border-purple-200' : 'bg-indigo-50 border-indigo-200'} ${isOwn ? 'ml-16' : 'mr-16'}`}>
-                                            <div className="flex items-center gap-2 mb-1">
-                                              <span className={`text-xs font-semibold ${comment.is_internal ? 'text-purple-700' : 'text-indigo-700'}`}>{comment.is_internal ? 'Internal' : 'Public'}</span>
-                                              <span className="text-xs text-gray-500">{comment.commentBy || "Anonymous"}</span>
+                            {activeItemTab === 'comments' && (
+                              <div className="flex flex-col gap-3 sm:gap-4">
+                                <h5 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Item Comments</h5>
+                                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                                  Comments specific to this order item.
+                                </p>
+                                <div className="space-y-3 sm:space-y-4">
+                                  {comments.filter((c) => c.orderItemId === item.id).length > 0 ? (
+                                    comments
+                                      .filter((c) => c.orderItemId === item.id)
+                                      .map((comment, index) => {
+                                        const isOwn =
+                                          comment.commentBy === (sessionStorage.getItem('username') || 'Anonymous');
+                                        const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+                                        return (
+                                          <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                                            <div
+                                              className={`max-w-[80%] sm:max-w-lg w-fit p-3 sm:p-4 rounded-2xl shadow border relative ${
+                                                comment.is_internal
+                                                  ? 'bg-purple-50 border-purple-200'
+                                                  : 'bg-indigo-50 border-indigo-200'
+                                              } ${isOwn ? 'ml-4 sm:ml-16' : 'mr-4 sm:mr-16'}`}
+                                            >
+                                              <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                                                <span
+                                                  className={`text-xs font-semibold ${
+                                                    comment.is_internal ? 'text-purple-700' : 'text-indigo-700'
+                                                  }`}
+                                                >
+                                                  {comment.is_internal ? 'Internal' : 'Public'}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                  {comment.commentBy || 'Anonymous'}
+                                                </span>
+                                              </div>
+                                              {itemEditingCommentId[item.id] === comment.id ? (
+                                                <>
+                                                  <input
+                                                    value={itemEditingCommentText[item.id] || ''}
+                                                    onChange={(e) => handleEditItemCommentChange(item.id, e)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mb-2 text-xs sm:text-sm"
+                                                  />
+                                                  <div className="flex gap-2 justify-end">
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleSaveEditItemComment(item.id, comment)}
+                                                      className="px-2 sm:px-3 py-1 bg-indigo-600 text-white rounded-md text-xs"
+                                                    >
+                                                      Save
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handleCancelEditItemComment(item.id)}
+                                                      className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-xs"
+                                                    >
+                                                      Cancel
+                                                    </button>
+                                                  </div>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <p className="text-xs sm:text-sm text-gray-800 whitespace-pre-line">
+                                                    {comment.commentText}
+                                                  </p>
+                                                  <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
+                                                    <span className="text-xs text-gray-500">
+                                                      {new Date(comment.commentAt || comment.createdAt).toLocaleString()}
+                                                    </span>
+                                                    {isEdited && <span className="text-xs text-gray-400">Edited</span>}
+                                                    {isOwn && (
+                                                      <>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => handleEditItemComment(item.id, comment)}
+                                                          className="ml-2 text-xs text-indigo-600 hover:underline"
+                                                        >
+                                                          Edit
+                                                        </button>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => handleDeleteComment(comment.id)}
+                                                          className="ml-2 text-xs text-red-600 hover:underline"
+                                                        >
+                                                          Delete
+                                                        </button>
+                                                      </>
+                                                    )}
+                                                  </div>
+                                                </>
+                                              )}
                                             </div>
-                                            {itemEditingCommentId[item.id] === comment.id ? (
-                                              <>
-                                                <input
-                                                  value={itemEditingCommentText[item.id]}
-                                                  onChange={(e) => handleEditItemCommentChange(item.id, e)}
-                                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mb-2"
-                                                />
-                                                <div className="flex gap-2 justify-end">
-                                                  <button type="button" onClick={handleSaveEditItemComment(item.id, comment)} className="px-3 py-1 bg-indigo-600 text-white rounded-md text-xs">Save</button>
-                                                  <button type="button" onClick={() => handleCancelEditItemComment(item.id)} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-xs">Cancel</button>
-                                                </div>
-                                              </>
-                                            ) : (
-                                              <>
-                                                <p className="text-sm text-gray-800 whitespace-pre-line">{comment.commentText}</p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                  <span className="text-xs text-gray-500">{new Date(comment.commentAt || comment.createdAt).toLocaleString()}</span>
-                                                  {isEdited && <span className="text-xs text-gray-400">Edited</span>}
-                                                  {isOwn && (
-                                                    <>
-                                                      <button type="button" onClick={() => handleEditItemComment(item.id, comment)} className="ml-2 text-xs text-indigo-600 hover:underline">Edit</button>
-                                                      <button type="button" onClick={() => handleDeleteComment(comment.id)} className="ml-2 text-xs text-red-600 hover:underline">Delete</button>
-                                                    </>
-                                                  )}
-                                                </div>
-                                              </>
-                                            )}
                                           </div>
-                                        </div>
-                                      );
-                                    })
+                                        );
+                                      })
                                   ) : (
-                                    <div className="bg-white p-6 border border-[#e5e7eb] text-center">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    <div className="bg-white p-3 sm:p-4 border border-[#e5e7eb] text-center">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-8 sm:h-12 w-8 sm:w-12 mx-auto text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={1}
+                                          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                                        />
                                       </svg>
-                                      <h4 className="mt-2 text-sm font-medium text-gray-900">No comments yet</h4>
-                                      <p className="mt-1 text-sm text-gray-500">Be the first to add a comment.</p>
+                                      <h4 className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-gray-900">
+                                        No comments yet
+                                      </h4>
+                                      <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                                        Be the first to add a comment.
+                                      </p>
                                     </div>
                                   )}
                                 </div>
-                                {/* Add Item Comment Form */}
-                                <div className="bg-white p-6 border border-[#e5e7eb] mb-6">
-                                  <form onSubmit={handleAddItemComment(item.id)} className="space-y-4">
+                                <div className="bg-white p-3 sm:p-4 md:p-5 border border-[#e5e7eb]">
+                                  <form onSubmit={handleAddItemComment(item.id)} className="space-y-3 sm:space-y-4">
                                     <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">Add Comment</label>
+                                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                        Add Comment
+                                      </label>
                                       <input
                                         name="commentText"
-                                        value={itemNewComment[item.id]?.commentText || ""}
+                                        value={itemNewComment[item.id]?.commentText || ''}
                                         onChange={(e) => handleItemCommentChange(item.id, e)}
-                                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                                         placeholder="Enter your comment"
                                         required
                                       />
                                     </div>
-                                    <div className="flex gap-4 items-center">
-                                      <span className="text-sm font-medium text-gray-700">Type:</span>
+                                    <div className="flex gap-2 sm:gap-3 items-center">
+                                      <span className="text-xs sm:text-sm font-medium text-gray-700">Type:</span>
                                       <button
                                         type="button"
                                         onClick={() => handleItemInternalToggle(item.id, false)}
-                                        className={`px-4 py-2 rounded-md border text-sm font-medium focus:outline-none ${!itemNewComment[item.id]?.is_internal ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                                        className={`px-3 sm:px-4 py-1 sm:py-2 rounded-md border text-xs sm:text-sm font-medium focus:outline-none ${
+                                          !itemNewComment[item.id]?.is_internal
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300'
+                                        }`}
                                       >
                                         Public
                                       </button>
                                       <button
                                         type="button"
                                         onClick={() => handleItemInternalToggle(item.id, true)}
-                                        className={`px-4 py-2 rounded-md border text-sm font-medium focus:outline-none ${itemNewComment[item.id]?.is_internal ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                                        className={`px-3 sm:px-4 py-1 sm:py-2 rounded-md border text-xs sm:text-sm font-medium focus:outline-none ${
+                                          itemNewComment[item.id]?.is_internal
+                                            ? 'bg-purple-600 text-white border-purple-600'
+                                            : 'bg-white text-gray-700 border-gray-300'
+                                        }`}
                                       >
                                         Internal
                                       </button>
                                     </div>
                                     <button
                                       type="submit"
-                                      className={`bg-[#5750f1] text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+                                      className={`bg-[#5750f1] text-white py-1 sm:py-2 px-3 sm:px-4 rounded-lg font-medium transition flex items-center justify-center text-xs sm:text-sm ${
                                         loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
                                       }`}
                                       disabled={loading}
                                     >
                                       {loading && (
-                                        <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        <svg
+                                          className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                          ></circle>
+                                          <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                          ></path>
                                         </svg>
                                       )}
-                                      {loading ? "Posting..." : "Post Comment"}
+                                      {loading ? 'Posting...' : 'Post Comment'}
                                     </button>
                                   </form>
                                 </div>
                               </div>
                             )}
-
-                            {activeItemTab === "activity" && (
+                            {activeItemTab === 'activity' && (
                               <div>
-                                <h3 className="text-lg font-medium text-gray-900 mb-4">Activity Log</h3>
+                                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
+                                  Activity Log
+                                </h3>
                                 <div>
-                                  {itemActivityLogs.length === 0 ? (
-                                    <p className="text-gray-500">No activity logs found.</p>
+                                  {itemActivityLogs?.length === 0 ? (
+                                    <p className="text-xs sm:text-sm text-gray-500">No activity logs found.</p>
                                   ) : (
-                                    <ul className="flex flex-col gap-3">
+                                    <ul className="flex flex-col gap-2 sm:gap-3">
                                       {itemActivityLogs.map((log) => (
-                                        <li key={log.id} className="border border-[#e5e7eb] px-5 py-4 bg-white">
-                                          <p className="text-sm text-gray-800">
-                                            <strong>{log.action}</strong> by <span className="text-blue-600">{log.performedBy}</span>
+                                        <li
+                                          key={log.id}
+                                          className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 bg-white"
+                                        >
+                                          <p className="text-xs sm:text-sm text-gray-800">
+                                            <strong>{log.action}</strong> by{' '}
+                                            <span className="text-blue-600">{log.performedBy}</span>
                                           </p>
                                           <p className="text-xs text-gray-500">
                                             {new Date(log.createdAt).toLocaleString()}
@@ -1506,95 +1462,355 @@ export default function ViewOrder() {
                                 </div>
                               </div>
                             )}
+                            {isSizeModalOpen && (
+                              <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+                                <div className="bg-white rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-lg">
+                                  <div className="flex justify-between items-center border-b border-gray-200 p-3 sm:p-4">
+                                    <h3 className="text-base sm:text-lg font-medium text-gray-900">
+                                      Manage Size Quantities
+                                    </h3>
+                                    <button
+                                      onClick={() => {
+                                        setIsSizeModalOpen(false);
+                                        setEditingSize(null);
+                                        setSizeOptions([]);
+                                      }}
+                                      className="text-gray-400 hover:text-gray-500"
+                                    >
+                                      <svg
+                                        className="h-5 sm:h-6 w-5 sm:w-6"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M6 18L18 6M6 6l12 12"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                  <div className="p-3 sm:p-4 md:p-5">
+                                    <div className="mb-4 sm:mb-6 bg-gray-50 p-3 sm:p-4 rounded-lg">
+                                      <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">
+                                        {editingSize ? 'Edit Size' : 'Add New Size'}
+                                      </h4>
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                        <div>
+                                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            Size
+                                          </label>
+                                          <select
+                                            name="Size"
+                                            value={editingSize?.Size || newSize.Size}
+                                            onChange={handleSizeChange}
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+                                          >
+                                            <option value="">Select Size</option>
+                                            {sizeOptions.map((size, i) => (
+                                              <option key={i} value={size}>
+                                                {size}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            Price
+                                          </label>
+                                          <input
+                                            type="number"
+                                            name="Price"
+                                            value={editingSize?.Price || newSize.Price}
+                                            onChange={handleSizeChange}
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-gray-100 text-xs sm:text-sm"
+                                            placeholder={newSize.Price || '0.00'}
+                                            step="0.01"
+                                            readOnly
+                                            disabled
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                            Quantity
+                                          </label>
+                                          <input
+                                            type="number"
+                                            name="Quantity"
+                                            value={editingSize?.Quantity || newSize.Quantity}
+                                            onChange={handleSizeChange}
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+                                            placeholder="0"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex justify-end mt-3 sm:mt-4 space-x-2 sm:space-x-3">
+                                        {editingSize ? (
+                                          <>
+                                            <button
+                                              onClick={() => setEditingSize(null)}
+                                              className="py-1 sm:py-2 px-3 sm:px-4 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300"
+                                            >
+                                              Cancel
+                                            </button>
+                                            <button
+                                              onClick={handleUpdateSize}
+                                              disabled={loading}
+                                              className={`py-1 sm:py-2 px-3 sm:px-4 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium transition flex items-center justify-center ${
+                                                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                                              }`}
+                                            >
+                                              {loading && (
+                                                <svg
+                                                  className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white"
+                                                  fill="none"
+                                                  viewBox="0 0 24 24"
+                                                >
+                                                  <circle
+                                                    className="opacity-25"
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="4"
+                                                  ></circle>
+                                                  <path
+                                                    className="opacity-75"
+                                                    fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                  ></path>
+                                                </svg>
+                                              )}
+                                              {loading ? 'Updating...' : 'Update Size'}
+                                            </button>
+                                          </>
+                                        ) : (
+                                          <button
+                                            onClick={handleAddSize}
+                                            disabled={loading}
+                                            className={`py-1 sm:py-2 px-3 sm:px-4 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium transition flex items-center justify-center ${
+                                              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                                            }`}
+                                          >
+                                            {loading && (
+                                              <svg
+                                                className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                              >
+                                                <circle
+                                                  className="opacity-25"
+                                                  cx="12"
+                                                  cy="12"
+                                                  r="10"
+                                                  stroke="currentColor"
+                                                  strokeWidth="4"
+                                                ></circle>
+                                                <path
+                                                  className="opacity-75"
+                                                  fill="currentColor"
+                                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                                ></path>
+                                              </svg>
+                                            )}
+                                            {loading ? 'Adding...' : 'Add Size'}
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">
+                                        Current Sizes
+                                      </h4>
+                                      {orderData.items.find((item) => item.id === currentOrderItemId)?.sizeQuantities
+                                        ?.length === 0 ? (
+                                        <p className="text-xs sm:text-sm text-gray-500">No sizes available</p>
+                                      ) : (
+                                        <div className="overflow-x-auto">
+                                          <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                              <tr>
+                                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                  Size
+                                                </th>
+                                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                  Price
+                                                </th>
+                                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                  Quantity
+                                                </th>
+                                                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                  Actions
+                                                </th>
+                                              </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                              {orderData.items
+                                                .find((item) => item.id === currentOrderItemId)
+                                                ?.sizeQuantities?.map((size) => (
+                                                  <tr key={size.id}>
+                                                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                      {size.Size}
+                                                    </td>
+                                                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                      ${size.Price}
+                                                    </td>
+                                                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                      {size.Quantity}
+                                                    </td>
+                                                    <td className="px-3 sm:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                                                      <div className="flex space-x-2">
+                                                        <button
+                                                          onClick={() => setEditingSize(size)}
+                                                          className="text-indigo-600 hover:text-indigo-900"
+                                                        >
+                                                          Edit
+                                                        </button>
+                                                        <button
+                                                          onClick={() => handleDeleteSize(size.id)}
+                                                          className="text-red-600 hover:text-red-900"
+                                                        >
+                                                          Delete
+                                                        </button>
+                                                      </div>
+                                                    </td>
+                                                  </tr>
+                                                ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
                 )}
-
-                {activeTab === "files" && (
+                {activeTab === 'files' && (
                   <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium text-gray-900">Order Files</h3>
+                    <div className="flex justify-between items-center mb-3 sm:mb-4">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900">Order Files</h3>
                       <button
                         onClick={() => setIsFilesModalOpen(true)}
-                        className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                        className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 sm:h-5 w-4 sm:w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
                         </svg>
                         Add Files
                       </button>
                     </div>
-
-                    {orderData.files.length > 0 ? (
-                      <div className="space-y-2">
+                    {orderData.files?.length > 0 ? (
+                      <div className="space-y-2 sm:space-y-3">
                         {orderData.files.map((file, fileIndex) => {
-                          const isImage = ["jpg", "jpeg", "png"].includes(
-                            file.fileName.split('.').pop().toLowerCase()
-                          );
+                          const isImage = ['jpg', 'jpeg', 'png'].includes(file.fileName.split('.').pop().toLowerCase());
                           return (
-                            <div key={fileIndex} className="flex items-center gap-3 p-3 border border-[#e5e7eb] px-5 py-4">
+                            <div
+                              key={fileIndex}
+                              className="flex items-center gap-2 sm:gap-3 border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4"
+                            >
                               {getFileIcon(file.fileName.split('.').pop())}
                               <div className="flex-1">
-                                <p className="text-sm text-gray-900">{file.fileName}</p>
+                                <p className="text-xs sm:text-sm text-gray-900 break-words">{file.fileName}</p>
                                 <p className="text-xs text-gray-500">
                                   Uploaded: {new Date(file.uploadedAt).toLocaleString()}
                                 </p>
                               </div>
-
-                              {/* Status badge */}
                               {file.status && (
                                 <span
-                                  className={`text-xs font-semibold px-2 py-1 rounded-full ${file.status === "Approved"
-                                      ? "bg-green-100 text-green-700"
-                                      : file.status === "Rejected"
-                                        ? "bg-red-100 text-red-700"
-                                        : "bg-yellow-100 text-yellow-700"
-                                    }`}
+                                  className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                    file.status === 'Approved'
+                                      ? 'bg-green-100 text-green-700'
+                                      : file.status === 'Rejected'
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-yellow-100 text-yellow-700'
+                                  }`}
                                 >
                                   {file.status}
                                 </span>
-
                               )}
-
                               <button
                                 onClick={() => handleAskApproval(file.id, orderData.token, orderData.customer.email)}
-                                className="text-xs text-indigo-600 hover:text-indigo-800"
+                                className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800"
                                 disabled={loading}
                               >
-                                {loading ? "Asking..." : "Ask Approval"}
+                                {loading ? 'Asking...' : 'Ask Approval'}
                               </button>
-
-                              {/* View button for images */}
                               {isImage && (
                                 <button
                                   onClick={() => openImageViewer(file.filePath)}
-                                  className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                                  className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
                                 >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 sm:h-5 w-4 sm:w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
                                   </svg>
                                   View
                                 </button>
                               )}
                             </div>
-
                           );
                         })}
                       </div>
                     ) : (
-                      <div className="bg-gray-50 p-8 rounded-lg border border-gray-200 text-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <div className="bg-gray-50 p-4 sm:p-6 md:p-8 rounded-lg border border-gray-200 text-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 sm:h-12 w-8 sm:w-12 mx-auto text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
                         </svg>
-                        <h4 className="mt-2 text-sm font-medium text-gray-900">No files uploaded</h4>
-                        <p className="mt-1 text-sm text-gray-500">Get started by uploading your first file.</p>
+                        <h4 className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-gray-900">
+                          No files uploaded
+                        </h4>
+                        <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                          Get started by uploading your first file.
+                        </p>
                         <button
                           onClick={() => setIsFilesModalOpen(true)}
-                          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          className="mt-3 sm:mt-4 inline-flex items-center px-3 sm:px-4 py-1 sm:py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                           Upload Files
                         </button>
@@ -1602,131 +1818,208 @@ export default function ViewOrder() {
                     )}
                   </div>
                 )}
-
-                {activeTab === "comments" && (
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Order Comments</h3>
-                    {/* Comments List as chat bubbles */}
-                    <div className="space-y-4">
-                      {comments.filter(c => c.orderItemId == null).length > 0 ? (
-                        comments.filter(c => c.orderItemId == null).map((comment, index) => {
-                          const isOwn = comment.commentBy === (sessionStorage.getItem("username") || "Anonymous");
-                          const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
-                          return (
-                            <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-lg w-fit p-4 rounded-2xl shadow border relative ${comment.is_internal ? 'bg-purple-50 border-purple-200' : 'bg-indigo-50 border-indigo-200'} ${isOwn ? 'ml-16' : 'mr-16'}`}>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-xs font-semibold ${comment.is_internal ? 'text-purple-700' : 'text-indigo-700'}`}>{comment.is_internal ? 'Internal' : 'Public'}</span>
-                                  <span className="text-xs text-gray-500">{comment.commentBy || "Anonymous"}</span>
+                {activeTab === 'comments' && (
+                  <div className="flex flex-col gap-3 sm:gap-4">
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Order Comments</h3>
+                    <div className="space-y-3 sm:space-y-4">
+                      {comments.filter((c) => c.orderItemId == null).length > 0 ? (
+                        comments
+                          .filter((c) => c.orderItemId == null)
+                          .map((comment, index) => {
+                            const isOwn = comment.commentBy === (sessionStorage.getItem('username') || 'Anonymous');
+                            const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+                            return (
+                              <div key={index} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                                <div
+                                  className={`max-w-[80%] sm:max-w-lg w-fit p-3 sm:p-4 rounded-2xl shadow border relative ${
+                                    comment.is_internal
+                                      ? 'bg-purple-50 border-purple-200'
+                                      : 'bg-indigo-50 border-indigo-200'
+                                  } ${isOwn ? 'ml-4 sm:ml-16' : 'mr-4 sm:mr-16'}`}
+                                >
+                                  <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                                    <span
+                                      className={`text-xs font-semibold ${
+                                        comment.is_internal ? 'text-purple-700' : 'text-indigo-700'
+                                      }`}
+                                    >
+                                      {comment.is_internal ? 'Internal' : 'Public'}
+                                    </span>
+                                    <span className="text-xs text-gray-500">{comment.commentBy || 'Anonymous'}</span>
+                                  </div>
+                                  {editingCommentId === comment.id ? (
+                                    <>
+                                      <input
+                                        value={editingCommentText}
+                                        onChange={handleEditCommentChange}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mb-2 text-xs sm:text-sm"
+                                      />
+                                      <div className="flex gap-2 justify-end">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSaveEditComment(comment)}
+                                          className="px-2 sm:px-3 py-1 bg-indigo-600 text-white rounded-md text-xs"
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={handleCancelEditComment}
+                                          className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-xs"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <p className="text-xs sm:text-sm text-gray-800 whitespace-pre-line">
+                                        {comment.commentText}
+                                      </p>
+                                      <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2">
+                                        <span className="text-xs text-gray-500">
+                                          {new Date(comment.commentAt || comment.createdAt).toLocaleString()}
+                                        </span>
+                                        {isEdited && <span className="text-xs text-gray-400">Edited</span>}
+                                        {isOwn && (
+                                          <>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleEditComment(comment)}
+                                              className="ml-2 text-xs text-indigo-600 hover:underline"
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteComment(comment.id)}
+                                              className="ml-2 text-xs text-red-600 hover:underline"
+                                            >
+                                              Delete
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
-                                {editingCommentId === comment.id ? (
-                                  <>
-                                    <input
-                                      value={editingCommentText}
-                                      onChange={handleEditCommentChange}
-                                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mb-2"
-                                    />
-                                    <div className="flex gap-2 justify-end">
-                                      <button type="button" onClick={() => handleSaveEditComment(comment)} className="px-3 py-1 bg-indigo-600 text-white rounded-md text-xs">Save</button>
-                                      <button type="button" onClick={handleCancelEditComment} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-xs">Cancel</button>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <>
-                                    <p className="text-sm text-gray-800 whitespace-pre-line">{comment.commentText}</p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <span className="text-xs text-gray-500">{new Date(comment.commentAt || comment.createdAt).toLocaleString()}</span>
-                                      {isEdited && <span className="text-xs text-gray-400">Edited</span>}
-                                      {isOwn && (
-                                        <>
-                                          <button type="button" onClick={() => handleEditComment(comment)} className="ml-2 text-xs text-indigo-600 hover:underline">Edit</button>
-                                          <button type="button" onClick={() => handleDeleteComment(comment.id)} className="ml-2 text-xs text-red-600 hover:underline">Delete</button>
-                                        </>
-                                      )}
-                                    </div>
-                                  </>
-                                )}
                               </div>
-                            </div>
-                          );
-                        })
+                            );
+                          })
                       ) : (
-                        <div className="bg-white p-6 border border-[#e5e7eb] text-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        <div className="bg-white p-3 sm:p-4 border border-[#e5e7eb] text-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-8 sm:h-12 w-8 sm:w-12 mx-auto text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1}
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                            />
                           </svg>
-                          <h4 className="mt-2 text-sm font-medium text-gray-900">No comments yet</h4>
-                          <p className="mt-1 text-sm text-gray-500">Be the first to add a comment.</p>
+                          <h4 className="mt-1 sm:mt-2 text-xs sm:text-sm font-medium text-gray-900">
+                            No comments yet
+                          </h4>
+                          <p className="mt-1 text-xs sm:text-sm text-gray-500">Be the first to add a comment.</p>
                         </div>
                       )}
                     </div>
-                    {/* Add Comment Form */}
-                    <div className="bg-white p-6 border border-[#e5e7eb] mb-6">
-                      <form onSubmit={handleAddComment} className="space-y-4">
+                    <div className="bg-white p-3 sm:p-4 md:p-5 border border-[#e5e7eb]">
+                      <form onSubmit={handleAddComment} className="space-y-3 sm:space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Add Comment</label>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Add Comment
+                          </label>
                           <input
                             name="commentText"
                             value={newComment.commentText}
                             onChange={handleCommentChange}
-                            className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                             placeholder="Enter your comment"
                             required
                           />
                         </div>
-                        <div className="flex gap-4 items-center">
-                          <span className="text-sm font-medium text-gray-700">Type:</span>
+                        <div className="flex gap-2 sm:gap-3 items-center">
+                          <span className="text-xs sm:text-sm font-medium text-gray-700">Type:</span>
                           <button
                             type="button"
                             onClick={() => handleInternalToggle(false)}
-                            className={`px-4 py-2 rounded-md border text-sm font-medium focus:outline-none ${!newComment.is_internal ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                            className={`px-3 sm:px-4 py-1 sm:py-2 rounded-md border text-xs sm:text-sm font-medium focus:outline-none ${
+                              !newComment.is_internal
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                            }`}
                           >
                             Public
                           </button>
                           <button
                             type="button"
                             onClick={() => handleInternalToggle(true)}
-                            className={`px-4 py-2 rounded-md border text-sm font-medium focus:outline-none ${newComment.is_internal ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-300'}`}
+                            className={`px-3 sm:px-4 py-1 sm:py-2 rounded-md border text-xs sm:text-sm font-medium focus:outline-none ${
+                              newComment.is_internal
+                                ? 'bg-purple-600 text-white border-purple-600'
+                                : 'bg-white text-gray-700 border-gray-300'
+                            }`}
                           >
                             Internal
                           </button>
                         </div>
                         <button
                           type="submit"
-                          className={`bg-[#5750f1] text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+                          className={`bg-[#5750f1] text-white py-1 sm:py-2 px-3 sm:px-4 rounded-lg font-medium transition flex items-center justify-center text-xs sm:text-sm ${
                             loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
                           }`}
                           disabled={loading}
                         >
                           {loading && (
-                            <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg
+                              className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
                             </svg>
                           )}
-                          {loading ? "Posting..." : "Post Comment"}
+                          {loading ? 'Posting...' : 'Post Comment'}
                         </button>
                       </form>
                     </div>
                   </div>
                 )}
-
-                {activeTab === "logs" && (
+                {activeTab === 'logs' && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Activity Log</h3>
+                    <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Activity Log</h3>
                     <div>
-                      {activityLogs.length === 0 ? (
-                        <p className="text-gray-500">No activity logs found.</p>
+                      {activityLogs?.length === 0 ? (
+                        <p className="text-xs sm:text-sm text-gray-500">No activity logs found.</p>
                       ) : (
-                        <ul className="flex flex-col gap-3">
+                        <ul className="flex flex-col gap-2 sm:gap-3">
                           {activityLogs.map((log) => (
-                            <li key={log.id} className="border border-[#e5e7eb] px-5 py-4 bg-white">
-                              <p className="text-sm text-gray-800">
+                            <li
+                              key={log.id}
+                              className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 bg-white"
+                            >
+                              <p className="text-xs sm:text-sm text-gray-800">
                                 <strong>{log.action}</strong> by <span className="text-blue-600">{log.performedBy}</span>
                               </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(log.createdAt).toLocaleString()}
-                              </p>
+                              <p className="text-xs text-gray-500">{new Date(log.createdAt).toLocaleString()}</p>
                             </li>
                           ))}
                         </ul>
@@ -1744,11 +2037,11 @@ export default function ViewOrder() {
 
 
       {/* Files Modal */}
-      {isFilesModalOpen && (
-        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="flex justify-between items-center border-b border-gray-200 p-4">
-              <h3 className="text-lg font-medium text-gray-900">Manage Order Files</h3>
+            {isFilesModalOpen && (
+        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-lg">
+            <div className="flex justify-between items-center border-b border-gray-200 p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900">Manage Order Files</h3>
               <button
                 onClick={() => {
                   setIsFilesModalOpen(false);
@@ -1757,25 +2050,25 @@ export default function ViewOrder() {
                 }}
                 className="text-gray-400 hover:text-gray-500"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 sm:h-6 w-5 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Add File Section */}
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Add New File</h4>
-                <div className="flex items-center gap-3">
+              <div className="mb-4 sm:mb-6">
+                <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Add New File</h4>
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                   <input
                     type="file"
                     onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="block w-full text-xs sm:text-sm text-gray-500 file:mr-3 sm:file:mr-4 file:py-2 sm:file:py-3 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />
                   <button
                     onClick={handleAddFile}
-                    className="px-4 py-2 border border-transparent flex items-center gap-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent flex items-center justify-center gap-1 sm:gap-2 rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                     disabled={!newFile || uploadProgress > 0}
                   >
                     {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Upload'}
@@ -1785,21 +2078,21 @@ export default function ViewOrder() {
 
               {/* Delete Files Section */}
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">Current Files</h4>
-                {orderData.files.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No files available</p>
+                <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Current Files</h4>
+                {orderData.files?.length === 0 ? (
+                  <p className="text-gray-500 text-xs sm:text-sm">No files available</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {orderData.files.map((file) => (
-                      <div key={file.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
+                      <div key={file.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border border-gray-200 rounded-lg">
                         <input
                           type="checkbox"
                           checked={filesToDelete.includes(file.id)}
                           onChange={() => toggleFileDelete(file.id)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 sm:h-5 w-4 sm:w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
+                          <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
                           <p className="text-xs text-gray-500">
                             Uploaded: {new Date(file.uploadedAt).toLocaleString()}
                           </p>
@@ -1809,19 +2102,19 @@ export default function ViewOrder() {
                   </div>
                 )}
 
-                {orderData.files.length > 0 && (
+                {orderData.files?.length > 0 && (
                   <button
                     onClick={handleDeleteFiles}
-                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
+                    className="mt-3 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center justify-center"
                     disabled={filesToDelete.length === 0 || loading}
                   >
                     {loading && (
-                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                    {loading ? "Deleting..." : `Delete Selected (${filesToDelete.length})`}
+                      <svg className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {loading ? 'Deleting...' : `Delete Selected (${filesToDelete.length})`}
                   </button>
                 )}
               </div>
@@ -1832,10 +2125,10 @@ export default function ViewOrder() {
 
       {/* Product Files Modal */}
       {isFilesModalOpenProduct && (
-        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="flex justify-between items-center border-b border-gray-200 p-4">
-              <h3 className="text-lg font-medium text-gray-900">Manage Product Files</h3>
+        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-lg">
+            <div className="flex justify-between items-center border-b border-gray-200 p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900">Manage Product Files</h3>
               <button
                 onClick={() => {
                   setIsFilesModalOpenProduct(false);
@@ -1844,25 +2137,25 @@ export default function ViewOrder() {
                 }}
                 className="text-gray-400 hover:text-gray-500"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 sm:h-6 w-5 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Add File Section */}
-              <div className="mb-6">
-                <h4 className="font-medium text-gray-900 mb-3">Add New File</h4>
-                <div className="flex items-center gap-3">
+              <div className="mb-4 sm:mb-6">
+                <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Add New File</h4>
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                   <input
                     type="file"
                     onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    className="block w-full text-xs sm:text-sm text-gray-500 file:mr-3 sm:file:mr-4 file:py-2 sm:file:py-3 file:px-3 sm:file:px-4 file:rounded-md file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                   />
                   <button
                     onClick={handleAddFileProduct}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                     disabled={!newFile || uploadProgress > 0}
                   >
                     {uploadProgress > 0 ? `Uploading... ${uploadProgress}%` : 'Upload'}
@@ -1872,37 +2165,37 @@ export default function ViewOrder() {
 
               {/* Delete Files Section */}
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">Current Files</h4>
-                {orderData.items.find(item => item.product.id === currentProductId)?.product?.files?.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No files available</p>
+                <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Current Files</h4>
+                {orderData.items?.find((item) => item.product?.id === currentProductId)?.files?.length === 0 ? (
+                  <p className="text-gray-500 text-xs sm:text-sm">No files available</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {orderData.items.map((item) => (
-                      item.files.map((file)=>(
-                        <div key={file.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
-                        <input
-                          type="checkbox"
-                          checked={filesToDelete.includes(file.id)}
-                          onChange={() => toggleFileDelete(file.id)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
-                          <p className="text-xs text-gray-500">
-                            Uploaded: {new Date(file.uploadedAt).toLocaleString()}
-                          </p>
+                    {orderData.items
+                      ?.find((item) => item.product?.id === currentProductId)
+                      ?.files?.map((file) => (
+                        <div key={file.id} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border border-gray-200 rounded-lg">
+                          <input
+                            type="checkbox"
+                            checked={filesToDelete.includes(file.id)}
+                            onChange={() => toggleFileDelete(file.id)}
+                            className="h-4 sm:h-5 w-4 sm:w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{file.fileName}</p>
+                            <p className="text-xs text-gray-500">
+                              Uploaded: {new Date(file.uploadedAt).toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      ))
-                    ))}
+                      ))}
                   </div>
                 )}
 
-                {orderData.items.find(item => item.product.id === currentProductId)?.product?.files?.length > 0 && (
+                {orderData.items?.find((item) => item.product?.id === currentProductId)?.files?.length > 0 && (
                   <button
                     onClick={handleDeleteFiles}
-                    className="mt-4 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                    disabled={filesToDelete.length === 0}
+                    className="mt-3 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    disabled={filesToDelete.length === 0 || loading}
                   >
                     Delete Selected ({filesToDelete.length})
                   </button>
@@ -1915,43 +2208,43 @@ export default function ViewOrder() {
 
       {/* Edit Order Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="flex justify-between items-center border-b border-gray-200 p-4">
-              <h3 className="text-lg font-medium text-gray-900">Edit Order Details</h3>
+        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-lg">
+            <div className="flex justify-between items-center border-b border-gray-200 p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900">Edit Order Details</h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="text-gray-400 hover:text-gray-500"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 sm:h-6 w-5 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
-            <form onSubmit={handleSaveChanges} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSaveChanges} className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {/* Order Information */}
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Order Information</h4>
-                  <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Order Information</h4>
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Title</label>
                       <input
                         type="text"
                         name="title"
                         value={editedData.title}
                         onChange={handleEditInputChange}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
                       <select
                         name="status"
                         value={editedData.status}
                         onChange={handleEditInputChange}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                       >
                         <option value="draft">Draft</option>
                         <option value="confirmed">Confirmed</option>
@@ -1961,23 +2254,23 @@ export default function ViewOrder() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
                       <input
                         type="date"
                         name="startDate"
                         value={editedData.startDate}
                         onChange={handleEditInputChange}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Due Date</label>
                       <input
                         type="date"
                         name="dueDate"
                         value={editedData.dueDate}
                         onChange={handleEditInputChange}
-                        className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                       />
                     </div>
                   </div>
@@ -1985,33 +2278,32 @@ export default function ViewOrder() {
 
                 {/* Notes */}
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Notes</h4>
+                  <h4 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Notes</h4>
                   <textarea
                     name="notes"
                     value={editedData.notes}
                     onChange={handleEditInputChange}
-                    className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
                     rows="5"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 mt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-2 sm:space-x-3 pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+                  className="py-2 sm:py-3 px-3 sm:px-4 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`bg-[#5750f1] text-white py-[13px] px-6 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-                    }`}
+                  className={`py-2 sm:py-3 px-3 sm:px-4 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium transition flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
                 >
                   {loading && (
-                    <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                    <svg className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -2026,21 +2318,21 @@ export default function ViewOrder() {
 
       {/* Image Viewer Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50" onClick={closeImageViewer}>
-          <div className="relative max-w-4xl w-full">
+        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6" onClick={closeImageViewer}>
+          <div className="relative w-full max-w-[90vw] sm:max-w-3xl lg:max-w-4xl">
             <button
               onClick={closeImageViewer}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300"
+              className="absolute -top-8 sm:-top-10 right-0 text-white hover:text-gray-300"
             >
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 sm:h-8 w-6 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="p-2 rounded-lg">
+            <div className="p-1 sm:p-2 rounded-lg">
               <img
                 src={`https://printmanager-api.onrender.com${selectedImage}`}
                 alt="Order File"
-                className="max-h-[80vh] max-w-full object-contain mx-auto"
+                className="max-h-[80vh] sm:max-h-[90vh] max-w-full object-contain mx-auto"
               />
             </div>
           </div>
@@ -2049,20 +2341,20 @@ export default function ViewOrder() {
 
       {/* Delete Comment Modal */}
       {deleteCommentModal.open && (
-        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg w-full max-w-[400px] shadow-xl">
-            <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
-            <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this comment?</p>
-            <div className="flex justify-end space-x-2">
+        <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-[85vw] sm:max-w-md shadow-xl">
+            <h2 className="text-lg sm:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Delete</h2>
+            <p className="text-sm sm:text-base text-[#111928] mb-3 sm:mb-4">Are you sure you want to delete this comment?</p>
+            <div className="flex justify-end space-x-2 sm:space-x-3">
               <button
                 onClick={cancelDeleteComment}
-                className="py-[10px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+                className="py-2 sm:py-3 px-3 sm:px-4 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteComment}
-                className="py-[10px] px-6 bg-[#ef4444] text-white rounded-lg hover:bg-red-700"
+                className="py-2 sm:py-3 px-3 sm:px-4 bg-[#ef4444] text-white rounded-lg text-xs sm:text-sm hover:bg-red-700"
               >
                 Delete
               </button>

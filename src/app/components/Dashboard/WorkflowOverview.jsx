@@ -35,20 +35,22 @@ function WorkflowOverview() {
         workflowsArray.forEach(workflow => {
           workflowStageMap[workflow.id] = {
             title: workflow.title,
-            stages: workflow.stages.map(stage => stage.title),
-            color: workflow.stages.length > 0 ? workflow.stages[0].color : '#6b7280' // Use first stage's color or fallback
+            stages: workflow.stages.map(s => s.stage?.name),
+            color: workflow.stages.length > 0 ? workflow.stages[0].stage?.color : '#6b7280' // Use first stage's color or fallback
           };
         });
 
         // Count orders per workflow
         const workflowCounts = {};
         ordersArray.forEach(order => {
-          const countedWorkflows = new Set(); // Track workflows counted for this order
+          const countedWorkflows = new Set();
           order.items.forEach(item => {
             if (item.currentStage) {
-              // Find which workflow this stage belongs to
               for (const workflowId in workflowStageMap) {
-                if (workflowStageMap[workflowId].stages.includes(item.currentStage) && !countedWorkflows.has(workflowId)) {
+                if (
+                  workflowStageMap[workflowId].stages.includes(item.currentStage) &&
+                  !countedWorkflows.has(workflowId)
+                ) {
                   workflowCounts[workflowId] = (workflowCounts[workflowId] || 0) + 1;
                   countedWorkflows.add(workflowId);
                 }
@@ -57,13 +59,13 @@ function WorkflowOverview() {
           });
         });
 
-        // Prepare workflow stats for all workflows
+        // Prepare workflow stats
         const stats = workflowsArray.map(workflow => ({
           id: workflow.id,
           name: workflow.title,
           count: workflowCounts[workflow.id] || 0,
           color: workflowStageMap[workflow.id]?.color || '#6b7280'
-        })).sort((a, b) => a.id - b.id); // Sort by workflow ID
+        })).sort((a, b) => a.id - b.id);
 
         setWorkflowStats(stats);
         setError(null);
@@ -120,7 +122,7 @@ function WorkflowOverview() {
             <div key={workflow.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className={`w-4 h-4 rounded-full ${workflow.color}`} />
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: workflow.color }} />
                   <span className="text-sm font-medium text-[#111928]">
                     {workflow.name}
                   </span>
@@ -129,8 +131,11 @@ function WorkflowOverview() {
               </div>
               <div className="w-full h-3 bg-gray-200 rounded-full">
                 <div
-                  className={`h-3 rounded-full bg-[${workflow.color}] `}
-                  style={{ width: workflow.count > 0 ? '1%' : '0%' }}
+                  className="h-3 rounded-full"
+                  style={{
+                    backgroundColor: workflow.color,
+                    width: workflow.count > 0 ? '1%' : '0%'
+                  }}
                 ></div>
               </div>
             </div>

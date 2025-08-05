@@ -27,8 +27,7 @@ export default function CreateOrder() {
   const [loading, setLoading] = useState(false);
   const [customerInfo, setCustomerInfo] = useState(null);
   const [customerSearchResults, setCustomerSearchResults] = useState([]);
-  const [productSearchResults, setProductSearchResults] = useState([]);
-  const [serviceDropdowns, setServiceDropdowns] = useState({});
+  const [serviceDropdowns, setServiceDropdowns] = useState({}); // State for toggling service collapse
   const fileInputRefs = useRef([]);
   const [fileInputs, setFileInputs] = useState([0]);
   const [isItemCollapsed, setIsItemCollapsed] = useState({});
@@ -96,42 +95,7 @@ export default function CreateOrder() {
     }
   };
 
-  // Handle product search
-  const handleProductSearch = (searchTerm, itemIndex) => {
-    if (searchTerm.length < 3) {
-      setProductSearchResults(prev => ({ ...prev, [itemIndex]: [] }));
-      setServiceDropdowns(prev => ({ ...prev, [itemIndex]: {} }));
-      return;
-    }
-    const lowerSearch = searchTerm.toLowerCase();
-    const results = products.filter(product => {
-      const service = services.find(s => s.id === product.serviceId);
-      const serviceTitle = service?.title || '';
-      return (
-        product.id.toString().includes(searchTerm) ||
-        (product.title && product.title.toLowerCase().includes(lowerSearch)) ||
-        (serviceTitle && serviceTitle.toLowerCase().includes(lowerSearch))
-      );
-    });
-    
-    // Group products by service
-    const groupedByService = results.reduce((acc, product) => {
-      const serviceId = product.serviceId;
-      const serviceTitle = services.find(s => s.id === serviceId)?.title || 'Unknown';
-      if (!acc[serviceId]) {
-        acc[serviceId] = { title: serviceTitle, products: [] };
-      }
-      acc[serviceId].products.push(product);
-      return acc;
-    }, {});
-
-    setProductSearchResults(prev => ({
-      ...prev,
-      [itemIndex]: Object.values(groupedByService)
-    }));
-  };
-
-  // Toggle service dropdown
+  // Toggle service dropdown for an item
   const toggleServiceDropdown = (itemIndex, serviceId) => {
     setServiceDropdowns(prev => ({
       ...prev,
@@ -217,6 +181,11 @@ export default function CreateOrder() {
         setIsItemCollapsed(newCollapsed);
         return updateTotals({ ...prev, items: newItems });
       });
+      setServiceDropdowns(prev => {
+        const newDropdowns = { ...prev };
+        delete newDropdowns[index];
+        return newDropdowns;
+      });
     }
   };
 
@@ -276,7 +245,6 @@ export default function CreateOrder() {
           };
           return updateTotals({ ...prev, items: newItems });
         });
-        setProductSearchResults(prev => ({ ...prev, [itemIndex]: [] }));
         setServiceDropdowns(prev => ({ ...prev, [itemIndex]: {} }));
       } catch (err) {
         toast.error(err.message || 'Error fetching product');
@@ -398,7 +366,7 @@ export default function CreateOrder() {
       });
       setCustomerInfo(null);
       setCustomerSearchResults([]);
-      setProductSearchResults({});
+      setServiceDropdowns({});
       setFileInputs([0]);
       fileInputRefs.current.forEach(ref => ref && (ref.value = ''));
       setTimeout(() => router.push('/dashboard/order/list'), 2000);
@@ -408,6 +376,12 @@ export default function CreateOrder() {
       setLoading(false);
     }
   };
+
+  // Group products by service for dropdown
+  const groupedProducts = services.map(service => ({
+    ...service,
+    products: products.filter(product => product.serviceId === service.id)
+  }));
 
   return (
     <form className="flex flex-col gap-4 sm:gap-6 md:gap-7 w-full mx-auto">
@@ -601,46 +575,41 @@ export default function CreateOrder() {
                       <label className="block text-xs sm:text-sm font-medium text-[#111928] after:content-['*'] after:text-[#ef4444]">
                         Product
                       </label>
-                      <input
-                        type="text"
-                        value={item.productTitle}
-                        onChange={(e) => {
-                          handleItemChange(itemIndex, 'productTitle', e.target.value);
-                          handleProductSearch(e.target.value, itemIndex);
-                        }}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-[#f2f2f3] text-xs sm:text-sm"
-                        required
-                        placeholder="Search by product or service"
-                      />
-                      {productSearchResults[itemIndex]?.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-[40vh] sm:max-h-[50vh] overflow-auto">
-                          {productSearchResults[itemIndex].map((service, serviceIndex) => (
-                            <div key={serviceIndex} className="border-b border-[#e5e7eb]">
-                              <div
-                                className="px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex justify-between items-center text-xs sm:text-sm"
-                                onClick={() => toggleServiceDropdown(itemIndex, serviceIndex)}
-                              >
-                                <span>{service.title}</span>
-                                <span>{serviceDropdowns[itemIndex]?.[serviceIndex] ? '−' : '+'}</span>
-                              </div>
-                              {serviceDropdowns[itemIndex]?.[serviceIndex] && (
-                                <div>
-                                  {service.products.map(product => (
-                                    <div
-                                      key={product.id}
-                                      className="w-full px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex items-center gap-2 sm:gap-3 text-xs sm:text-sm"
-                                      onClick={() => handleItemChange(itemIndex, 'productId', product.id.toString())}
-                                    >
-                                      <div className="w-3 h-3 sm:w-4 sm:h-4 bg-[#5750f1] rounded-full"></div>
-                                      {product.title}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                      <div className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg bg-[#f2f2f3] text-xs sm:text-sm cursor-pointer">
+                        <div className="flex justify-between items-center" onClick={() => toggleServiceDropdown(itemIndex, 'main')}>
+                          <span>{item.productTitle || 'Select Product'}</span>
+                          <span>{serviceDropdowns[itemIndex]?.main ? '−' : '+'}</span>
                         </div>
-                      )}
+                        {serviceDropdowns[itemIndex]?.main && (
+                          <div className="absolute z-10 w-full mt-3 left-0 border border-[#e5e7eb] rounded-lg shadow-lg max-h-[40vh] sm:max-h-[50vh] overflow-auto bg-white">
+                            {groupedProducts.map((service, serviceIndex) => (
+                              <div key={service.id} className="border-b border-[#e5e7eb]">
+                                <div
+                                  className="px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex justify-between items-center text-xs sm:text-sm"
+                                  onClick={() => toggleServiceDropdown(itemIndex, service.id)}
+                                >
+                                  <span>{service.title}</span>
+                                  <span>{serviceDropdowns[itemIndex]?.[service.id] ? '−' : '+'}</span>
+                                </div>
+                                {serviceDropdowns[itemIndex]?.[service.id] && (
+                                  <div>
+                                    {service.products.map(product => (
+                                      <div
+                                        key={product.id}
+                                        className="w-full px-3 sm:px-4 py-2 hover:bg-[#f8fafc] cursor-pointer flex items-center gap-2 sm:gap-3 text-xs sm:text-sm"
+                                        onClick={() => handleItemChange(itemIndex, 'productId', product.id.toString())}
+                                      >
+                                        <div className="w-3 h-3 sm:w-4 sm:h-4 bg-[#5750f1] rounded-full"></div>
+                                        {product.title}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div>

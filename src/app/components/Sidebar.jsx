@@ -1,12 +1,30 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FaPrint } from "react-icons/fa6";
+import Image from 'next/image';
 
 export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   const pathname = usePathname();
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [logo, setLogo] = useState(null);
+
+  useEffect(() => {
+    const adminValue = sessionStorage.getItem("isAdmin");
+    setIsAdmin(adminValue === true);
+
+    // Fetch organization settings including logo
+    fetch('https://printmanager-api.onrender.com/api/organization-settings')
+      .then(response => response.json())
+      .then(data => {
+        setLogo(data.logo);
+      })
+      .catch(error => {
+        console.error('Error fetching logo:', error);
+      });
+  }, []);
 
   const toggleDropdown = (id) => {
     setOpenDropdowns((prev) => ({
@@ -167,41 +185,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
 
   const otherMenuItems = [
     {
-      id: 'settings',
-      title: 'Settings',
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-      ),
-      dropdown: [
-        { 
-          title: 'Create Stage', 
-          href: '/dashboard/stage', 
-          icon: (
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M8 12h8"></path>
-              <path d="M12 8v8"></path>
-            </svg>
-          ) 
-        },
-        { 
-          title: 'Create Workflow', 
-          href: '/dashboard/workflow', 
-          icon: (
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="18" r="3"></circle>
-              <circle cx="6" cy="6" r="3"></circle>
-              <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
-              <line x1="6" x2="6" y1="9" y2="21"></line>
-            </svg>
-          ) 
-        },
-      ],
-    },
-    {
       id: 'bigscreen',
       title: 'BigScreen',
       icon: (
@@ -246,6 +229,55 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       href: '/dashboard/user-management',
+    },
+    {
+      id: 'organization-settings',
+      title: 'Organization Settings',
+      icon: (
+        <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+          <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+          <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+          <path d="M10 6h4"></path><path d="M10 10h4"></path>
+          <path d="M10 14h4"></path><path d="M10 18h4"></path>
+        </svg>
+      ),
+      href: '/dashboard/organization-settings',
+    },
+    {
+      id: 'settings',
+      title: 'Settings',
+      icon: (
+        <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      ),
+      dropdown: [
+        { 
+          title: 'Create Stage', 
+          href: '/dashboard/stage', 
+          icon: (
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8 12h8"></path>
+              <path d="M12 8v8"></path>
+            </svg>
+          ) 
+        },
+        { 
+          title: 'Create Workflow', 
+          href: '/dashboard/workflow', 
+          icon: (
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="18" r="3"></circle>
+              <circle cx="6" cy="6" r="3"></circle>
+              <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+              <line x1="6" x2="6" y1="9" y2="21"></line>
+            </svg>
+          ) 
+        },
+      ],
     },
   ];
 
@@ -327,8 +359,17 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       {/* Sidebar Header */}
       <div className="flex items-center justify-between py-4 sm:py-5 md:py-6 lg:py-[30px] bg-white text-black px-3 sm:px-4 shrink-0">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111928] flex items-center gap-1 sm:gap-2">
-          <FaPrint size={20} sm={24} md={28} color='#5750f1' />
-          Print Shop
+          {logo ? (
+            <Image
+              src={`https://printmanager-api.onrender.com${logo}`}
+              alt="Organization Logo"
+              width={200}
+              height={200}
+              className="w-[50px] sm:w-[100px] md:w-[170px]"
+            />
+          ) : (
+            <FaPrint size={20} sm={24} md={28} color='#5750f1' />
+          )}
         </h1>
         <button onClick={toggleSidebar} className="lg:hidden text-black">
           <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -341,10 +382,12 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         <nav className="space-y-1 sm:space-y-2">
           <h2 className="text-xs sm:text-sm md:text-[14px] text-[#4b5563] mb-2 sm:mb-4 uppercase">Main Menu</h2>
           {renderMenuItems(mainMenuItems)}
-          {/* <h2 className="text-xs sm:text-sm md:text-[14px] text-[#4b5563] mb-2 sm:mb-4 uppercase mt-2 sm:mt-4">Team Dashboards</h2>
-          {renderMenuItems(teamDashboardsItems)} */}
           <h2 className="text-xs sm:text-sm md:text-[14px] text-[#4b5563] mb-2 sm:mb-4 uppercase mt-2 sm:mt-4">Other</h2>
-          {renderMenuItems(otherMenuItems)}
+          {renderMenuItems(
+            isAdmin
+              ? otherMenuItems.filter(item => item.id !== 'organization-settings')
+              : otherMenuItems
+          )}
         </nav>
       </div>
     </div>

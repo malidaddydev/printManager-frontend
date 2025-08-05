@@ -14,13 +14,13 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8">
       <Breadcrumbs pageName="User Management" />
       <UserCard />
       <div className="pt-6 flex justify-end">
         <button
           onClick={() => setIsPopupOpen(true)}
-          className="bg-[#5750f1] text-white py-[13px] px-[35px] rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
+          className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

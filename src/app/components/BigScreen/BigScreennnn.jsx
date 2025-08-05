@@ -178,15 +178,10 @@ export default function BigScreennnn() {
   const activeItem = orderItems.find((item) => item.id.toString() === activeId);
 
   const mouseSensor = useSensor(MouseSensor, {
-    activationConstraint: {
-      distance: 0,
-    },
+    activationConstraint: { distance: 0 },
   });
   const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: {
-      delay: 100,
-      tolerance: 5,
-    },
+    activationConstraint: { delay: 100, tolerance: 5 },
   });
   const sensors = useSensors(mouseSensor, touchSensor);
 
@@ -194,6 +189,7 @@ export default function BigScreennnn() {
     setLoading(true);
     const servicesData = await fetchData("https://printmanager-api.onrender.com/api/services");
     const ordersData = await fetchData("https://printmanager-api.onrender.com/api/orders");
+
     const allItems = ordersData.flatMap((order) =>
       (order.items || []).map((item) => ({
         ...item,
@@ -204,9 +200,10 @@ export default function BigScreennnn() {
         sizeQuantities: item.sizeQuantities,
       }))
     );
+
     setServices(servicesData);
     setOrderItems(allItems);
-    console.log(allItems)
+
     if (!selectedService && servicesData.length > 0) {
       setSelectedService(servicesData[0]);
     }
@@ -249,8 +246,8 @@ export default function BigScreennnn() {
     ? orderItems.filter(
         (item) =>
           item.product?.serviceId === selectedService.id &&
-          selectedService.workflow.stages.some((s) => s.title === item.currentStage)
-)
+          selectedService.workflow.stages.some((s) => s.stage.name === item.currentStage)
+      )
     : [];
 
   const getOrderItemsByStage = (stageTitle) =>
@@ -259,48 +256,48 @@ export default function BigScreennnn() {
   return (
     <>
       <div>
-        <Image
-          src={BgImage}
-          alt="Bg-Image"
-          className="w-full h-[100vh] fixed -z-10"
-        />
+        <Image src={BgImage} alt="Bg-Image" className="w-full h-[100vh] fixed -z-10" />
         <div>
           <div className="bg-gray-800 text-white min-h-[4rem] flex items-center justify-between px-6 py-4 sm:py-6 shadow-lg mb-8">
             <div className="flex items-center space-x-4">
-              <Image 
-              src={Logo}
-              alt="Logo"
-              className="w-[110px] h-[28px]"
-              />
+              <Image src={Logo} alt="Logo" className="w-[110px] h-[28px]" />
             </div>
             <h1 className="text-2xl font-bold hidden sm:block">
               {selectedService?.title} Team Workflow
             </h1>
             <div className="w-full max-w-[220px]">
-            <select
-              className="w-full max-w-[220px] px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              value={selectedService?.id || ""}
-              onChange={(e) => {
-                const service = services.find((s) => s.id === parseInt(e.target.value));
-                setSelectedService(service);
-              }}
-            >
-              <option value="" disabled>
-                Select a service
-              </option>
-              {services.map((service) => (
-                <option key={service.id} value={service.id} className="text-[#111928]">
-                  {service.title}
-                </option>
-              ))}
-            </select>
+              <select
+                className="w-full max-w-[220px] px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+                value={selectedService?.id || ""}
+                onChange={(e) => {
+                  const service = services.find((s) => s.id === parseInt(e.target.value));
+                  setSelectedService(service);
+                }}
+              >
+                <option value="" disabled>Select a service</option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.id} className="text-[#111928]">
+                    {service.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="w-full z-50 flex flex-col sm:flex-row justify-between gap-4 items-center mb-8 px-6">
+            <div className="gap-2 flex items-center px-[20px] py-[5px] rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white">
+              <div className="w-[12px] h-[12px] bg-green-500 rounded-full animate-pulse"></div>
+              Auto-refresh: 30s
+            </div>
+            <div className=" px-[20px] py-[5px] rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white">
+              {format(currentTime, "PPpp")}
             </div>
           </div>
 
           <div className="px-6 pb-12">
             {loading ? (
-            <div className="w-full flex justify-center items-center">
-               <svg className="animate-spin h-10 w-10 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+              <div className="w-full flex justify-center items-center">
+                <svg className="animate-spin h-10 w-10 mr-2 text-white" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path
                     className="opacity-75"
@@ -308,36 +305,43 @@ export default function BigScreennnn() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-            </div>
-          ) : !selectedService ? (
-            <div className="text-center text-lg">No services available</div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={onDragEnd}
-              onDragStart={({ active }) => setActiveId(active.id)}
-              onDragOver={({ over }) => setDragOverId(over?.id || null)}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {selectedService.workflow.stages.map((stage) => (
-                  <SortableStage
-                    key={stage.id}
-                    stage={stage}
-                    orders={getOrderItemsByStage(stage.title)}
-                    isOverTarget={dragOverId === stage.title}
-                  />
-                ))}
               </div>
-              <DragOverlay>
-                {activeItem ? (
-                  <div className="p-4 bg-white border border-[#e2e8f0] shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
-                    {activeItem.product?.title}
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-          )}
+            ) : !selectedService ? (
+              <div className="text-center text-lg">No services available</div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={onDragEnd}
+                onDragStart={({ active }) => setActiveId(active.id)}
+                onDragOver={({ over }) => setDragOverId(over?.id || null)}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {selectedService.workflow.stages.map((s) => {
+                    const stage = {
+                      id: s.stage.id,
+                      title: s.stage.name,
+                      color: s.stage.color,
+                    };
+                    return (
+                      <SortableStage
+                        key={stage.id}
+                        stage={stage}
+                        orders={getOrderItemsByStage(stage.title)}
+                        isOverTarget={dragOverId === stage.title}
+                      />
+                    );
+                  })}
+                </div>
+                <DragOverlay>
+                  {activeItem ? (
+                    <div className="p-4 bg-white border border-[#e2e8f0] shadow-[0_2px_5px_rgba(0,0,0,0.1)]">
+                      {activeItem.product?.title}
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            )}
           </div>
         </div>
       </div>
@@ -345,3 +349,4 @@ export default function BigScreennnn() {
     </>
   );
 }
+

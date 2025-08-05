@@ -11,18 +11,18 @@ const ViewImagePopup = ({ isOpen, onClose, filePath }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Product Image</h2>
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Product Image</h2>
         {filePath ? (
-          <img src={`${BASE_URL}${filePath}`} alt="Product" className="w-full h-auto max-h-[60vh] object-contain mb-4" />
+          <img src={`${BASE_URL}${filePath}`} alt="Product" className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mb-3 sm:mb-4" />
         ) : (
-          <p className="text-sm text-[#111928] mb-4">No image provided</p>
+          <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">No image provided</p>
         )}
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+            className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 transition"
           >
             Close
           </button>
@@ -35,7 +35,7 @@ const ViewImagePopup = ({ isOpen, onClose, filePath }) => {
 export function CheckIcon({ className }) {
   return (
     <svg
-      width="11"
+      width="10"
       height="8"
       viewBox="0 0 11 8"
       fill="currentColor"
@@ -55,10 +55,10 @@ function CustomCheckbox({ label, checked, onChange, name }) {
   const id = React.useId();
 
   return (
-    <div className="mb-2">
+    <div className="mb-1.5 sm:mb-2">
       <label
         htmlFor={id}
-        className="flex cursor-pointer select-none items-center text-sm text-[#111928]"
+        className="flex cursor-pointer select-none items-center text-xs sm:text-sm text-[#111928]"
       >
         <div className="relative">
           <input
@@ -70,7 +70,7 @@ function CustomCheckbox({ label, checked, onChange, name }) {
             className="peer sr-only"
           />
           <div
-            className="mr-2 flex size-5 items-center justify-center rounded border border-[#e5e7eb] peer-checked:border-[#5750f1] peer-checked:bg-[#f3f4f6] [&>*]:text-[#5750f1] peer-checked:[&>*]:block"
+            className="mr-1.5 sm:mr-2 flex size-4 sm:size-5 items-center justify-center rounded border border-[#e5e7eb] peer-checked:border-[#5750f1] peer-checked:bg-[#f3f4f6] [&>*]:text-[#5750f1] peer-checked:[&>*]:block"
           >
             <CheckIcon className="hidden text-[#5750f1]" />
           </div>
@@ -209,6 +209,9 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
     try {
       const response = await fetch(`${BASE_URL}/api/products/${product.id}`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
         body: submitData,
       });
       if (!response.ok) {
@@ -232,30 +235,30 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full h-[500px] overflow-y-scroll max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Edit Product</h2>
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] max-h-[80vh] overflow-y-auto shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Edit Product</h2>
         {error && (
-          <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
+          <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-xs sm:text-sm">
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Product Title</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Product Title *</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Product Image</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Product Image</label>
             <div
-              className={`w-full h-32 border-2 border-dashed border-[#e5e7eb] rounded-lg flex items-center justify-center text-[#111928] cursor-pointer ${
+              className={`w-full h-24 sm:h-28 md:h-32 border-2 border-dashed border-[#e5e7eb] rounded-lg flex items-center justify-center text-[#111928] cursor-pointer ${
                 dragActive ? 'bg-[#f7f9fc]' : ''
               }`}
               onDragEnter={handleDrag}
@@ -277,7 +280,7 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
                   className="h-full object-contain"
                 />
               ) : (
-                <p className="text-sm">Drag and drop an image or click to upload</p>
+                <p className="text-xs sm:text-sm">Drag and drop an image or click to upload</p>
               )}
               <input
                 type="file"
@@ -289,7 +292,7 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Unit Price ($)</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Unit Price ($) *</label>
             <input
               type="number"
               name="unitPrice"
@@ -297,17 +300,17 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
               onChange={handleChange}
               step="0.01"
               min="0"
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Category</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Category *</label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             >
               <option value="">Select Category</option>
@@ -319,44 +322,40 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Colors</label>
-            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
-              <div>
-                {colorOptions.map((color, index) => (
-                  <CustomCheckbox
-                    key={index}
-                    label={color}
-                    checked={formData.colorOptions.includes(color)}
-                    onChange={() => handleColorChange(color)}
-                    name={`color-${color}`}
-                  />
-                ))}
-              </div>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Colors *</label>
+            <div className="mt-1 sm:mt-2 max-h-28 sm:max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-2 sm:p-3">
+              {colorOptions.map((color, index) => (
+                <CustomCheckbox
+                  key={index}
+                  label={color}
+                  checked={formData.colorOptions.includes(color)}
+                  onChange={() => handleColorChange(color)}
+                  name={`color-${color}`}
+                />
+              ))}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Sizes</label>
-            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
-              <div>
-                {sizeOptions.map((size, index) => (
-                  <CustomCheckbox
-                    key={index}
-                    label={size}
-                    checked={formData.sizeOptions.includes(size)}
-                    onChange={() => handleSizeChange(size)}
-                    name={`size-${size}`}
-                  />
-                ))}
-              </div>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Sizes *</label>
+            <div className="mt-1 sm:mt-2 max-h-28 sm:max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-2 sm:p-3">
+              {sizeOptions.map((size, index) => (
+                <CustomCheckbox
+                  key={index}
+                  label={size}
+                  checked={formData.sizeOptions.includes(size)}
+                  onChange={() => handleSizeChange(size)}
+                  name={`size-${size}`}
+                />
+              ))}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Service</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Service *</label>
             <select
               name="serviceId"
               value={formData.serviceId}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             >
               <option value="">Select Service</option>
@@ -377,19 +376,19 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
             <button
               type="button"
               onClick={onClose}
-              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+              className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg flex items-center justify-center ${
+              className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center transition ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
               }`}
             >
               {loading && (
-                <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <svg className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path
                     className="opacity-75"
@@ -417,6 +416,9 @@ const DeleteProductPopup = ({ isOpen, onClose, productId, onDelete }) => {
     try {
       const response = await fetch(`${BASE_URL}/api/products/${productId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -437,31 +439,31 @@ const DeleteProductPopup = ({ isOpen, onClose, productId, onDelete }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
-        <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this product?</p>
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Delete</h2>
+        <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">Are you sure you want to delete this product?</p>
         {error && (
-          <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">
+          <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-xs sm:text-sm">
             {error}
           </div>
         )}
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+            className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 transition"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className={`py-[13px] px-6 bg-[#ef4444] text-white rounded-lg flex items-center justify-center ${
+            className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#ef4444] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center transition ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
             }`}
           >
             {loading && (
-              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
@@ -482,10 +484,10 @@ const DropdownMenu = ({ productId, menuPosition, menuOpen, onEdit, onDelete }) =
   if (menuOpen !== productId) return null;
   return createPortal(
     <div
-      className="absolute top-0 bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
+      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[120px] sm:min-w-[150px] overflow-hidden dropdown-menu"
       style={{
         top: `${menuPosition.top}px`,
-        right: `${menuPosition.right}px`,
+        right: `${Math.max(16, menuPosition.right)}px`,
       }}
     >
       <button
@@ -493,7 +495,7 @@ const DropdownMenu = ({ productId, menuPosition, menuOpen, onEdit, onDelete }) =
           e.stopPropagation();
           onEdit(productId);
         }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         Edit Product
       </button>
@@ -502,7 +504,7 @@ const DropdownMenu = ({ productId, menuPosition, menuOpen, onEdit, onDelete }) =
           e.stopPropagation();
           onDelete(productId);
         }}
-        className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
         Delete Product
       </button>
@@ -530,12 +532,15 @@ export default function ProductList() {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${BASE_URL}/api/products`);
+        const response = await fetch(`${BASE_URL}/api/products`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
-        console.log('Products API response:', data); // Debugging
         const productsArray = Array.isArray(data)
           ? data
           : Array.isArray(data.products)
@@ -561,12 +566,15 @@ export default function ProductList() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/services`);
+        const response = await fetch(`${BASE_URL}/api/services`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch services');
         }
         const data = await response.json();
-        console.log('Services API response:', data); // Debugging
         const servicesArray = Array.isArray(data)
           ? data
           : Array.isArray(data.services)
@@ -643,29 +651,29 @@ export default function ProductList() {
     const rect = event.currentTarget.getBoundingClientRect();
     const newPosition = {
       top: rect.bottom + window.scrollY,
-      right: window.innerWidth - rect.right + window.scrollX,
+      right: Math.max(16, window.innerWidth - rect.right + window.scrollX),
     };
     setMenuPosition(newPosition);
     setMenuOpen(menuOpen === productId ? null : productId);
   };
 
   return (
-    <>
-      <div className="bg-white rounded-[10px] p-6 border-[1px] border-[#e5e7eb]">
-        <div className="flex justify-between">
+    <div>
+      <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border border-[#e5e7eb] mt-4 sm:mt-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="font-medium text-gray-800 text-[24px]">Product Directory</h2>
-            <p className="text-[18px] text-[#9ca3af] mb-4">Search product catalog</p>
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-1 sm:mb-2">Product Directory</h2>
+            <p className="text-xs sm:text-sm text-[#9ca3af] mb-2 sm:mb-3">Search product catalog</p>
           </div>
-          <div>
+          <div className="sm:mb-0 mb-[20px]">
             <button
               onClick={() => router.push('/dashboard/products/create')}
-              className="bg-[#5750f1] text-white py-[13px] px-[35px] rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
+              className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -681,22 +689,22 @@ export default function ProductList() {
             </button>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-5">
           <input
             type="text"
             placeholder="Search by ID, title, or service"
-            className="w-full sm:w-1/3 px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+            className="w-full sm:w-1/2 md:w-1/3 px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
-      <div className="mt-6 rounded-[10px] bg-white p-6 border-[1px] border-[#e5e7eb]">
-        <div className="relative w-full overflow-auto">
+      <div className="mt-4 sm:mt-5 rounded-lg bg-white p-4 sm:p-5 md:p-6 border border-[#e5e7eb]">
+        <div className="relative w-full overflow-x-auto">
           {isLoading ? (
-            <div className="flex justify-center items-center py-10">
+            <div className="flex justify-center items-center py-8 sm:py-10">
               <svg
-                className="animate-spin h-8 w-8 text-[#5750f1]"
+                className="animate-spin h-6 sm:h-8 w-6 sm:w-8 text-[#5750f1]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -717,72 +725,72 @@ export default function ProductList() {
               </svg>
             </div>
           ) : error ? (
-            <div className="text-center py-10 text-[#ef4444] text-lg">
+            <div className="text-center py-8 sm:py-10 text-[#ef4444] text-sm sm:text-base">
               Error: {error}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-10 text-[#9ca3af] text-lg">
+            <div className="text-center py-8 sm:py-10 text-[#9ca3af] text-sm sm:text-base">
               No products found
             </div>
           ) : (
-            <table className="w-full caption-bottom text-sm">
+            <table className="w-full caption-bottom text-xs sm:text-sm">
               <thead>
-                <tr className="border-none bg-[#F7F9FC] py-4 text-base text-[#111928]">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-7.5">Product ID</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">Image</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">Title</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">Service</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">Type</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-neutral-500">Price</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-neutral-500 xl:pr-7.5">Actions</th>
+                <tr className="border-none bg-[#f7f9fc] text-[#111928]">
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] sm:min-w-[100px] md:pl-6">Product ID</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[60px] sm:min-w-[80px]">Image</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Title</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Service</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Type</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px]">Price</th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 md:pr-6">Actions</th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
                 {filteredProducts.map((product) => (
                   <tr
                     key={product.id}
-                    className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
+                    className="border-b border-[#e5e7eb] transition-colors hover:bg-neutral-100/50"
                   >
-                    <td className="p-4 align-middle min-w-[100px] xl:pl-7.5">
+                    <td className="p-3 sm:p-4 align-middle min-w-[80px] sm:min-w-[100px] md:pl-6">
                       <p className="text-[#111928]">{product.id || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle min-w-[60px] sm:min-w-[80px]">
                       {product.files && product.files[0]?.filePath ? (
                         <img
                           src={`${BASE_URL}${product.files[0].filePath}`}
                           alt={product.title || 'Product'}
-                          className="h-10 w-10 object-cover rounded cursor-pointer"
+                          className="h-8 sm:h-10 w-8 sm:w-10 object-cover rounded cursor-pointer"
                           onClick={() => setViewImage({ isOpen: true, filePath: product.files[0].filePath })}
                         />
                       ) : (
                         <p className="text-[#111928]">N/A</p>
                       )}
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle min-w-[100px]">
                       <p className="text-[#111928]">{product.title || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle min-w-[100px]">
                       <p className="text-[#111928]">
                         {product.service?.title || services.find((s) => s.id === product.serviceId)?.title || product.serviceId || 'N/A'}
                       </p>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle min-w-[100px]">
                       <p className="text-[#111928]">{product.category || 'N/A'}</p>
                     </td>
-                    <td className="p-4 align-middle">
+                    <td className="p-3 sm:p-4 align-middle min-w-[80px]">
                       <p className="text-[#111928]">
                         {product.unitPrice ? `$${product.unitPrice}` : 'N/A'}
                       </p>
                     </td>
-                    <td className="p-4 align-middle xl:pr-7.5">
+                    <td className="p-3 sm:p-4 align-middle md:pr-6">
                       <div className="relative flex justify-end">
                         <button
                           className="dropdown-button hover:text-[#2563eb] transition"
                           onClick={(e) => handleMenuClick(product.id, e)}
                         >
                           <svg
-                            width="20"
-                            height="20"
+                            width="16"
+                            height="16"
                             viewBox="0 0 20 20"
                             fill="currentColor"
                           >
@@ -825,7 +833,7 @@ export default function ProductList() {
         productId={deleteProduct.productId}
         onDelete={handleDeleteProductConfirmed}
       />
-      <ToastContainer />
-    </>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
+    </div>
   );
 }

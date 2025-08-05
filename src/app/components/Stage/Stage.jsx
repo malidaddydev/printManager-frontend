@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,27 +11,10 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
     team: '',
     color: '#000000',
     days: 1,
-    workflowId: '',
   });
   const [error, setError] = useState('');
-  const [workflows, setWorkflows] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Fetch workflows
-  useEffect(() => {
-    const fetchWorkflows = async () => {
-      try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/workflows');
-        if (!response.ok) throw new Error('Failed to fetch workflows');
-        const data = await response.json();
-        setWorkflows(Array.isArray(data) ? data : data.workflows || []);
-      } catch (error) {
-        console.error('Error fetching workflows:', error);
-        setWorkflows([]);
-      }
-    };
-    fetchWorkflows();
-  }, []);
+  const teams = ['Design', 'Embroidery', 'DTF', 'Sublimation', 'Production'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,21 +24,19 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.color.trim() || !formData.days || !formData.workflowId) {
+    if (!formData.state.trim() || !formData.name.trim() || !formData.team || !formData.color.trim() || !formData.days) {
       setError('All fields are required');
       return;
     }
 
-    // Convert days and workflowId to numbers
     const payload = {
       ...formData,
       days: parseInt(formData.days, 10),
-      workflowId: parseInt(formData.workflowId, 10),
+      createdBy: sessionStorage.getItem('username') || 'Unknown',
     };
 
-    // Validate that conversions resulted in valid numbers
-    if (isNaN(payload.days) || isNaN(payload.workflowId)) {
-      setError('Days and Workflow ID must be valid numbers');
+    if (isNaN(payload.days)) {
+      setError('Days must be a valid number');
       return;
     }
 
@@ -87,37 +68,48 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-6 sm:p-8 rounded-lg w-full max-w-[90%] sm:max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out">
         <h2 className="text-xl font-bold text-[#111928] mb-4">Create Stage</h2>
         {error && <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Workflow</label>
-            <select
-              name="workflowId"
-              value={formData.workflowId}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              required
-            >
-              <option value="">Select a Workflow</option>
-              {workflows.map((workflow) => (
-                <option key={workflow.id} value={workflow.id}>
-                  {workflow.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#111928]">Title</label>
+            <label className="block text-sm font-medium text-[#111928]">State</label>
             <input
               type="text"
-              name="title"
-              value={formData.title}
+              name="state"
+              value={formData.state}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Team</label>
+            <select
+              name="team"
+              value={formData.team}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            >
+              <option value="">Select a Team</option>
+              {teams.map((team) => (
+                <option key={team} value={team}>
+                  {team}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Color (e.g., #FF5733)</label>
@@ -146,31 +138,30 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+              className="py-2 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={loading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center ${
-                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-              }`}
+              className={`py-2 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             >
               {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-            {loading ? 'Creating Stage...' : 'Create Stage'}
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+              {loading ? 'Creating Stage...' : 'Create Stage'}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -183,36 +174,19 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
     team: stage?.team || '',
     color: stage?.color || '#000000',
     days: stage?.days || 1,
-    workflowId: stage?.workflowId || '',
   });
   const [error, setError] = useState('');
-  const [workflows, setWorkflows] = useState([]);
   const [loading, setLoading] = useState(false);
- 
-  useEffect(() => {
-    const fetchWorkflows = async () => {
-      try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/workflows');
-        if (!response.ok) throw new Error('Failed to fetch workflows');
-        const data = await response.json();
-        setWorkflows(Array.isArray(data) ? data : data.workflows || []);
-      } catch (error) {
-        console.error('Error fetching workflows:', error);
-        setWorkflows([]);
-      }
-    };
-    fetchWorkflows();
-  }, []);
+  const teams = ['Design', 'Embroidery', 'DTF', 'Sublimation', 'Production'];
 
   useEffect(() => {
     if (stage) {
       setFormData({
-         state: stage?.state || '',
-        name: stage?.name || '',
-        team: stage?.team || '',
+        state: stage.state || '',
+        name: stage.name || '',
+        team: stage.team || '',
         color: stage.color || '#000000',
         days: stage.days || 1,
-        workflowId: stage.workflowId || '',
       });
       setError('');
     }
@@ -226,16 +200,28 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.color.trim() || !formData.days || !formData.workflowId) {
+    if (!formData.state.trim() || !formData.name.trim() || !formData.team || !formData.color.trim() || !formData.days) {
       setError('All fields are required');
       return;
     }
+
+    const payload = {
+      ...formData,
+      days: parseInt(formData.days, 10),
+      createdBy: sessionStorage.getItem('username') || 'Unknown',
+    };
+
+    if (isNaN(payload.days)) {
+      setError('Days must be a valid number');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/stages/${stage.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error('Failed to update stage');
       const updatedStage = await response.json();
@@ -255,37 +241,48 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-6 sm:p-8 rounded-lg w-full max-w-[90%] sm:max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out">
         <h2 className="text-xl font-bold text-[#111928] mb-4">Edit Stage</h2>
         {error && <div className="mb-4 p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-sm">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Workflow</label>
-            <select
-              name="workflowId"
-              value={formData.workflowId}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
-              required
-            >
-              <option value="">Select a Workflow</option>
-              {workflows.map((workflow) => (
-                <option key={workflow.id} value={workflow.id}>
-                  {workflow.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#111928]">Title</label>
+            <label className="block text-sm font-medium text-[#111928]">State</label>
             <input
               type="text"
-              name="title"
-              value={formData.title}
+              name="state"
+              value={formData.state}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#111928]">Team</label>
+            <select
+              name="team"
+              value={formData.team}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              required
+            >
+              <option value="">Select a Team</option>
+              {teams.map((team) => (
+                <option key={team} value={team}>
+                  {team}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Color (e.g., #FF5733)</label>
@@ -314,31 +311,30 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+              className="py-2 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={loading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center ${
-                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
-              }`}
+              className={`py-2 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             >
               {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-            {loading ? 'Saving...' : 'Save Changes'}
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -369,22 +365,20 @@ const DeleteStagePopup = ({ isOpen, onClose, stageId, onDelete }) => {
 
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
+      <div className="bg-white p-6 sm:p-8 rounded-lg w-full max-w-[90%] sm:max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out">
         <h2 className="text-xl font-bold text-[#111928] mb-4">Confirm Delete</h2>
         <p className="text-sm text-[#111928] mb-4">Are you sure you want to delete this stage?</p>
         <div className="flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
+            className="py-2 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg hover:bg-gray-300"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className={`py-[13px] px-6 bg-[#ef4444] text-white rounded-lg flex items-center justify-center ${
-              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
-            }`}
+            className={`py-2 px-4 sm:px-6 bg-[#ef4444] text-white rounded-lg flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'}`}
           >
             {loading && (
               <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
@@ -408,7 +402,7 @@ const DropdownMenu = ({ stageId, menuPosition, menuOpen, onEdit, onDelete }) => 
   if (menuOpen !== stageId) return null;
   return createPortal(
     <div
-      className="absolute top-0 bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
+      className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
       style={{
         top: `${menuPosition.top}px`,
         right: `${menuPosition.right}px`,
@@ -447,7 +441,6 @@ export default function Stage() {
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch stages from API
   useEffect(() => {
     const fetchStages = async () => {
       setIsLoading(true);
@@ -466,7 +459,6 @@ export default function Stage() {
     fetchStages();
   }, []);
 
-  // Handle outside click to close dropdown
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-button')) {
@@ -500,87 +492,95 @@ export default function Stage() {
     setMenuOpen(menuOpen === stageId ? null : stageId);
   };
 
+  // Close DropdownMenu when any popup opens
+  useEffect(() => {
+    if (createPopupOpen || editPopupOpen || deletePopupOpen) {
+      setMenuOpen(null);
+    }
+  }, [createPopupOpen, editPopupOpen, deletePopupOpen]);
+
   return (
-    <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+    <div className="bg-white p-4 sm:p-8 rounded-lg w-full border border-[#e5e7eb]">
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setCreatePopupOpen(true)}
-          className="py-[13px] px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700"
+          className="py-2 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg hover:bg-blue-700"
         >
           Create Stage
         </button>
       </div>
       {isLoading ? (
-            <div className="flex justify-center items-center py-10">
-              <svg
-                className="animate-spin h-8 w-8 text-[#5750f1]"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            </div>
-          ) : stages.length === 0 ? (
+        <div className="flex justify-center items-center py-10">
+          <svg
+            className="animate-spin h-8 w-8 text-[#5750f1]"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        </div>
+      ) : stages.length === 0 ? (
         <div className="text-center py-10 text-[#9ca3af] text-lg">Data Not Found</div>
       ) : (
         <div>
-          <h2 className="font-medium text-gray-800 text-[24px] mb-2">Stages</h2>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 2xl:gap-7.5">
-          {stages.map((stage) => (
-            <div key={stage.id} className="bg-white p-6 rounded-lg border-[1px] border-[#e5e7eb] relative">
-              <div className="flex items-center space-x-4">
-               <div
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: stage.color }}
-                />
-              <h3 className="text-lg font-semibold text-[#111928]">{stage.state}</h3>
+          <h2 className="font-medium text-gray-800 text-xl sm:text-2xl mb-4">Stages</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {stages.map((stage) => (
+              <div key={stage.id} className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] relative">
+                <div className="flex items-center space-x-4">
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: stage.color }}
+                  />
+                  <h3 className="text-base sm:text-lg font-semibold text-[#111928]">{stage.state}</h3>
+                </div>
+                <div className="space-y-2 mt-2 text-sm text-[#9ca3af]">
+                  <div>Name: {stage.name}</div>
+                  <div>Team: {stage.team}</div>
+                  <div>Days: {stage.days}</div>
+                  <div>Created By: {stage.createdBy}</div>
+                </div>
+                <div className="absolute top-4 right-4">
+                  <button
+                    className="dropdown-button hover:text-[#2563eb] transition"
+                    onClick={(e) => handleMenuClick(stage.id, e)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                      <circle cx="10" cy="4" r="2" />
+                      <circle cx="10" cy="10" r="2" />
+                      <circle cx="10" cy="16" r="2" />
+                    </svg>
+                  </button>
+                  <DropdownMenu
+                    stageId={stage.id}
+                    menuPosition={menuPosition}
+                    menuOpen={menuOpen}
+                    onEdit={() => {
+                      setSelectedStage(stage);
+                      setEditPopupOpen(true);
+                    }}
+                    onDelete={() => {
+                      setSelectedStage(stage);
+                      setDeletePopupOpen(true);
+                    }}
+                  />
+                </div>
               </div>
-              <div className="space-y-2 mt-2">
-              <div className="text-sm text-[#9ca3af]"> Name: {stage.name}</div>
-              <div className="text-sm text-[#9ca3af]">Team: {stage.team}</div>
-                  <div className="text-sm text-[#9ca3af]">Days: {stage.days}</div>
-              </div>
-              <div className="absolute top-4 right-4">
-                <button
-                  className="dropdown-button hover:text-[#2563eb] transition"
-                  onClick={(e) => handleMenuClick(stage.id, e)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <circle cx="10" cy="4" r="2" />
-                    <circle cx="10" cy="10" r="2" />
-                    <circle cx="10" cy="16" r="2" />
-                  </svg>
-                </button>
-                <DropdownMenu
-                  stageId={stage.id}
-                  menuPosition={menuPosition}
-                  menuOpen={menuOpen}
-                  onEdit={() => {
-                    setSelectedStage(stage);
-                    setEditPopupOpen(true);
-                  }}
-                  onDelete={() => {
-                    setSelectedStage(stage);
-                    setDeletePopupOpen(true);
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         </div>
       )}
       <CreateStagePopup

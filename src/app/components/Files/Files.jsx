@@ -95,7 +95,7 @@ function Files() {
     if (menuOpen !== fileId) return null;
     return createPortal(
       <div
-        className="absolute bg-white border border-[#e5e7eb] rounded-lg shadow-xl z-50 min-w-[150px] overflow-hidden dropdown-menu"
+        className="absolute bg-white border border-[#e5e7eb] rounded-lg z-50 min-w-[150px] overflow-hidden dropdown-menu"
         style={{ top: `${menuPosition.top}px`, right: `${menuPosition.right}px` }}
       >
         <a
@@ -168,22 +168,22 @@ function Files() {
     <div>
       {/* Stats Cards */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb]">
           <h3 className="text-sm font-medium text-[#111928] mb-2 sm:mb-3">Total Files</h3>
           <div className="text-xl sm:text-2xl font-bold text-[#111928]">{files.length}</div>
           <p className="text-xs text-[#9ca3af] mt-1">Across all orders</p>
         </div>
-        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb]">
           <h3 className="text-sm font-medium text-[#111928] mb-2 sm:mb-3">Pending Approval</h3>
           <div className="text-xl sm:text-2xl font-bold text-[#111928]">{pendingFiles}</div>
           <p className="text-xs text-[#9ca3af] mt-1">Needs review</p>
         </div>
-        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb]">
           <h3 className="text-sm font-medium text-[#111928] mb-2 sm:mb-3">Images</h3>
           <div className="text-xl sm:text-2xl font-bold text-[#111928]">{imageFiles}</div>
           <p className="text-xs text-[#9ca3af] mt-1">Design files</p>
         </div>
-        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] shadow-sm">
+        <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb]">
           <h3 className="text-sm font-medium text-[#111928] mb-2 sm:mb-3">Storage Used</h3>
           <div className="text-xl sm:text-2xl font-bold text-[#111928]">{totalStorage.toFixed(1)} MB</div>
           <p className="text-xs text-[#9ca3af] mt-1">Total file size</p>
@@ -191,7 +191,7 @@ function Files() {
       </div>
 
       {/* Search and Filter Options */}
-      <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] mb-6 sm:mb-8 shadow-sm">
+      <div className="bg-white p-4 sm:p-6 rounded-lg border border-[#e5e7eb] mb-6 sm:mb-8">
         <div className="mb-4">
           <h2 className="font-medium text-gray-800 text-lg sm:text-xl md:text-2xl">File Library</h2>
           <p className="text-sm sm:text-base text-[#9ca3af]">Search and filter through all uploaded files</p>
@@ -218,7 +218,7 @@ function Files() {
       </div>
 
       {/* Files Table */}
-      <div className="bg-white rounded-lg p-4 sm:p-6 border border-[#e5e7eb] shadow-sm">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border border-[#e5e7eb]">
         <div className="relative w-full overflow-auto">
           <table className="w-full caption-bottom text-sm">
             <thead>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '@/app/CSS/popup.css';
 import { toast } from 'react-toastify';
 
 const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
@@ -55,7 +54,10 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
     try {
       const response = await fetch('https://printmanager-api.onrender.com/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
         body: JSON.stringify(payload),
       });
       if (response.ok) {
@@ -63,12 +65,12 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
         onUserCreated();
         onClose();
       } else {
-        toast.error('Failed to create user');
-        console.error('Error creating user:', await response.json());
-        alert('Failed to create user. Please try again.');
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to create user');
+        console.error('Error creating user:', errorData);
       }
     } catch (error) {
-      toast.error('An error occurred while creating the user');
+      toast.error(`Error creating user: ${error.message}`);
       console.error('Error creating user:', error);
     } finally {
       setIsLoading(false);
@@ -78,54 +80,54 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-lg w-full max-w-[600px] h-[500px] overflow-y-scroll shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-2xl font-bold text-[#111928] mb-6">Add New User</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white p-4 sm:p-5 md:p-6 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] max-h-[80vh] overflow-y-auto shadow-xl transform transition-all duration-300 ease-in-out">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Add New User</h2>
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Username</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Username</label>
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition text-xs sm:text-sm"
               placeholder="Enter username"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Email</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition text-xs sm:text-sm"
               placeholder="Enter email"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Password</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition pr-10"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition pr-10 text-xs sm:text-sm"
                 placeholder="Enter password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-[#111928] hover:text-[#5750f1] transition"
+                className="absolute inset-y-0 right-2 sm:right-3 flex items-center text-[#111928] hover:text-[#5750f1] transition"
               >
                 {showPassword ? (
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 sm:w-5 h-4 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -140,7 +142,7 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
                   </svg>
                 ) : (
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 sm:w-5 h-4 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -164,34 +166,34 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">First Name</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">First Name</label>
             <input
               type="text"
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition text-xs sm:text-sm"
               placeholder="Enter first name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Last Name</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Last Name</label>
             <input
               type="text"
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] placeholder:text-[#9ca3af] text-[#111928] hover:border-[#5750f1] transition text-xs sm:text-sm"
               placeholder="Enter last name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Role</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Role</label>
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-white text-[#111928] hover:border-[#5750f1] transition"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] bg-white text-[#111928] hover:border-[#5750f1] transition text-xs sm:text-sm"
             >
               <option value="admin">Admin</option>
               <option value="manager">Manager</option>
@@ -199,42 +201,42 @@ const AddUserPopup = ({ isOpen, onClose, onUserCreated }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928] mb-2">Status</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Status</label>
             <div className="flex items-center">
-              <span className="text-sm text-[#111928] mr-3">{formData.isActive ? 'Active' : 'Inactive'}</span>
+              <span className="text-xs sm:text-sm text-[#111928] mr-2 sm:mr-3">{formData.isActive ? 'Active' : 'Inactive'}</span>
               <button
                 type="button"
                 onClick={() => setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out ${
+                className={`relative inline-flex h-5 sm:h-6 w-9 sm:w-11 items-center rounded-full transition-colors duration-200 ease-in-out ${
                   formData.isActive ? 'bg-[#5750f1]' : 'bg-gray-200'
                 } hover:ring-2 hover:ring-[#5750f1]/50`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
-                    formData.isActive ? 'translate-x-6' : 'translate-x-1'
+                  className={`inline-block h-3 sm:h-4 w-3 sm:w-4 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${
+                    formData.isActive ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
             </div>
           </div>
-          <div className="flex justify-end space-x-3 pt-6">
+          <div className="flex justify-end space-x-2 sm:space-x-3 pt-3 sm:pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="py-[13px] px-6 bg-gray-200 text-[#111928] rounded-lg font-medium hover:bg-gray-300 transition cursor-pointer"
+              className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg font-medium hover:bg-gray-300 transition cursor-pointer text-xs sm:text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className={`py-[13px] px-6 bg-[#5750f1] text-white rounded-lg font-medium transition flex items-center justify-center cursor-pointer ${
+              className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#5750f1] text-white rounded-lg font-medium transition flex items-center justify-center text-xs sm:text-sm ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
               }`}
             >
               {isLoading ? (
                 <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  className="animate-spin h-4 sm:h-5 w-4 sm:w-5 mr-1 sm:mr-2 text-white"
                   fill="none"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"

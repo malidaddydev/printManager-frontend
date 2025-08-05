@@ -9,7 +9,6 @@ import "react-toastify/dist/ReactToastify.css";
 export default function Navbar({ toggleSidebar }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [email, setEmail] = useState("");
   const router = useRouter();
 
   const fetchNotifications = async () => {
@@ -124,7 +123,7 @@ export default function Navbar({ toggleSidebar }) {
             {isProfileDropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-lg py-2 z-20">
                 <div className="block px-4 py-2 text-gray-700 border-[#e5e7eb] border-b-[1px] mb-2 text-xs sm:text-sm">
-                  {email || "No email"}
+                  {sessionStorage.getItem("email")}
                 </div>
                 <Link
                   href="/dashboard/user-management"
@@ -135,6 +134,9 @@ export default function Navbar({ toggleSidebar }) {
                 <button
                   onClick={() => {
                     sessionStorage.removeItem("authToken");
+                    sessionStorage.removeItem("username");
+                    sessionStorage.removeItem("isAdmin");
+                    sessionStorage.removeItem("email")
                     window.location.href = "/auth/login";
                   }}
                   className="w-full block px-4 py-2 text-gray-700 hover:bg-[rgba(87,80,241,0.07)] hover:text-[#5750f1] text-left text-xs sm:text-sm cursor-pointer"

@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Create() {
   const [data, setData] = useState({
@@ -123,13 +124,13 @@ export default function Create() {
 
   return (
     <div>
-      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
+      <div className="w-full bg-white p-4 sm:p-6 md:p-8 rounded-lg border border-[#e5e7eb] my-4 sm:my-6">
         {errors.general && (
-          <div className="mb-4 text-red-600 text-center">{errors.general}</div>
+          <div className="mb-4 text-red-600 text-center text-sm sm:text-base">{errors.general}</div>
         )}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="firstName" className="block text-[#111928] font-medium mb-2">First Name *</label>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <div>
+            <label htmlFor="firstName" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">First Name *</label>
             <input
               type="text"
               id="firstName"
@@ -137,15 +138,15 @@ export default function Create() {
               value={data.firstName}
               onChange={handleChange}
               placeholder="Enter first name"
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base ${errors.firstName ? 'border-red-500' : 'border-[#e5e7eb]'}`}
               ref={firstNameRef}
             />
             {errors.firstName && (
-              <div className="text-red-600 text-sm mt-1">{errors.firstName}</div>
+              <div className="text-red-600 text-xs sm:text-sm mt-1">{errors.firstName}</div>
             )}
           </div>
-          <div className="mb-4">
-            <label htmlFor="lastName" className="block text-[#111928] font-medium mb-2">Last Name *</label>
+          <div>
+            <label htmlFor="lastName" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Last Name *</label>
             <input
               type="text"
               id="lastName"
@@ -153,15 +154,15 @@ export default function Create() {
               value={data.lastName}
               onChange={handleChange}
               placeholder="Enter last name"
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${errors.lastName ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base ${errors.lastName ? 'border-red-500' : 'border-[#e5e7eb]'}`}
               ref={lastNameRef}
             />
             {errors.lastName && (
-              <div className="text-red-600 text-sm mt-1">{errors.lastName}</div>
+              <div className="text-red-600 text-xs sm:text-sm mt-1">{errors.lastName}</div>
             )}
           </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-[#111928] font-medium mb-2">Email *</label>
+          <div>
+            <label htmlFor="email" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Email *</label>
             <input
               type="email"
               id="email"
@@ -169,15 +170,15 @@ export default function Create() {
               value={data.email}
               onChange={handleChange}
               placeholder="Enter customer email"
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base ${errors.email ? 'border-red-500' : 'border-[#e5e7eb]'}`}
               ref={emailRef}
             />
             {errors.email && (
-              <div className="text-red-600 text-sm mt-1">{errors.email}</div>
+              <div className="text-red-600 text-xs sm:text-sm mt-1">{errors.email}</div>
             )}
           </div>
-          <div className="mb-4">
-            <label htmlFor="mobile" className="block text-[#111928] font-medium mb-2">Mobile *</label>
+          <div>
+            <label htmlFor="mobile" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Mobile *</label>
             <input
               type="tel"
               id="mobile"
@@ -185,15 +186,15 @@ export default function Create() {
               value={data.mobile}
               onChange={handleChange}
               placeholder="Enter mobile number"
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${errors.mobile ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base ${errors.mobile ? 'border-red-500' : 'border-[#e5e7eb]'}`}
               ref={mobileRef}
             />
             {errors.mobile && (
-              <div className="text-red-600 text-sm mt-1">{errors.mobile}</div>
+              <div className="text-red-600 text-xs sm:text-sm mt-1">{errors.mobile}</div>
             )}
           </div>
-          <div className="mb-4">
-            <label htmlFor="mobile2" className="block text-[#111928] font-medium mb-2">Mobile 2 (Optional)</label>
+          <div>
+            <label htmlFor="mobile2" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Mobile 2 (Optional)</label>
             <input
               type="tel"
               id="mobile2"
@@ -201,15 +202,15 @@ export default function Create() {
               value={data.mobile2}
               onChange={handleChange}
               placeholder="Enter secondary mobile number"
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] ${errors.mobile2 ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base ${errors.mobile2 ? 'border-red-500' : 'border-[#e5e7eb]'}`}
               ref={mobile2Ref}
             />
             {errors.mobile2 && (
-              <div className="text-red-600 text-sm mt-1">{errors.mobile2}</div>
+              <div className="text-red-600 text-xs sm:text-sm mt-1">{errors.mobile2}</div>
             )}
           </div>
-          <div className="mb-4">
-            <label htmlFor="company" className="block text-[#111928] font-medium mb-2">Company (Optional)</label>
+          <div>
+            <label htmlFor="company" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Company (Optional)</label>
             <input
               type="text"
               id="company"
@@ -217,30 +218,30 @@ export default function Create() {
               value={data.company}
               onChange={handleChange}
               placeholder="Enter company name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base"
             />
           </div>
-          <div className="mb-5">
-            <label htmlFor="address" className="block text-[#111928] font-medium mb-2">Address (Optional)</label>
+          <div>
+            <label htmlFor="address" className="block text-sm sm:text-base font-medium text-[#111928] mb-1 sm:mb-2">Address (Optional)</label>
             <textarea
               id="address"
               name="address"
               value={data.address}
               onChange={handleChange}
               placeholder="Enter address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-sm sm:text-base"
               rows="4"
             ></textarea>
           </div>
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-[#5750f1] text-white p-[13px] rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center cursor-pointer ${
+            className={`w-full bg-[#5750f1] text-white py-2 sm:py-3 px-4 rounded-lg font-medium text-sm sm:text-base flex items-center justify-center transition ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
             }`}
           >
             {loading && (
-              <svg className="mr-2 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>

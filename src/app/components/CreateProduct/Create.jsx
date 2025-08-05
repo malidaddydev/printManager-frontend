@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 export function CheckIcon({ className }) {
   return (
     <svg
-      width="11"
+      width="10"
       height="8"
       viewBox="0 0 11 8"
       fill="currentColor"
@@ -27,10 +27,10 @@ function CustomCheckbox({ label, checked, onChange, name }) {
   const id = React.useId();
 
   return (
-    <div className="mb-2">
+    <div className="mb-1.5 sm:mb-2">
       <label
         htmlFor={id}
-        className="flex cursor-pointer select-none items-center text-sm text-[#111928]"
+        className="flex cursor-pointer select-none items-center text-xs sm:text-sm text-[#111928]"
       >
         <div className="relative">
           <input
@@ -42,7 +42,7 @@ function CustomCheckbox({ label, checked, onChange, name }) {
             className="peer sr-only"
           />
           <div
-            className="mr-2 flex size-5 items-center justify-center rounded border border-[#e5e7eb] peer-checked:border-[#5750f1] peer-checked:bg-[#f3f4f6] [&>*]:text-[#5750f1] peer-checked:[&>*]:block"
+            className="mr-1.5 sm:mr-2 flex size-4 sm:size-5 items-center justify-center rounded border border-[#e5e7eb] peer-checked:border-[#5750f1] peer-checked:bg-[#f3f4f6] [&>*]:text-[#5750f1] peer-checked:[&>*]:block"
           >
             <CheckIcon className="hidden text-[#5750f1]" />
           </div>
@@ -80,7 +80,11 @@ export default function CreateProduct() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/services');
+        const response = await fetch('https://printmanager-api.onrender.com/api/services', {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch services');
         }
@@ -202,6 +206,9 @@ export default function CreateProduct() {
     try {
       const response = await fetch('https://printmanager-api.onrender.com/api/products', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
         body: formData,
       });
       const result = await response.json();
@@ -230,27 +237,28 @@ export default function CreateProduct() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
-      <div className="bg-white p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit}>
+      <div className="bg-white p-4 sm:p-5 md:p-6 rounded-lg border border-[#e5e7eb] mt-4 sm:mt-6">
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Create Product</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
           {/* Product Title */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Product Title</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Product Title *</label>
             <input
               type="text"
               name="title"
               value={productData.title}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
 
           {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Product Image</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Product Image *</label>
             <div
-              className={`w-full h-32 border-2 border-dashed border-[#e5e7eb] rounded-lg flex items-center justify-center text-[#111928] cursor-pointer ${
+              className={`w-full h-24 sm:h-28 md:h-32 border-2 border-dashed border-[#e5e7eb] rounded-lg flex items-center justify-center text-[#111928] cursor-pointer ${
                 dragActive ? 'bg-[#f7f9fc]' : ''
               }`}
               onDragEnter={handleDrag}
@@ -266,7 +274,7 @@ export default function CreateProduct() {
                   className="h-full object-contain"
                 />
               ) : (
-                <p className="text-sm">Drag and drop an image or click to upload</p>
+                <p className="text-xs sm:text-sm">Drag and drop an image or click to upload</p>
               )}
               <input
                 type="file"
@@ -280,7 +288,7 @@ export default function CreateProduct() {
 
           {/* Unit Price */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Unit Price ($)</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Unit Price ($) *</label>
             <input
               type="number"
               name="unitPrice"
@@ -288,19 +296,19 @@ export default function CreateProduct() {
               onChange={handleChange}
               step="0.01"
               min="0"
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Category</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Category *</label>
             <select
               name="category"
               value={productData.category}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             >
               <option value="">Select Category</option>
@@ -314,48 +322,44 @@ export default function CreateProduct() {
 
           {/* Color Options */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Colors</label>
-            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
-              <div>
-                {colorOptions.map((color, index) => (
-                  <CustomCheckbox
-                    key={index}
-                    label={color}
-                    checked={productData.colorOptions.includes(color)}
-                    onChange={() => handleColorChange(color)}
-                    name={`color-${color}`}
-                  />
-                ))}
-              </div>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Colors *</label>
+            <div className="mt-1 sm:mt-2 max-h-28 sm:max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-2 sm:p-3">
+              {colorOptions.map((color, index) => (
+                <CustomCheckbox
+                  key={index}
+                  label={color}
+                  checked={productData.colorOptions.includes(color)}
+                  onChange={() => handleColorChange(color)}
+                  name={`color-${color}`}
+                />
+              ))}
             </div>
           </div>
 
           {/* Size Options */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Sizes</label>
-            <div className="mt-2 max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-3">
-              <div>
-                {sizeOptions.map((size, index) => (
-                  <CustomCheckbox
-                    key={index}
-                    label={size}
-                    checked={productData.sizeOptions.includes(size)}
-                    onChange={() => handleSizeChange(size)}
-                    name={`size-${size}`}
-                  />
-                ))}
-              </div>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Sizes *</label>
+            <div className="mt-1 sm:mt-2 max-h-28 sm:max-h-32 overflow-y-auto border border-[#e5e7eb] rounded-lg p-2 sm:p-3">
+              {sizeOptions.map((size, index) => (
+                <CustomCheckbox
+                  key={index}
+                  label={size}
+                  checked={productData.sizeOptions.includes(size)}
+                  onChange={() => handleSizeChange(size)}
+                  name={`size-${size}`}
+                />
+              ))}
             </div>
           </div>
 
           {/* Service Options */}
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Service</label>
+            <label className="block text-xs sm:text-sm font-medium text-[#111928] mb-1 sm:mb-2">Service *</label>
             <select
               name="serviceId"
               value={productData.serviceId}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               required
             >
               <option value="">Select Service</option>
@@ -375,16 +379,16 @@ export default function CreateProduct() {
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end mt-4 sm:mt-5 md:mt-6">
           <button
             type="submit"
-            className={`py-3 px-8 bg-[#5750f1] text-white rounded-lg flex items-center ${
+            className={`py-2 sm:py-2.5 px-6 sm:px-8 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium flex items-center transition ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
             }`}
             disabled={loading}
           >
             {loading && (
-              <svg className="animate-spin h-5 w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 sm:h-5 w-4 sm:w-5 mr-2 text-white" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
@@ -397,7 +401,7 @@ export default function CreateProduct() {
           </button>
         </div>
       </div>
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
     </form>
   );
 }

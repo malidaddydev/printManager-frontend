@@ -5,31 +5,31 @@ import { createPortal } from 'react-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
+const CancelOrderPopup = ({ isOpen, onClose, orderId, onCancel }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleDelete = async () => {
+  const handleCancel = async () => {
     const token = sessionStorage.getItem('authToken');
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
-        method: 'DELETE',
+      const response = await fetch(`https://printmanager-api.onrender.com/api/orders/cancel-order/${orderId}`, {
+        method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'cancelled' })
       });
       if (!response.ok) {
-        toast.error('Failed to delete order');
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete order');
+        throw new Error(errorData.message || 'Failed to cancel order');
       }
-      toast.success('Order deleted successfully');
-      onDelete(orderId);
+      toast.success('Order cancelled successfully');
+      onCancel(orderId);
       onClose();
     } catch (error) {
-      toast.error(`Error deleting order: ${error.message}`);
+      toast.error(`Error cancelling order: ${error.message}`);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -41,8 +41,8 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
   return (
     <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50">
       <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] md:max-w-[600px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
-        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Delete</h2>
-        <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">Are you sure you want to delete this order?</p>
+        <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Cancel</h2>
+        <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">Are you sure you want to cancel this order?</p>
         {error && (
           <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-[#ef4444]/10 text-[#ef4444] rounded-lg text-xs sm:text-sm">
             {error}
@@ -50,15 +50,13 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
         )}
         <div className="flex justify-end space-x-2">
           <button
-            onClick={() => {
-              onClose();
-            }}
+            onClick={onClose}
             className="py-2 sm:py-2.5 px-4 sm:px-6 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300 cursor-pointer"
           >
-            Cancel
+            Close
           </button>
           <button
-            onClick={handleDelete}
+            onClick={handleCancel}
             disabled={loading}
             className={`py-2 sm:py-2.5 px-4 sm:px-6 bg-[#ef4444] text-white rounded-lg text-xs sm:text-sm flex items-center justify-center cursor-pointer ${
               loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-700'
@@ -70,7 +68,7 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
-            {loading ? 'Deleting...' : 'Delete Order'}
+            {loading ? 'Cancelling...' : 'Cancel Order'}
           </button>
         </div>
       </div>
@@ -78,7 +76,7 @@ const DeleteOrderPopup = ({ isOpen, onClose, orderId, onDelete }) => {
   );
 };
 
-const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onDelete }) => {
+const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel }) => {
   if (menuOpen !== orderId) return null;
   return createPortal(
     <div
@@ -100,11 +98,11 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onDelete }) => 
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onDelete(orderId);
+          onCancel(orderId);
         }}
         className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
       >
-        Delete Order
+        Cancel Order
       </button>
     </div>,
     document.getElementById('dropdown-portal') || document.body
@@ -119,8 +117,9 @@ export default function OrderList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
-  const [deleteOrder, setDeleteOrder] = useState({ isOpen: false, orderId: null });
+  const [cancelOrder, setCancelOrder] = useState({ isOpen: false, orderId: null });
   const [customerNames, setCustomerNames] = useState({});
+  const [filterOption, setFilterOption] = useState('showAll'); // New state for filter dropdown
 
   // Fetch orders and customer names
   useEffect(() => {
@@ -184,6 +183,7 @@ export default function OrderList() {
   // Filter orders
   const filteredOrders = Array.isArray(orders)
     ? orders.filter((order) => {
+        if (filterOption === 'hideCancelled' && order.status?.toLowerCase() === 'cancelled') return false;
         if (!searchTerm.trim()) return true;
         const customerName = customerNames[order.customerId]?.toLowerCase() || '';
         return (
@@ -201,13 +201,17 @@ export default function OrderList() {
     setMenuOpen(null);
   };
 
-  const handleDeleteOrder = (orderId) => {
-    setDeleteOrder({ isOpen: true, orderId });
+  const handleCancelOrder = (orderId) => {
+    setCancelOrder({ isOpen: true, orderId });
     setMenuOpen(null);
   };
 
-  const handleDeleteOrderConfirmed = (orderId) => {
-    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+  const handleCancelOrderConfirmed = (orderId) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: 'Cancelled' } : order
+      )
+    );
     setMenuOpen(null);
   };
 
@@ -234,6 +238,8 @@ export default function OrderList() {
         return 'bg-blue-100 text-blue-800';
       case 'draft':
         return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -272,6 +278,20 @@ export default function OrderList() {
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:gap-4">
+          <div>
+            <label htmlFor="filterOption" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+              Filter Orders
+            </label>
+            <select
+              id="filterOption"
+              value={filterOption}
+              onChange={(e) => setFilterOption(e.target.value)}
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+            >
+              <option value="showAll">Show All Orders</option>
+              <option value="hideCancelled">Hide Cancelled Orders</option>
+            </select>
+          </div>
           <input
             type="text"
             placeholder="Search by order number, title, customer first name, customer last name, or status"
@@ -397,7 +417,7 @@ export default function OrderList() {
                           menuPosition={menuPosition}
                           menuOpen={menuOpen}
                           onView={handleViewOrder}
-                          onDelete={handleDeleteOrder}
+                          onCancel={handleCancelOrder}
                         />
                       </div>
                     </td>
@@ -408,13 +428,13 @@ export default function OrderList() {
           )}
         </div>
       </div>
-      <DeleteOrderPopup
-        isOpen={deleteOrder.isOpen}
+      <CancelOrderPopup
+        isOpen={cancelOrder.isOpen}
         onClose={() => {
-          setDeleteOrder({ isOpen: false, orderId: null });
+          setCancelOrder({ isOpen: false, orderId: null });
         }}
-        orderId={deleteOrder.orderId}
-        onDelete={handleDeleteOrderConfirmed}
+        orderId={cancelOrder.orderId}
+        onCancel={handleCancelOrderConfirmed}
       />
       <ToastContainer />
     </>
