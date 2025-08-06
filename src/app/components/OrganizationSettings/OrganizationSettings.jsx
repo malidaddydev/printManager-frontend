@@ -108,7 +108,7 @@ const OrganizationSettings = () => {
   if (isFetching) {
     return (
       <div className="flex flex-col items-center p-4 sm:p-6">
-        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-4xl border border-[#e5e7eb] shadow-sm flex justify-center items-center">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full border border-[#e5e7eb] shadow-sm flex justify-center items-center">
           <svg
             className="h-6 sm:h-8 w-6 sm:w-8 animate-spin text-[#5750f1]"
             fill="none"
