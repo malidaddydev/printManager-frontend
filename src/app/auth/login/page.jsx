@@ -44,7 +44,6 @@ export default function LogIn() {
         sessionStorage.setItem('authToken', result.token);
         sessionStorage.setItem('username', result.username);
         sessionStorage.setItem('email', result.email);
-        sessionStorage.setItem('isAdmin', result.isAdmin);
         setSuccess(result.message || 'Login successful')
         setTimeout(() => {
           router.push('/dashboard');

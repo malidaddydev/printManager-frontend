@@ -135,7 +135,6 @@ export default function Navbar({ toggleSidebar }) {
                   onClick={() => {
                     sessionStorage.removeItem("authToken");
                     sessionStorage.removeItem("username");
-                    sessionStorage.removeItem("isAdmin");
                     sessionStorage.removeItem("email")
                     window.location.href = "/auth/login";
                   }}

@@ -1,17 +1,40 @@
-"use client";
-import React, { useState } from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Breadcrumbs from '@/app/components/Breadcrumbs/Breadcrumbs';
 import UserCard from '@/app/components/UserManagement/UserCard';
 import RoleCard from '@/app/components/UserManagement/RoleCard';
 import AddUserPopup from '@/app/components/UserManagement/AddUserPopup';
 
 export default function UserManagementPage() {
+  const router = useRouter();
+  const [isAllowed, setIsAllowed] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [refreshUsers, setRefreshUsers] = useState(0);
+
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
+
+    fetch('https://printmanager-api.onrender.com/api/users')
+      .then((res) => res.json())
+      .then((users) => {
+        const user = users.find((u) => u.email === email);
+        if (!user || user.isManager === true) {
+          router.push('/dashboard');
+        } else {
+          setIsAllowed(true);
+        }
+      })
+      .catch(() => {
+        router.push('/dashboard');
+      });
+  }, [router]);
 
   const handleUserCreated = () => {
     setRefreshUsers((prev) => prev + 1);
   };
+
+  if (!isAllowed) return null; // Jab tak permission verify na ho page render na ho
 
   return (
     <div className="p-3 sm:p-4 md:p-6 lg:p-8">

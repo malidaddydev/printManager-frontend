@@ -9,22 +9,40 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   const pathname = usePathname();
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isManager, setIsManager] = useState(false);
   const [logo, setLogo] = useState(null);
 
   useEffect(() => {
-    const adminValue = sessionStorage.getItem("isAdmin");
-    setIsAdmin(adminValue === true);
+  const email = sessionStorage.getItem("email");
 
-    // Fetch organization settings including logo
-    fetch('https://printmanager-api.onrender.com/api/organization-settings')
-      .then(response => response.json())
-      .then(data => {
-        setLogo(data.logo);
-      })
-      .catch(error => {
-        console.error('Error fetching logo:', error);
-      });
-  }, []);
+  if (!email) return;
+
+  // Fetch user data by email
+  fetch('https://printmanager-api.onrender.com/api/users')
+    .then((res) => res.json())
+    .then((users) => {
+      const user = users.find((u) => u.email === email);
+
+      if (user) {
+        setIsAdmin(user.isAdmin);
+        setIsManager(user.isManager);
+      }
+    })
+    .catch((err) => {
+      console.error("Error fetching user:", err);
+    });
+
+  // Fetch logo
+  fetch('https://printmanager-api.onrender.com/api/organization-settings')
+    .then(response => response.json())
+    .then(data => {
+      setLogo(data.logo);
+    })
+    .catch(error => {
+      console.error('Error fetching logo:', error);
+    });
+}, []);
+
 
   const toggleDropdown = (id) => {
     setOpenDropdowns((prev) => ({
@@ -384,9 +402,15 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
           {renderMenuItems(mainMenuItems)}
           <h2 className="text-xs sm:text-sm md:text-[14px] text-[#4b5563] mb-2 sm:mb-4 uppercase mt-2 sm:mt-4">Other</h2>
           {renderMenuItems(
-            isAdmin
-              ? otherMenuItems.filter(item => item.id !== 'organization-settings')
-              : otherMenuItems
+          otherMenuItems.filter(item => {
+              if (isManager && (item.id === 'organization-settings' || item.id === 'user-management')) {
+                return false;
+              }
+              if (!isAdmin && item.id === 'organization-settings') {
+                return false;
+              }
+              return true;
+            })
           )}
         </nav>
       </div>
