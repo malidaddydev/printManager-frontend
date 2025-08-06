@@ -415,6 +415,23 @@ export default function CustomerList({ onCustomerUpdated }) {
     setMenuOpen(menuOpen === customerId ? null : customerId);
   };
 
+      const [isAllowed, setIsAllowed] = useState(false);
+    
+      useEffect(() => {
+        const email = sessionStorage.getItem('email');
+    
+        fetch('https://printmanager-api.onrender.com/api/users')
+          .then((res) => res.json())
+          .then((users) => {
+            const user = users.find((u) => u.email === email);
+            if (!user || user.isMember === true) {
+              setIsAllowed(true);
+            } 
+          })
+      }, []);
+    
+  
+
   return (
     <div>
       <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border border-[#e5e7eb] mt-4 sm:mt-6">
@@ -424,6 +441,9 @@ export default function CustomerList({ onCustomerUpdated }) {
             <p className="text-sm sm:text-base text-[#9ca3af] mt-1">Search customer accounts</p>
           </div>
           <div>
+            {isAllowed ? (
+              ""
+            ) : (
             <button
               onClick={() => router.push('/dashboard/customer/create')}
               className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1"
@@ -445,6 +465,7 @@ export default function CustomerList({ onCustomerUpdated }) {
               </svg>
               Create Customer
             </button>
+            )}
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
@@ -502,7 +523,9 @@ export default function CustomerList({ onCustomerUpdated }) {
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell">Mobile 2</th>
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell">Company</th>
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">Address</th>
+                  {isAllowed ? "" : (
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -542,6 +565,9 @@ export default function CustomerList({ onCustomerUpdated }) {
                         View Address
                       </button>
                     </td>
+                    {isAllowed ? (
+                      ""
+                    ) : (
                     <td className="p-3 sm:p-4 align-middle xl:pr-6">
                       <div className="relative flex justify-end">
                         <button
@@ -568,6 +594,7 @@ export default function CustomerList({ onCustomerUpdated }) {
                         />
                       </div>
                     </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

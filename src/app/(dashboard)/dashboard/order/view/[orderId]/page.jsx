@@ -123,6 +123,20 @@ export default function ViewOrder() {
   const [itemEditingCommentText, setItemEditingCommentText] = useState({}); // { [itemId]: text }
   const [deleteCommentModal, setDeleteCommentModal] = useState({ open: false, commentId: null });
   const [loading, setLoading] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
+          
+      useEffect(() => {
+        const email = sessionStorage.getItem('email');
+    
+        fetch('https://printmanager-api.onrender.com/api/users')
+          .then((res) => res.json())
+          .then((users) => {
+            const user = users.find((u) => u.email === email);
+            if (!user || user.isMember === true) {
+              setIsAllowed(true);
+            } 
+          })
+      }, []);
 
   const handleAskApproval = async (fileId) => {
     setLoading(true);
@@ -927,6 +941,7 @@ export default function ViewOrder() {
                 {activeTab === 'overview' && (
                   <div>
                     <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Order Overview</h3>
+                    {isAllowed ? " " : (
                     <div className="flex justify-end items-center mb-3 sm:mb-4">
                       <button
                         onClick={openEditModal}
@@ -949,6 +964,7 @@ export default function ViewOrder() {
                         Edit
                       </button>
                     </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       {[
                         { label: 'Title', value: orderData.title || 'N/A' },
@@ -1028,6 +1044,8 @@ export default function ViewOrder() {
                                       <h5 className="text-[#6b7280] text-xs sm:text-sm break-words">{field.value}</h5>
                                     </div>
                                   ))}
+                                  {isAllowed ? "" : (
+                                  <>
                                   {item.product?.service?.workflow?.stages && (
                                     <div className="border border-[#e5e7eb] px-3 sm:px-4 py-3 sm:py-4 flex flex-col gap-1 sm:gap-2">
                                       <h5 className="font-bold text-[#111928] text-xs sm:text-sm">Change Stage</h5>
@@ -1067,10 +1085,13 @@ export default function ViewOrder() {
                                       </div>
                                     </div>
                                   )}
+                                  </>
+                                  )}
                                 </div>
                                 <div className="sm:col-span-2">
                                   <div className="flex justify-between items-center mb-2 sm:mb-3">
                                     <h5 className="font-medium text-gray-900 text-sm sm:text-base">Size Quantities</h5>
+                                    {isAllowed ? "" : (
                                     <button
                                       onClick={() => openSizeModal(item.id, item.product.unitPrice, item.product.id)}
                                       className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center gap-1"
@@ -1091,6 +1112,7 @@ export default function ViewOrder() {
                                       </svg>
                                       Edit Sizes
                                     </button>
+                                    )}
                                   </div>
                                   {item.sizeQuantities?.length > 0 ? (
                                     <div className="overflow-x-auto">

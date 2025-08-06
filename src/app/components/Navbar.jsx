@@ -43,6 +43,21 @@ export default function Navbar({ toggleSidebar }) {
   // Calculate unread count based on isRead: false from API data
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
+    const [isAllowed, setIsAllowed] = useState(false);
+  
+    useEffect(() => {
+      const email = sessionStorage.getItem('email');
+  
+      fetch('https://printmanager-api.onrender.com/api/users')
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true || user.isManager === true) {
+            setIsAllowed(true);
+          } 
+        })
+    }, []);
+
   return (
     <>
       <div className="fixed top-0 left-0 lg:left-[290px] right-0 bg-white flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-5 md:py-6 lg:py-7 border-b-[2px] border-[#e5e7eb] z-10">
@@ -125,12 +140,14 @@ export default function Navbar({ toggleSidebar }) {
                 <div className="block px-4 py-2 text-gray-700 border-[#e5e7eb] border-b-[1px] mb-2 text-xs sm:text-sm">
                   {sessionStorage.getItem("email")}
                 </div>
+                {isAllowed ? "" : (
                 <Link
                   href="/dashboard/user-management"
                   className="block px-4 py-2 text-gray-700 hover:bg-[rgba(87,80,241,0.07)] hover:text-[#5750f1] text-xs sm:text-sm"
                 >
                   User Management
                 </Link>
+                )}
                 <button
                   onClick={() => {
                     sessionStorage.removeItem("authToken");

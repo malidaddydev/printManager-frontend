@@ -10,39 +10,40 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManager, setIsManager] = useState(false);
+  const [isMember, setIsMember] = useState(false);
   const [logo, setLogo] = useState(null);
 
   useEffect(() => {
-  const email = sessionStorage.getItem("email");
+    const email = sessionStorage.getItem("email");
 
-  if (!email) return;
+    if (!email) return;
 
-  // Fetch user data by email
-  fetch('https://printmanager-api.onrender.com/api/users')
-    .then((res) => res.json())
-    .then((users) => {
-      const user = users.find((u) => u.email === email);
+    // Fetch user data by email
+    fetch('https://printmanager-api.onrender.com/api/users')
+      .then((res) => res.json())
+      .then((users) => {
+        const user = users.find((u) => u.email === email);
 
-      if (user) {
-        setIsAdmin(user.isAdmin);
-        setIsManager(user.isManager);
-      }
-    })
-    .catch((err) => {
-      console.error("Error fetching user:", err);
-    });
+        if (user) {
+          setIsAdmin(user.isAdmin);
+          setIsManager(user.isManager);
+          setIsMember(user.isMember);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
 
-  // Fetch logo
-  fetch('https://printmanager-api.onrender.com/api/organization-settings')
-    .then(response => response.json())
-    .then(data => {
-      setLogo(data.logo);
-    })
-    .catch(error => {
-      console.error('Error fetching logo:', error);
-    });
-}, []);
-
+    // Fetch logo
+    fetch('https://printmanager-api.onrender.com/api/organization-settings')
+      .then(response => response.json())
+      .then(data => {
+        setLogo(data.logo);
+      })
+      .catch(error => {
+        console.error('Error fetching logo:', error);
+      });
+  }, []);
 
   const toggleDropdown = (id) => {
     setOpenDropdowns((prev) => ({
@@ -77,7 +78,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       dropdown: [
-        { title: 'Create Customer', href: '/dashboard/customer/create' },
+        ...(isMember ? [] : [{ title: 'Create Customer', href: '/dashboard/customer/create' }]),
         { title: 'Customer List', href: '/dashboard/customer/list' },
       ],
     },
@@ -93,13 +94,13 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       dropdown: [
-        { title: 'Create Order', href: '/dashboard/order/create' },
+        ...(isMember ? [] : [{ title: 'Create Order', href: '/dashboard/order/create' }]),
         { title: 'Order List', href: '/dashboard/order/list' },
       ],
     },
     {
-      id: 'createServices',
-      title: 'Create Services',
+      id: 'services',
+      title: 'Services',
       icon: (
         <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect width="8" height="8" x="3" y="3" rx="2"></rect>
@@ -119,7 +120,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       dropdown: [
-        { title: 'Create Product', href: '/dashboard/products/create' },
+        ...(isMember ? [] : [{ title: 'Create Product', href: '/dashboard/products/create' }]),
         { title: 'Product List', href: '/dashboard/products/list' },
       ],
     },
@@ -202,7 +203,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   // ];
 
   const otherMenuItems = [
-    {
+    ...(isMember ? [] : [{
       id: 'bigscreen',
       title: 'BigScreen',
       icon: (
@@ -213,7 +214,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       href: '/dashboard/bigscreen',
-    },
+    }]),
     {
       id: 'calender',
       title: 'Calender',
@@ -238,7 +239,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       ),
       href: '/dashboard/notifications',
     },
-    {
+    ...(isMember ? [] : [{
       id: 'user-management',
       title: 'User Management',
       icon: (
@@ -261,7 +262,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       href: '/dashboard/organization-settings',
-    },
+    }]),
     {
       id: 'settings',
       title: 'Settings',
@@ -273,7 +274,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
       ),
       dropdown: [
         { 
-          title: 'Create Stage', 
+          title: isMember ? 'Stage' : 'Create Stage', 
           href: '/dashboard/stage', 
           icon: (
             <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -284,7 +285,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
           ) 
         },
         { 
-          title: 'Create Workflow', 
+          title: isMember ? 'Workflow' : 'Create Workflow', 
           href: '/dashboard/workflow', 
           icon: (
             <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -402,7 +403,7 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
           {renderMenuItems(mainMenuItems)}
           <h2 className="text-xs sm:text-sm md:text-[14px] text-[#4b5563] mb-2 sm:mb-4 uppercase mt-2 sm:mt-4">Other</h2>
           {renderMenuItems(
-          otherMenuItems.filter(item => {
+            otherMenuItems.filter(item => {
               if (isManager && (item.id === 'organization-settings' || item.id === 'user-management')) {
                 return false;
               }

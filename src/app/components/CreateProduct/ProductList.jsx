@@ -657,6 +657,21 @@ export default function ProductList() {
     setMenuOpen(menuOpen === productId ? null : productId);
   };
 
+    const [isAllowed, setIsAllowed] = useState(false);
+        
+    useEffect(() => {
+      const email = sessionStorage.getItem('email');
+  
+      fetch('https://printmanager-api.onrender.com/api/users')
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          } 
+        })
+    }, []);
+
   return (
     <div>
       <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border border-[#e5e7eb] mt-4 sm:mt-6">
@@ -665,6 +680,7 @@ export default function ProductList() {
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-1 sm:mb-2">Product Directory</h2>
             <p className="text-xs sm:text-sm text-[#9ca3af] mb-2 sm:mb-3">Search product catalog</p>
           </div>
+          {isAllowed ? "" : (
           <div className="sm:mb-0 mb-[20px]">
             <button
               onClick={() => router.push('/dashboard/products/create')}
@@ -688,6 +704,7 @@ export default function ProductList() {
               Create Product
             </button>
           </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-5">
           <input
@@ -742,7 +759,9 @@ export default function ProductList() {
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Service</th>
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Type</th>
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px]">Price</th>
+                  {isAllowed ? "" : (
                   <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 md:pr-6">Actions</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -782,6 +801,7 @@ export default function ProductList() {
                         {product.unitPrice ? `$${product.unitPrice}` : 'N/A'}
                       </p>
                     </td>
+                    {isAllowed ? "" : (
                     <td className="p-3 sm:p-4 align-middle md:pr-6">
                       <div className="relative flex justify-end">
                         <button
@@ -808,6 +828,7 @@ export default function ProductList() {
                         />
                       </div>
                     </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

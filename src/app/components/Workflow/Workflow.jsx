@@ -380,8 +380,24 @@ export default function Workflow() {
     setMenuOpen(menuOpen === workflowId ? null : workflowId);
   };
 
+    const [isAllowed, setIsAllowed] = useState(false);
+        
+    useEffect(() => {
+      const email = sessionStorage.getItem('email');
+  
+      fetch('https://printmanager-api.onrender.com/api/users')
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          } 
+        })
+    }, []);
+
   return (
     <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full border border-[#e5e7eb]">
+      {isAllowed ? "" : (
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setCreatePopupOpen(true)}
@@ -390,6 +406,7 @@ export default function Workflow() {
           Create Workflow
         </button>
       </div>
+      )}
       {isLoading ? (
         <div className="flex justify-center items-center py-10">
           <svg
@@ -448,6 +465,7 @@ export default function Workflow() {
                   <span className="text-sm text-[#9ca3af]">Stages Data Not Found</span>
                 )}
               </div>
+              {isAllowed ? "" : (
               <div className="absolute top-4 right-4">
                 <button
                   className="dropdown-button hover:text-[#2563eb] transition"
@@ -469,6 +487,7 @@ export default function Workflow() {
                   }}
                 />
               </div>
+              )}
             </div>
           ))}
         </div>

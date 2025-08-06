@@ -499,8 +499,24 @@ export default function Stage() {
     }
   }, [createPopupOpen, editPopupOpen, deletePopupOpen]);
 
+      const [isAllowed, setIsAllowed] = useState(false);
+          
+      useEffect(() => {
+        const email = sessionStorage.getItem('email');
+    
+        fetch('https://printmanager-api.onrender.com/api/users')
+          .then((res) => res.json())
+          .then((users) => {
+            const user = users.find((u) => u.email === email);
+            if (!user || user.isMember === true) {
+              setIsAllowed(true);
+            } 
+          })
+      }, []);
+
   return (
     <div className="bg-white p-4 sm:p-8 rounded-lg w-full border border-[#e5e7eb]">
+      {isAllowed ? "" : (
       <div className="flex justify-end mb-6">
         <button
           onClick={() => setCreatePopupOpen(true)}
@@ -509,6 +525,7 @@ export default function Stage() {
           Create Stage
         </button>
       </div>
+      )}
       {isLoading ? (
         <div className="flex justify-center items-center py-10">
           <svg
@@ -553,6 +570,7 @@ export default function Stage() {
                   <div>Days: {stage.days}</div>
                   <div>Created By: {stage.createdBy}</div>
                 </div>
+                { isAllowed ? "" : (
                 <div className="absolute top-4 right-4">
                   <button
                     className="dropdown-button hover:text-[#2563eb] transition"
@@ -578,6 +596,7 @@ export default function Stage() {
                     }}
                   />
                 </div>
+                )}
               </div>
             ))}
           </div>

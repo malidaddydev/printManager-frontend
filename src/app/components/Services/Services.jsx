@@ -332,9 +332,25 @@ export default function Services() {
     setMenuOpen(menuOpen === serviceId ? null : serviceId);
   };
 
+    const [isAllowed, setIsAllowed] = useState(false);
+        
+    useEffect(() => {
+      const email = sessionStorage.getItem('email');
+  
+      fetch('https://printmanager-api.onrender.com/api/users')
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          } 
+        })
+    }, []);
+
   return (
     <div>
       <div className="bg-white p-4 sm:p-5 md:p-6 rounded-lg border border-[#e5e7eb] mt-4 sm:mt-6">
+        {isAllowed ? "" : (
         <div className="flex justify-end mb-4 sm:mb-5">
           <button
             onClick={() => setCreatePopupOpen(true)}
@@ -343,6 +359,7 @@ export default function Services() {
             Create Service
           </button>
         </div>
+        )}
         {isLoading ? (
           <div className="flex justify-center items-center py-8 sm:py-10">
             <svg
@@ -394,6 +411,7 @@ export default function Services() {
                     <p className="text-xs sm:text-sm text-[#9ca3af]">No stages available</p>
                   )}
                 </div>
+                {isAllowed ? "" : (
                 <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
                   <button
                     className="dropdown-button hover:text-[#2563eb] transition"
@@ -416,6 +434,7 @@ export default function Services() {
                     setMenuOpen={setMenuOpen}
                   />
                 </div>
+                )}
               </div>
             ))}
           </div>

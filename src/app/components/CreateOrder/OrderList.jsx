@@ -76,7 +76,7 @@ const CancelOrderPopup = ({ isOpen, onClose, orderId, onCancel }) => {
   );
 };
 
-const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel }) => {
+const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel , isAllowed }) => {
   if (menuOpen !== orderId) return null;
   return createPortal(
     <div
@@ -95,6 +95,7 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel }) => 
       >
         View Order
       </button>
+      {isAllowed ? "" : (
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -104,6 +105,7 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel }) => 
       >
         Cancel Order
       </button>
+      )}
     </div>,
     document.getElementById('dropdown-portal') || document.body
   );
@@ -245,6 +247,21 @@ export default function OrderList() {
     }
   };
 
+  const [isAllowed, setIsAllowed] = useState(false);
+      
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
+
+    fetch('https://printmanager-api.onrender.com/api/users')
+      .then((res) => res.json())
+      .then((users) => {
+        const user = users.find((u) => u.email === email);
+        if (!user || user.isMember === true) {
+          setIsAllowed(true);
+        } 
+      })
+  }, []);
+
   return (
     <>
       <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border-[1px] border-[#e5e7eb] w-full">
@@ -254,6 +271,7 @@ export default function OrderList() {
             <p className="text-sm sm:text-base text-[#9ca3af] mb-3 sm:mb-4">Search and filter orders</p>
           </div>
           <div className="sm:mb-0 mb-[20px]">
+            {isAllowed ? "" : (
             <button
               onClick={() => router.push('/dashboard/order/create')}
               className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
@@ -275,6 +293,7 @@ export default function OrderList() {
               </svg>
               Create Order
             </button>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:gap-4">
@@ -418,6 +437,7 @@ export default function OrderList() {
                           menuOpen={menuOpen}
                           onView={handleViewOrder}
                           onCancel={handleCancelOrder}
+                          isAllowed={isAllowed}
                         />
                       </div>
                     </td>
