@@ -383,6 +383,8 @@ export default function CreateOrder() {
     products: products.filter(product => product.serviceId === service.id)
   }));
 
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <form className="flex flex-col gap-4 sm:gap-6 md:gap-7 w-full mx-auto">
       <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full border-[1px] border-[#e5e7eb]">
@@ -455,6 +457,7 @@ export default function CreateOrder() {
             <input
               type="date"
               name="startDate"
+              min={today}
               value={orderData.startDate}
               onChange={handleChange}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
@@ -468,6 +471,7 @@ export default function CreateOrder() {
             <input
               type="date"
               name="dueDate"
+              min={today}
               value={orderData.dueDate}
               onChange={handleChange}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"

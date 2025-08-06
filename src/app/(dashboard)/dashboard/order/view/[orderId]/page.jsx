@@ -857,6 +857,8 @@ export default function ViewOrder() {
     setDeleteCommentModal({ open: false, commentId: null });
   };
 
+  const today = new Date().toISOString().split('T')[0];
+
   return (
     <div className="p-6">
       <div>
@@ -2280,6 +2282,7 @@ export default function ViewOrder() {
                       <input
                         type="date"
                         name="startDate"
+                        min={today}
                         value={editedData.startDate}
                         onChange={handleEditInputChange}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
@@ -2290,6 +2293,7 @@ export default function ViewOrder() {
                       <input
                         type="date"
                         name="dueDate"
+                        min={today}
                         value={editedData.dueDate}
                         onChange={handleEditInputChange}
                         className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
