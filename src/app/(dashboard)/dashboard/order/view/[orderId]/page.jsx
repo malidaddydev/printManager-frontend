@@ -63,7 +63,7 @@ export default function ViewOrder() {
   });
   const { orderId } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
-  const [activeItemTab, setActiveItemTab] = useState("details");
+  const [activeItemTabs, setActiveItemTabs] = useState({});
 
   const fetchData = async () => {
     const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`);
@@ -539,6 +539,10 @@ export default function ViewOrder() {
           setIsItemCollapsed(
             data.items.reduce((acc, _, index) => ({ ...acc, [index]: false }), {})
           );
+          // Initialize activeItemTabs for each item
+          setActiveItemTabs(
+            data.items.reduce((acc, item) => ({ ...acc, [item.id]: "details" }), {})
+          );
         }
 
         const commentsRes = await fetch(`https://printmanager-api.onrender.com/api/comments?orderId=${orderId}`);
@@ -611,14 +615,18 @@ export default function ViewOrder() {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-gray-100 text-gray-800";
-      case "in progress":
-        return "bg-blue-100 text-blue-800";
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'in progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -1015,9 +1023,9 @@ export default function ViewOrder() {
                               {['details', 'workflow', 'files', 'comments', 'activity'].map((tab) => (
                                 <button
                                   key={tab}
-                                  onClick={() => setActiveItemTab(tab)}
+                                  onClick={() => setActiveItemTabs((prev) => ({ ...prev, [item.id]: tab }))}
                                   className={`py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium ${
-                                    activeItemTab === tab
+                                    activeItemTabs[item.id] === tab
                                       ? 'text-indigo-600 border-b-2 border-indigo-600'
                                       : 'text-gray-500 hover:text-gray-700'
                                   }`}
@@ -1026,7 +1034,7 @@ export default function ViewOrder() {
                                 </button>
                               ))}
                             </nav>
-                            {activeItemTab === 'details' && (
+                            {activeItemTabs[item.id] === 'details' && (
                               <div className="flex flex-col gap-3 sm:gap-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                   {[
@@ -1155,7 +1163,7 @@ export default function ViewOrder() {
                                 </div>
                               </div>
                             )}
-                            {activeItemTab === 'workflow' && (
+                            {activeItemTabs[item.id] === 'workflow' && (
                               <div>
                                 <h5 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Workflow Stages</h5>
                                 <div className="space-y-2 sm:space-y-3">
@@ -1180,7 +1188,7 @@ export default function ViewOrder() {
                                 </div>
                               </div>
                             )}
-                            {activeItemTab === 'files' && (
+                            {activeItemTabs[item.id] === 'files' && (
                               <div>
                                 <div className="flex justify-between items-center mb-3 sm:mb-4">
                                   <h5 className="font-medium text-gray-900 text-sm sm:text-base">Product Files</h5>
@@ -1264,7 +1272,7 @@ export default function ViewOrder() {
                                 )}
                               </div>
                             )}
-                            {activeItemTab === 'comments' && (
+                            {activeItemTabs[item.id] === 'comments' && (
                               <div className="flex flex-col gap-3 sm:gap-4">
                                 <h5 className="font-medium text-gray-900 text-sm sm:text-base mb-2 sm:mb-3">Item Comments</h5>
                                 <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
@@ -1457,7 +1465,7 @@ export default function ViewOrder() {
                                 </div>
                               </div>
                             )}
-                            {activeItemTab === 'activity' && (
+                            {activeItemTabs[item.id] === 'activity' && (
                               <div>
                                 <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                                   Activity Log

@@ -31,32 +31,35 @@ export default function Navbar({ toggleSidebar }) {
       
       setNotifications(processedNotifications);
     } catch (error) {
-      toast.error("Failed to fetch notifications");
       console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchNotifications(); // Initial fetch
+    const intervalId = setInterval(fetchNotifications, 1000); // Fetch every second
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   // Calculate unread count based on isRead: false from API data
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-    const [isAllowed, setIsAllowed] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
   
-    useEffect(() => {
-      const email = sessionStorage.getItem('email');
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
   
-      fetch('https://printmanager-api.onrender.com/api/users')
-        .then((res) => res.json())
-        .then((users) => {
-          const user = users.find((u) => u.email === email);
-          if (!user || user.isMember === true || user.isManager === true) {
-            setIsAllowed(true);
-          } 
-        })
-    }, []);
+    fetch('https://printmanager-api.onrender.com/api/users')
+      .then((res) => res.json())
+      .then((users) => {
+        const user = users.find((u) => u.email === email);
+        if (!user || user.isMember === true || user.isManager === true) {
+          setIsAllowed(true);
+        } 
+      })
+  }, []);
 
   return (
     <>
@@ -90,7 +93,7 @@ export default function Navbar({ toggleSidebar }) {
           <div className="relative">
             <button
               onClick={() => router.push('/dashboard/notifications')}
-              className="text-gray-600 hover:text-[#5750f1] bg-gray-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[#e5e7eb] border-[1px] relative"
+              className="text-gray-600 hover:text-[#5750f1] bg-gray-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[#e5e7eb] border-[1px] relative cursor-pointer"
             >
               <svg
                 className="w-5 h-5 sm:w-6 sm:h-6"
@@ -117,7 +120,7 @@ export default function Navbar({ toggleSidebar }) {
           <div className="relative">
             <button
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="text-gray-600 hover:text-[#5750f1] bg-gray-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[#e5e7eb] border-[1px]"
+              className="text-gray-600 hover:text-[#5750f1] bg-gray-100 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[#e5e7eb] border-[1px] cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
