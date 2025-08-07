@@ -15,7 +15,7 @@ const ViewImagePopup = ({ isOpen, onClose, filePath }) => {
       <div className="bg-white p-4 sm:p-6 md:p-8 rounded-lg w-full max-w-[90vw] sm:max-w-[500px] shadow-xl transform transition-all duration-300 ease-in-out animate-popup">
         <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Product Image</h2>
         {filePath ? (
-          <img src={`${BASE_URL}${filePath}`} alt="Product" className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mb-3 sm:mb-4" />
+          <img src={filePath} alt="Product" className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mb-3 sm:mb-4" />
         ) : (
           <p className="text-xs sm:text-sm text-[#111928] mb-3 sm:mb-4">No image provided</p>
         )}
@@ -275,7 +275,7 @@ const EditProductPopup = ({ isOpen, onClose, product, onSave, services }) => {
                 />
               ) : product.files && product.files[0]?.filePath ? (
                 <img
-                  src={`${BASE_URL}${product.files[0].filePath}`}
+                  src={product.files[0].filePath}
                   alt="Product Preview"
                   className="h-full object-contain"
                 />
@@ -776,7 +776,7 @@ export default function ProductList() {
                     <td className="p-3 sm:p-4 align-middle min-w-[60px] sm:min-w-[80px]">
                       {product.files && product.files[0]?.filePath ? (
                         <img
-                          src={`${BASE_URL}${product.files[0].filePath}`}
+                          src={product.files[0].filePath}
                           alt={product.title || 'Product'}
                           className="h-8 sm:h-10 w-8 sm:w-10 object-cover rounded cursor-pointer"
                           onClick={() => setViewImage({ isOpen: true, filePath: product.files[0].filePath })}

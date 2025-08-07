@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FaPrint } from "react-icons/fa6";
@@ -377,13 +377,13 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
     >
       {/* Sidebar Header */}
       <div className="flex items-center justify-between py-4 sm:py-5 md:py-6 lg:py-[30px] bg-white text-black px-3 sm:px-4 shrink-0">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#111928] flex items-center gap-1 sm:gap-2">
+        <h1>
           {logo ? (
             <Image
-              src={`https://printmanager-api.onrender.com${logo}`}
-              alt="Organization Logo"
+              src={logo}
+              alt="Soccer Express"
               width={200}
-              height={200}
+              height={0}
               className="w-[50px] sm:w-[100px] md:w-[170px]"
             />
           ) : (

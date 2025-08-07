@@ -171,7 +171,7 @@ const OrganizationSettings = () => {
             <h5 className="font-bold text-[#111928] text-xs sm:text-sm">Logo</h5>
             {settings.logo ? (
               <img
-                src={`https://printmanager-api.onrender.com${settings.logo}`}
+                src={settings.logo}
                 alt="Organization Logo"
                 className="max-h-24 sm:max-h-32 w-auto object-contain"
               />
@@ -280,7 +280,7 @@ const OrganizationSettings = () => {
                       <div className="mt-2">
                         <p className="text-xs sm:text-sm text-gray-500">Current Logo:</p>
                         <img
-                          src={`https://printmanager-api.onrender.com${editedData.logo}`}
+                          src={editedData.logo}
                           alt="Current Logo"
                           className="max-h-24 sm:max-h-32 w-auto object-contain mt-1"
                         />

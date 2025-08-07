@@ -2364,7 +2364,7 @@ export default function ViewOrder() {
             </button>
             <div className="p-1 sm:p-2 rounded-lg">
               <img
-                src={`https://printmanager-api.onrender.com${selectedImage}`}
+                src={selectedImage}
                 alt="Order File"
                 className="max-h-[80vh] sm:max-h-[90vh] max-w-full object-contain mx-auto"
               />

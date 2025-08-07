@@ -235,7 +235,7 @@ export default function CreateOrder() {
             productTitle: product.title || '',
             serviceTitle: services.find(s => s.id === product.serviceId)?.title || '',
             image: product.files?.[0]?.filePath
-              ? `https://printmanager-api.onrender.com${product.files[0].filePath}`
+              ? `${product.files[0].filePath}`
               : '',
             colorOptions: product.colorOptions || [],
             sizeOptions: product.sizeOptions || [],

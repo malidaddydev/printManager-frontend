@@ -99,7 +99,7 @@ function Files() {
         style={{ top: `${menuPosition.top}px`, right: `${menuPosition.right}px` }}
       >
         <a
-          href={`https://printmanager-api.onrender.com${filePath}`}
+          href={filePath}
           download
           className="block w-full text-left px-4 py-2 text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
           onClick={() => setMenuOpen(null)}
