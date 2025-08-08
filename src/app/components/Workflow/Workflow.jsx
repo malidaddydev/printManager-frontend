@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export function CheckIcon({ className }) {
@@ -503,7 +503,6 @@ export default function Workflow() {
         workflowId={selectedWorkflow?.id}
         onDelete={handleDeleteWorkflow}
       />
-      <ToastContainer />
     </div>
   );
 }

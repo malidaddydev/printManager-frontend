@@ -1,5 +1,5 @@
 'use client';
-import React, { lazy, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FaPrint } from "react-icons/fa6";
@@ -97,18 +97,6 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         ...(isMember ? [] : [{ title: 'Create Order', href: '/dashboard/order/create' }]),
         { title: 'Order List', href: '/dashboard/order/list' },
       ],
-    },
-    {
-      id: 'services',
-      title: 'Services',
-      icon: (
-        <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect width="8" height="8" x="3" y="3" rx="2"></rect>
-          <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
-          <rect width="8" height="8" x="13" y="13" rx="2"></rect>
-        </svg>
-      ),
-      href: '/dashboard/services',
     },
     {
       id: 'products',
@@ -273,6 +261,17 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
         </svg>
       ),
       dropdown: [
+        {
+          title: isMember ? 'services' : 'Create Services',
+          icon: (
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+              <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+              <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+            </svg>
+          ),
+          href: '/dashboard/services',
+        },
         { 
           title: isMember ? 'Stage' : 'Create Stage', 
           href: '/dashboard/stage', 

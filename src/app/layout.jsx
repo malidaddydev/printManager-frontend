@@ -1,3 +1,5 @@
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import AuthProvider from "./components/AuthProvider/AuthProvider";
 import "./CSS/globals.css";
 import { Roboto } from 'next/font/google'
@@ -15,6 +17,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={roboto.className}>
       <body suppressHydrationWarning={true}>
         <AuthProvider>{children}</AuthProvider>
+        <ToastContainer />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const EditUserPopup = ({ isOpen, onClose, user, onSave }) => {
   const [loading, setLoading] = useState(false);
@@ -659,7 +660,6 @@ const RoleCard = ({ onUserUpdated }) => {
         currentStatus={toggleStatus.currentStatus}
         onToggle={handleToggleStatusConfirmed}
       />
-      <ToastContainer />
     </div>
   );
 };

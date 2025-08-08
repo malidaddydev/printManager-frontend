@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import React, { useState, useRef } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function Create() {
@@ -250,7 +250,6 @@ export default function Create() {
           </button>
         </form>
       </div>
-      <ToastContainer />
     </div>
   );
 }

@@ -26,7 +26,6 @@ import {
   differenceInHours,
   differenceInMinutes,
 } from "date-fns";
-import { ToastContainer, toast } from 'react-toastify';
 import Image from "next/image";
 import Logo from "/public/assets/images/xpress-soccer.png"
 import BgImage from "/public/assets/images/bg.jpg"
@@ -345,7 +344,6 @@ export default function BigScreennnn() {
           </div>
         </div>
       </div>
-      <ToastContainer />
     </>
   );
 }

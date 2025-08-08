@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CancelOrderPopup = ({ isOpen, onClose, orderId, onCancel }) => {
@@ -76,7 +76,7 @@ const CancelOrderPopup = ({ isOpen, onClose, orderId, onCancel }) => {
   );
 };
 
-const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel , isAllowed }) => {
+const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel, isAllowed }) => {
   if (menuOpen !== orderId) return null;
   return createPortal(
     <div
@@ -96,15 +96,15 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel , isAl
         View Order
       </button>
       {isAllowed ? "" : (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onCancel(orderId);
-        }}
-        className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
-      >
-        Cancel Order
-      </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCancel(orderId);
+          }}
+          className="block w-full text-left px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-[#111928] hover:bg-[#f7f9fc] transition"
+        >
+          Cancel Order
+        </button>
       )}
     </div>,
     document.getElementById('dropdown-portal') || document.body
@@ -121,9 +121,15 @@ export default function OrderList() {
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [cancelOrder, setCancelOrder] = useState({ isOpen: false, orderId: null });
   const [customerNames, setCustomerNames] = useState({});
-  const [filterOption, setFilterOption] = useState('showAll'); // New state for filter dropdown
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [filters, setFilters] = useState({
+    orderStatus: '',
+    dueDate: '',
+    dueDateType: 'all'
+  });
 
-  // Fetch orders and customer names
   useEffect(() => {
     const fetchOrders = async () => {
       setIsLoading(true);
@@ -137,7 +143,6 @@ export default function OrderList() {
         const ordersArray = Array.isArray(data) ? data : [];
         setOrders(ordersArray);
 
-        // Fetch customer names for each order
         const customerIds = [...new Set(ordersArray.map(order => order.customerId))];
         const customerPromises = customerIds.map(async (id) => {
           try {
@@ -171,7 +176,6 @@ export default function OrderList() {
     fetchOrders();
   }, []);
 
-  // Handle outside click to close dropdown
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-button')) {
@@ -182,22 +186,82 @@ export default function OrderList() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Filter orders
-  const filteredOrders = Array.isArray(orders)
-    ? orders.filter((order) => {
-        if (filterOption === 'hideCancelled' && order.status?.toLowerCase() === 'cancelled') return false;
-        if (!searchTerm.trim()) return true;
-        const customerName = customerNames[order.customerId]?.toLowerCase() || '';
-        return (
-          (order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-          (order.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-          (customerName.includes(searchTerm.toLowerCase()) || false) ||
-          (order.status?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
-        );
-      })
-    : [];
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+    setCurrentPage(1); // Reset to first page on sort change
+  };
 
-  // Action handlers
+  const sortedOrders = React.useMemo(() => {
+    let sortableOrders = [...orders];
+    if (sortConfig.key) {
+      sortableOrders.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        if (sortConfig.key === 'customerId') {
+          aValue = customerNames[a.customerId] || 'N/A';
+          bValue = customerNames[b.customerId] || 'N/A';
+        } else if (sortConfig.key === 'startDate' || sortConfig.key === 'dueDate') {
+          aValue = a[sortConfig.key] ? new Date(a[sortConfig.key]).getTime() : 0;
+          bValue = b[sortConfig.key] ? new Date(b[sortConfig.key]).getTime() : 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableOrders;
+  }, [orders, sortConfig, customerNames]);
+
+  const filteredOrders = sortedOrders.filter((order) => {
+    const customerName = customerNames[order.customerId]?.toLowerCase() || '';
+    const matchesSearch = !searchTerm.trim() || (
+      order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerName.includes(searchTerm.toLowerCase()) ||
+      order.status?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const matchesStatus = !filters.orderStatus || order.status?.toLowerCase() === filters.orderStatus.toLowerCase();
+    
+    const matchesDueDate = () => {
+      if (filters.dueDateType === 'all') return true;
+      if (!order.dueDate) return false;
+
+      const dueDate = new Date(order.dueDate);
+      const now = new Date();
+      // Set time to 00:00:00 for date-only comparison
+      dueDate.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+
+      if (filters.dueDateType === 'overdue') {
+        // Include orders where due date is not equal to current date
+        // and exclude completed or cancelled orders
+        return dueDate.getTime() !== now.getTime() && 
+               order.status?.toLowerCase() !== 'completed' && 
+               order.status?.toLowerCase() !== 'cancelled';
+      } else if (filters.dueDateType === 'between') {
+        if (!filters.dueDate) return false;
+        const selectedDate = new Date(filters.dueDate);
+        selectedDate.setHours(0, 0, 0, 0);
+        return dueDate >= now && dueDate <= selectedDate;
+      }
+      return true;
+    };
+
+    return matchesSearch && matchesStatus && matchesDueDate();
+  });
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleViewOrder = (orderId) => {
     router.push(`/dashboard/order/view/${orderId}`);
     setMenuOpen(null);
@@ -217,7 +281,6 @@ export default function OrderList() {
     setMenuOpen(null);
   };
 
-  // Handle menu open and position
   const handleMenuClick = (orderId, event) => {
     event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();
@@ -229,7 +292,6 @@ export default function OrderList() {
     setMenuOpen(menuOpen === orderId ? null : orderId);
   };
 
-  // Status color mapping
   const getStatusStyles = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -248,19 +310,38 @@ export default function OrderList() {
   };
 
   const [isAllowed, setIsAllowed] = useState(false);
-      
+
   useEffect(() => {
     const email = sessionStorage.getItem('email');
-
     fetch('https://printmanager-api.onrender.com/api/users')
       .then((res) => res.json())
       .then((users) => {
         const user = users.find((u) => u.email === email);
         if (!user || user.isMember === true) {
           setIsAllowed(true);
-        } 
-      })
+        }
+      });
   }, []);
+
+  const renderSortIcon = (key) => {
+    // Always show the sort icon, default to ascending if not sorted
+    const isActive = sortConfig.key === key;
+    const direction = isActive ? sortConfig.direction : 'asc';
+    return (
+      <svg
+        className="w-4 h-4 inline-block ml-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        {direction === 'asc' ? (
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+        ) : (
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        )}
+      </svg>
+    );
+  };
 
   return (
     <>
@@ -272,44 +353,79 @@ export default function OrderList() {
           </div>
           <div className="sm:mb-0 mb-[20px]">
             {isAllowed ? "" : (
-            <button
-              onClick={() => router.push('/dashboard/order/create')}
-              className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-white"
+              <button
+                onClick={() => router.push('/dashboard/order/create')}
+                className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
               >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Create Order
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-white"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Order
+              </button>
             )}
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:gap-4">
-          <div>
-            <label htmlFor="filterOption" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
-              Filter Orders
-            </label>
-            <select
-              id="filterOption"
-              value={filterOption}
-              onChange={(e) => setFilterOption(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
-            >
-              <option value="showAll">Show All Orders</option>
-              <option value="hideCancelled">Hide Cancelled Orders</option>
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label htmlFor="orderStatus" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+                Order Status
+              </label>
+              <select
+                id="orderStatus"
+                value={filters.orderStatus}
+                onChange={(e) => setFilters(prev => ({ ...prev, orderStatus: e.target.value }))}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+              >
+                <option value="">All Statuses</option>
+                <option value="draft">Draft</option>
+                <option value="in progress">In Progress</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="dueDateType" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+                Due Date Filter
+              </label>
+              <select
+                id="dueDateType"
+                value={filters.dueDateType}
+                onChange={(e) => setFilters(prev => ({ ...prev, dueDateType: e.target.value }))}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+              >
+                <option value="all">All Dates</option>
+                <option value="overdue">Overdue</option>
+                <option value="between">Due Between Now and Selected Date</option>
+              </select>
+            </div>
+            {filters.dueDateType === 'between' && (
+              <div>
+                <label htmlFor="dueDate" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+                  Select Due Date
+                </label>
+                <input
+                  type="date"
+                  id="dueDate"
+                  value={filters.dueDate}
+                  onChange={(e) => setFilters(prev => ({ ...prev, dueDate: e.target.value }))}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+                />
+              </div>
+            )}
           </div>
           <input
             type="text"
@@ -354,97 +470,168 @@ export default function OrderList() {
               No Data Found
             </div>
           ) : (
-            <table className="w-full caption-bottom text-xs sm:text-sm">
-              <thead>
-                <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-6">
-                    Order Number
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                    Customer Name
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                    Order Title
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                    Order Date
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                    Delivery Date
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                    Order Status
-                  </th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="[&_tr:last-child]:border-0">
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
-                  >
-                    <td className="p-3 sm:p-4 align-middle min-w-[100px] xl:pl-6">
-                      <p className="text-[#111928] text-xs sm:text-sm">{order.orderNumber || 'N/A'}</p>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle">
-                      <p className="text-[#111928] text-xs sm:text-sm">{customerNames[order.customerId] || 'N/A'}</p>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle">
-                      <p className="text-[#111928] text-xs sm:text-sm">{order.title || 'N/A'}</p>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle">
-                      <p className="text-[#111928] text-xs sm:text-sm">
-                        {order.startDate ? new Date(order.startDate).toLocaleDateString() : 'N/A'}
-                      </p>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle">
-                      <p className="text-[#111928] text-xs sm:text-sm">
-                        {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : 'N/A'}
-                      </p>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle">
-                      <span
-                        className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
-                          order.status
-                        )}`}
-                      >
-                        {order.status || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="p-3 sm:p-4 align-middle xl:pr-6">
-                      <div className="relative flex justify-end">
-                        <button
-                          className="dropdown-button hover:text-[#2563eb] transition"
-                          onClick={(e) => handleMenuClick(order.id, e)}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <circle cx="10" cy="4" r="2" />
-                            <circle cx="10" cy="10" r="2" />
-                            <circle cx="10" cy="16" r="2" />
-                          </svg>
-                        </button>
-                        <DropdownMenu
-                          orderId={order.id}
-                          menuPosition={menuPosition}
-                          menuOpen={menuOpen}
-                          onView={handleViewOrder}
-                          onCancel={handleCancelOrder}
-                          isAllowed={isAllowed}
-                        />
-                      </div>
-                    </td>
+            <>
+              <table className="w-full caption-bottom text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-6">
+                      <button onClick={() => handleSort('orderNumber')} className="flex items-center">
+                        Order Number
+                        {renderSortIcon('orderNumber')}
+                      </button>
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                      <button onClick={() => handleSort('customerId')} className="flex items-center">
+                        Customer Name
+                        {renderSortIcon('customerId')}
+                      </button>
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                      <button onClick={() => handleSort('title')} className="flex items-center">
+                        Order Title
+                        {renderSortIcon('title')}
+                      </button>
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                      <button onClick={() => handleSort('startDate')} className="flex items-center">
+                        Order Date
+                        {renderSortIcon('startDate')}
+                      </button>
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                      <button onClick={() => handleSort('dueDate')} className="flex items-center">
+                        Delivery Date
+                        {renderSortIcon('dueDate')}
+                      </button>
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                      Order Status
+                    </th>
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="[&_tr:last-child]:border-0">
+                  {paginatedOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
+                    >
+                      <td className="p-3 sm:p-4 align-middle min-w-[100px] xl:pl-6">
+                        <p className="text-[#111928] text-xs sm:text-sm">{order.orderNumber || 'N/A'}</p>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle">
+                        <p className="text-[#111928] text-xs sm:text-sm">{customerNames[order.customerId] || 'N/A'}</p>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle">
+                        <p className="text-[#111928] text-xs sm:text-sm">{order.title || 'N/A'}</p>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle">
+                        <p className="text-[#111928] text-xs sm:text-sm">
+                          {order.startDate ? new Date(order.startDate).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle">
+                        <p className="text-[#111928] text-xs sm:text-sm">
+                          {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : 'N/A'}
+                        </p>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle">
+                        <span
+                          className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
+                            order.status
+                          )}`}
+                        >
+                          {order.status || 'N/A'}
+                        </span>
+                      </td>
+                      <td className="p-3 sm:p-4 align-middle xl:pr-6">
+                        <div className="relative flex justify-end">
+                          <button
+                            className="dropdown-button hover:text-[#2563eb] transition"
+                            onClick={(e) => handleMenuClick(order.id, e)}
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <circle cx="10" cy="4" r="2" />
+                              <circle cx="10" cy="10" r="2" />
+                              <circle cx="10" cy="16" r="2" />
+                            </svg>
+                          </button>
+                          <DropdownMenu
+                            orderId={order.id}
+                            menuPosition={menuPosition}
+                            menuOpen={menuOpen}
+                            onView={handleViewOrder}
+                            onCancel={handleCancelOrder}
+                            isAllowed={isAllowed}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div className="text-sm text-[#9ca3af]">
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 rounded-lg text-sm ${
+                        currentPage === page ? 'bg-[#5750f1] text-white' : 'bg-gray-200 hover:bg-gray-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-lg text-sm ${
+                      currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -456,7 +643,6 @@ export default function OrderList() {
         orderId={cancelOrder.orderId}
         onCancel={handleCancelOrderConfirmed}
       />
-      <ToastContainer />
     </>
   );
 }

@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 export default function Navbar({ toggleSidebar }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -167,7 +165,6 @@ export default function Navbar({ toggleSidebar }) {
           </div>
         </div>
       </div>
-      <ToastContainer />
     </>
   );
 }

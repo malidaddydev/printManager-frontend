@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CreateServicePopup = ({ isOpen, onClose, onSave, workflows }) => {
@@ -452,7 +452,6 @@ export default function Services() {
         serviceId={selectedService?.id}
         onDelete={handleDeleteService}
       />
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
     </div>
   );
 }

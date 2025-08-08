@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreateOrder() {
@@ -121,12 +121,6 @@ export default function CreateOrder() {
   const handleFileChange = (e, index) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      for (let file of files) {
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error('File size must be less than 5MB');
-          return;
-        }
-      }
       setOrderData(prev => {
         const newFiles = [...prev.files];
         newFiles[index] = files[0];
@@ -200,7 +194,9 @@ export default function CreateOrder() {
       const newItems = [...prev.items];
       const item = newItems[itemIndex];
       if (!item.unitPrice) {
-        toast.error('Please select a product with a valid price before adding a size.');
+        toast.error('Please select a product with a valid price before adding a size.', {
+          toastId: `add-size-error-${itemIndex}`,
+        });
         return prev;
       }
       newItems[itemIndex] = {
@@ -486,59 +482,83 @@ export default function CreateOrder() {
               onChange={handleChange}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
             />
-            <div className="mt-2 sm:mt-3">
-              <label className="block text-xs sm:text-sm font-medium text-[#111928]">Upload Files</label>
-              {fileInputs.map((_, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <input
-                    type="file"
-                    ref={el => fileInputRefs.current[index] = el}
-                    onChange={(e) => handleFileChange(e, index)}
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg text-xs sm:text-sm"
-                  />
-                  {fileInputs.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeFileInput(index)}
-                      className="text-[#ef4444] text-xs sm:text-sm"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addFileInput}
-                className="mt-1 sm:mt-2 py-1 sm:py-1.5 px-2 sm:px-3 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm hover:bg-blue-700"
-              >
-                More Files
-              </button>
-              {orderData.files.length > 0 && (
-                <div className="mt-2 sm:mt-3">
-                  {orderData.files.map((file, index) => (
+          <div className="mt-2 sm:mt-3">
+            <label className="block text-xs sm:text-sm font-medium text-gray-900 mb-2">
+              Upload Files
+            </label>
+            {/* File Inputs */}
+            {fileInputs.map((_, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2 sm:mb-3">
+                <input
+                  type="file"
+                  ref={(el) => (fileInputRefs.current[index] = el)}
+                  onChange={(e) => handleFileChange(e, index)}
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg text-xs sm:text-sm"
+                />
+                {fileInputs.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeFileInput(index)}
+                    className="py-1 px-2 bg-red-100 text-red-600 rounded-lg text-xs sm:text-sm hover:bg-red-200"
+                    title="Remove this file input field"
+                  >
+                    Remove Input
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addFileInput}
+              className="mt-1 sm:mt-2 py-1 sm:py-1.5 px-2 sm:px-3 bg-indigo-600 text-white rounded-lg text-xs sm:text-sm hover:bg-indigo-700"
+            >
+              Add More Files
+            </button>
+
+            {/* Uploaded Files List */}
+            {orderData.files.length > 0 && (
+              <div className="mt-4 sm:mt-5 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">
+                  Uploaded Files
+                </h4>
+                {orderData.files.map(
+                  (file, index) =>
                     file && (
-                      <div key={index} className="flex justify-between p-2 sm:p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg mb-2 text-xs sm:text-sm">
-                        <span>{file.name}</span>
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 sm:p-3 bg-white border border-gray-200 rounded-lg mb-2 text-xs sm:text-sm"
+                      >
+                        <span className="truncate max-w-[70%]">{file.name}</span>
                         <button
                           type="button"
                           onClick={() => {
-                            setOrderData(prev => ({
-                              ...prev,
-                              files: prev.files.filter((_, i) => i !== index)
-                            }));
+                            if (
+                              window.confirm(
+                                `Are you sure you want to remove the file "${file.name}"?`
+                              )
+                            ) {
+                              setOrderData((prev) => ({
+                                ...prev,
+                                files: prev.files.filter((_, i) => i !== index),
+                              }));
+                              // Clear the corresponding file input
+                              if (fileInputRefs.current[index]) {
+                                fileInputRefs.current[index].value = '';
+                              }
+                            }
                           }}
-                          className="text-[#ef4444]"
+                          className="py-1 px-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm hover:bg-red-700"
+                          title="Remove this uploaded file"
                         >
-                          Remove
+                          Delete File
                         </button>
                       </div>
                     )
-                  ))}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+          </div>
           </div>
         </div>
 
@@ -771,7 +791,6 @@ export default function CreateOrder() {
           </div>
         </div>
       </div>
-      <ToastContainer />
     </form>
   );
 }

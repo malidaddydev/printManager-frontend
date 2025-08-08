@@ -1,8 +1,7 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 
@@ -123,7 +122,9 @@ export default function ViewOrder() {
   const [itemEditingCommentText, setItemEditingCommentText] = useState({}); // { [itemId]: text }
   const [deleteCommentModal, setDeleteCommentModal] = useState({ open: false, commentId: null });
   const [loading, setLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({});
   const [isAllowed, setIsAllowed] = useState(false);
+  const [stageChangeModal, setStageChangeModal] = useState({ open: false, itemId: null, newStage: null });
           
       useEffect(() => {
         const email = sessionStorage.getItem('email');
@@ -138,25 +139,60 @@ export default function ViewOrder() {
           })
       }, []);
 
-  const handleAskApproval = async (fileId) => {
-    setLoading(true);
-  try {
-    const response = await fetch(`https://printmanager-api.onrender.com/api/customerApprovals/${fileId}`, {
-      method: 'POST'
-    });
-    const data = await response.json();
-    if (response.ok) {
-      toast.success('Approval email sent successfully!');
-    } else {
-      toast.error(`Failed to send email: ${data.message}`);
-    }
-  } catch (err) {
-    toast.error('Error sending approval request');
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+    const handleAskApproval = async (fileId) => {
+      setLoadingStates(prev => ({ ...prev, [fileId]: true }));
+      try {
+        const response = await fetch(`https://printmanager-api.onrender.com/api/customerApprovals/${fileId}`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        if (response.ok) {
+          toast.success('Approval email sent successfully!');
+        } else {
+          toast.error(`Failed to send email: ${data.message}`);
+        }
+      } catch (err) {
+        toast.error('Error sending approval request');
+        console.error(err);
+      } finally {
+        setLoadingStates(prev => ({ ...prev, [fileId]: false }));
+      }
+    };
+
+
+    const confirmStageChange = async () => {
+      const { itemId, newStage } = stageChangeModal;
+        setLoading(true);
+      try {
+        await axios.put(
+          `https://printmanager-api.onrender.com/api/orderItems/${itemId}`,
+          {
+            currentStage: newStage,
+            updatedBy: sessionStorage.getItem('username'),
+          }
+        );
+        setOrderData((prev) => ({
+          ...prev,
+          items: prev.items.map((itm) =>
+            itm.id === itemId ? { ...itm, currentStage: newStage } : itm
+          ),
+        }));
+        toast.success('Stage updated successfully');
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } catch (error) {
+        toast.error('Failed to update stage');
+      } finally {
+        setLoading(false);
+        setStageChangeModal({ open: false, itemId: null, newStage: null });
+      }
+    };
+
+    const cancelStageChange = () => {
+      setStageChangeModal({ open: false, itemId: null, newStage: null });
+    };
+
 
   const openSizeModal = async (orderItemId, productPrice, productId) => {
     setIsSizeModalOpen(true);
@@ -745,7 +781,7 @@ export default function ViewOrder() {
     }
     try {
       const commentData = {
-        orderId: parseInt(orderId),
+        orderId: null,
         orderItemId: itemId,
         commentText,
         commentBy: sessionStorage.getItem("username") || "Anonymous",
@@ -1066,29 +1102,12 @@ export default function ViewOrder() {
                                             label={stage.stage.name}
                                             checked={item.currentStage === stage.stage.name}
                                             name={`stage-${item.id}`}
-                                            onChange={async () => {
-                                              const newStage = stage.stage.name;
-                                              try {
-                                                await axios.put(
-                                                  `https://printmanager-api.onrender.com/api/orderItems/${item.id}`,
-                                                  {
-                                                    currentStage: newStage,
-                                                    updatedBy: sessionStorage.getItem('username'),
-                                                  }
-                                                );
-                                                setOrderData((prev) => ({
-                                                  ...prev,
-                                                  items: prev.items.map((itm) =>
-                                                    itm.id === item.id ? { ...itm, currentStage: newStage } : itm
-                                                  ),
-                                                }));
-                                                toast.success('Stage updated successfully');
-                                                setTimeout(() => {
-                                                  window.location.reload();
-                                                }, 3000);
-                                              } catch (error) {
-                                                toast.error('Failed to update stage');
-                                              }
+                                            onChange={() => {
+                                              setStageChangeModal({
+                                                open: true,
+                                                itemId: item.id,
+                                                newStage: stage.stage.name,
+                                              });
                                             }}
                                           />
                                         ))}
@@ -1780,11 +1799,11 @@ export default function ViewOrder() {
                                 </span>
                               )}
                               <button
-                                onClick={() => handleAskApproval(file.id, orderData.token, orderData.customer.email)}
+                                onClick={() => handleAskApproval(file.id)}
                                 className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800"
-                                disabled={loading}
+                                disabled={loadingStates[file.id]}
                               >
-                                {loading ? 'Asking...' : 'Ask Approval'}
+                                {loadingStates[file.id] ? 'Asking...' : 'Ask Approval'}
                               </button>
                               {isImage && (
                                 <button
@@ -1854,9 +1873,9 @@ export default function ViewOrder() {
                   <div className="flex flex-col gap-3 sm:gap-4">
                     <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Order Comments</h3>
                     <div className="space-y-3 sm:space-y-4">
-                      {comments.filter((c) => c.orderItemId == null).length > 0 ? (
+                      {comments.filter((c) => c.orderId === parseInt(orderId)).length > 0 ? (
                         comments
-                          .filter((c) => c.orderItemId == null)
+                          .filter((c) => c.orderId === parseInt(orderId))
                           .map((comment, index) => {
                             const isOwn = comment.commentBy === (sessionStorage.getItem('username') || 'Anonymous');
                             const isEdited = comment.updatedAt && comment.updatedAt !== comment.createdAt;
@@ -2069,7 +2088,7 @@ export default function ViewOrder() {
 
 
       {/* Files Modal */}
-            {isFilesModalOpen && (
+      {isFilesModalOpen && (
         <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-lg">
             <div className="flex justify-between items-center border-b border-gray-200 p-3 sm:p-4">
@@ -2397,7 +2416,37 @@ export default function ViewOrder() {
         </div>
       )}
 
-      <ToastContainer autoClose={3000} />
+      {stageChangeModal.open && (
+      <div className="fixed inset-0 bg-[#111928]/60 flex items-center justify-center z-50 px-4 sm:px-6">
+        <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-[85vw] sm:max-w-md shadow-xl">
+          <h2 className="text-lg sm:text-xl font-bold text-[#111928] mb-3 sm:mb-4">Confirm Stage Change</h2>
+          <p className="text-sm sm:text-base text-[#111928] mb-3 sm:mb-4">
+            Are you sure you want to change the stage to <strong>{stageChangeModal.newStage}</strong>?
+          </p>
+          <div className="flex justify-end space-x-2 sm:space-x-3">
+            <button
+              onClick={cancelStageChange}
+              className="py-2 sm:py-3 px-3 sm:px-4 bg-gray-200 text-[#111928] rounded-lg text-xs sm:text-sm hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmStageChange}
+              disabled={loading}
+              className={`py-2 sm:py-3 px-3 sm:px-4 bg-[#5750f1] text-white rounded-lg text-xs sm:text-sm font-medium transition flex items-center justify-center ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+            >
+              {loading && (
+                <svg className="mr-1 sm:mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {loading ? 'Confirming...' : 'Confirm'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
