@@ -65,7 +65,11 @@ export default function ViewOrder() {
   const [activeItemTabs, setActiveItemTabs] = useState({});
 
   const fetchData = async () => {
-    const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`);
+    const response = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
+      headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+    });
     const data = await response.json();
     return data.items.map((item => {
       return (
@@ -129,7 +133,11 @@ export default function ViewOrder() {
       useEffect(() => {
         const email = sessionStorage.getItem('email');
     
-        fetch('https://printmanager-api.onrender.com/api/users')
+        fetch('https://printmanager-api.onrender.com/api/users', {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        })
           .then((res) => res.json())
           .then((users) => {
             const user = users.find((u) => u.email === email);
@@ -143,7 +151,10 @@ export default function ViewOrder() {
       setLoadingStates(prev => ({ ...prev, [fileId]: true }));
       try {
         const response = await fetch(`https://printmanager-api.onrender.com/api/customerApprovals/${fileId}`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
         });
         const data = await response.json();
         if (response.ok) {
@@ -165,8 +176,11 @@ export default function ViewOrder() {
         setLoading(true);
       try {
         await axios.put(
-          `https://printmanager-api.onrender.com/api/orderItems/${itemId}`,
+          `https://printmanager-api.onrender.com/api/sendEmail/workflow/${itemId}`,
           {
+            headers: {
+              'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+            },
             currentStage: newStage,
             updatedBy: sessionStorage.getItem('username'),
           }
@@ -214,7 +228,11 @@ export default function ViewOrder() {
 
     try {
       const response = await axios.get(
-        `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`
+        `https://printmanager-api.onrender.com/api/sizeQuantities/${orderItemId}`, {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        }
       );
       setSizeQuantities(response.data);
     } catch (error) {
@@ -238,6 +256,9 @@ export default function ViewOrder() {
       const response = await axios.post(
         'https://printmanager-api.onrender.com/api/sizeQuantities',
         {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
           ...newSize,
           orderitemId: currentOrderItemId,
           createdBy: sessionStorage.getItem("username"),
@@ -278,6 +299,9 @@ export default function ViewOrder() {
       const response = await axios.put(
         `https://printmanager-api.onrender.com/api/sizeQuantities/${editingSize.id}`,
         {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
           ...editingSize,
           Price: parseFloat(editingSize.Price),
           Quantity: parseInt(editingSize.Quantity),
@@ -316,7 +340,11 @@ export default function ViewOrder() {
   const handleDeleteSize = async (sizeId) => {
     try {
       await axios.delete(
-        `https://printmanager-api.onrender.com/api/sizeQuantities/${sizeId}`
+        `https://printmanager-api.onrender.com/api/sizeQuantities/${sizeId}`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+        }
       );
 
       // Update local state immediately
@@ -374,6 +402,7 @@ export default function ViewOrder() {
         formData,
         {
           headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
             'Content-Type': 'multipart/form-data',
           },
           onUploadProgress: (progressEvent) => {
@@ -421,6 +450,7 @@ export default function ViewOrder() {
       formData,
       {
         headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
           'Content-Type': 'multipart/form-data',
         },
         onUploadProgress: (progressEvent) => {
@@ -468,7 +498,11 @@ export default function ViewOrder() {
     try {
       await Promise.all(
         filesToDelete.map(fileId =>
-          axios.delete(`https://printmanager-api.onrender.com/api/orderFiles/${fileId}`)
+          axios.delete(`https://printmanager-api.onrender.com/api/orderFiles/${fileId}`, {
+            headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+          })
         )
       );
 
@@ -548,9 +582,17 @@ export default function ViewOrder() {
     try {
       const response = await axios.put(
         `https://printmanager-api.onrender.com/api/orders/${orderId}`,
-        editedData
+        editedData, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        }
       );
-      const orderRes = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`);
+      const orderRes = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      });
       if (!orderRes.ok) throw new Error("Failed to fetch order");
       const data = await orderRes.json();
       setOrderData(data);
@@ -567,7 +609,11 @@ export default function ViewOrder() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const orderRes = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`);
+        const orderRes = await fetch(`https://printmanager-api.onrender.com/api/orders/${orderId}`, {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!orderRes.ok) throw new Error("Failed to fetch order");
         const data = await orderRes.json();
         setOrderData(data);
@@ -581,7 +627,11 @@ export default function ViewOrder() {
           );
         }
 
-        const commentsRes = await fetch(`https://printmanager-api.onrender.com/api/comments?orderId=${orderId}`);
+        const commentsRes = await fetch(`https://printmanager-api.onrender.com/api/comments?orderId=${orderId}`,{
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!commentsRes.ok) throw new Error("Failed to fetch comments");
         const commentsData = await commentsRes.json();
         setComments(Array.isArray(commentsData) ? commentsData : []);
@@ -597,7 +647,11 @@ export default function ViewOrder() {
   useEffect(() => {
     async function fetchActivityLogs() {
       try {
-        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/order/${orderId}`);
+        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/order/${orderId}`,{
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
         const logsData = await logsRes.json();
         setActivityLogs(Array.isArray(logsData) ? logsData : []);
@@ -611,7 +665,11 @@ export default function ViewOrder() {
 
     async function fetchItemActivityLogs() {
       try {
-        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/orderitem/${orderId}`);
+        const logsRes = await fetch(`https://printmanager-api.onrender.com/api/activitylogs/orderitem/${orderId}`, {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!logsRes.ok) throw new Error("Failed to fetch activity logs");
         const logsData = await logsRes.json();
         setItemActivityLogs(Array.isArray(logsData) ? logsData : []);
@@ -743,7 +801,10 @@ export default function ViewOrder() {
       };
       const res = await fetch("https://printmanager-api.onrender.com/api/comments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(commentData),
       });
       if (!res.ok) throw new Error("Failed to add comment");
@@ -789,7 +850,10 @@ export default function ViewOrder() {
       };
       const res = await fetch("https://printmanager-api.onrender.com/api/comments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(commentData),
       });
       if (!res.ok) throw new Error("Failed to add comment");
@@ -816,7 +880,10 @@ export default function ViewOrder() {
     try {
       const res = await fetch(`https://printmanager-api.onrender.com/api/comments/${comment.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({
           ...comment,
           commentText: itemEditingCommentText[itemId],
@@ -852,7 +919,10 @@ export default function ViewOrder() {
     try {
       const res = await fetch(`https://printmanager-api.onrender.com/api/comments/${comment.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({
           ...comment,
           commentText: editingCommentText,
@@ -886,6 +956,9 @@ export default function ViewOrder() {
     try {
       const res = await fetch(`https://printmanager-api.onrender.com/api/comments/${commentId}`, {
         method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!res.ok) throw new Error("Failed to delete comment");
       setComments((prev) => prev.filter((c) => c.id !== commentId));

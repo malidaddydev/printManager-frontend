@@ -64,7 +64,11 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
   useEffect(() => {
     if (isOpen) {
       setStagesLoading(true);
-      fetch('https://printmanager-api.onrender.com/api/stages/')
+      fetch('https://printmanager-api.onrender.com/api/stages/', {
+              headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      })
         .then(res => res.json())
         .then(data => {
           setStages(Array.isArray(data) ? data : data.stages || []);
@@ -93,7 +97,10 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
     try {
       const response = await fetch('https://printmanager-api.onrender.com/api/workflows', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({
           title: workflowTitle,
           createdBy: sessionStorage.getItem("username") || 'Unknown',
@@ -172,7 +179,7 @@ const CreateWorkflowPopup = ({ isOpen, onClose, onSave }) => {
                           <div>
                             <p className="font-medium text-sm">{stage.name}</p>
                             <p className="text-xs text-gray-500">
-                              State: {stage.state} • Team: {stage.team} • Duedays: {stage.days}
+                              State: {stage.state} • Position: {stage.position} • Duedays: {stage.days}
                             </p>
                           </div>
                         }
@@ -232,6 +239,9 @@ const DeleteWorkflowPopup = ({ isOpen, onClose, workflowId, onDelete }) => {
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/workflows/${workflowId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!response.ok) throw new Error('Failed to delete workflow');
       onDelete(workflowId);
@@ -319,7 +329,11 @@ export default function Workflow() {
     const fetchWorkflows = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/workflows');
+        const response = await fetch('https://printmanager-api.onrender.com/api/workflows', {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!response.ok) throw new Error('Failed to fetch workflows');
         const data = await response.json();
         setWorkflows(Array.isArray(data) ? data : data.workflows || []);
@@ -353,7 +367,11 @@ export default function Workflow() {
   const handleCreateWorkflow = async (newWorkflow) => {
     try {
       // Fetch the full workflow details including stages
-      const response = await fetch(`https://printmanager-api.onrender.com/api/workflows/${newWorkflow.id}`);
+      const response = await fetch(`https://printmanager-api.onrender.com/api/workflows/${newWorkflow.id}`, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch new workflow details');
       const fullWorkflow = await response.json();
       setWorkflows([...workflows, fullWorkflow]);
@@ -385,7 +403,11 @@ export default function Workflow() {
     useEffect(() => {
       const email = sessionStorage.getItem('email');
   
-      fetch('https://printmanager-api.onrender.com/api/users')
+      fetch('https://printmanager-api.onrender.com/api/users', {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      })
         .then((res) => res.json())
         .then((users) => {
           const user = users.find((u) => u.email === email);

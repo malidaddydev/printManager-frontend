@@ -1,5 +1,5 @@
 'use client';
-import BigScreen from '@/app/components/BigScreen/BigScreennnn';
+import BigScreen from '@/app/components/BigScreen/BigScreen';
 import React from 'react';
 
 export default function BigScreenPage() {

@@ -36,17 +36,29 @@ export default function CreateOrder() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const customersRes = await fetch('https://printmanager-api.onrender.com/api/customers');
+        const customersRes = await fetch('https://printmanager-api.onrender.com/api/customers', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!customersRes.ok) throw new Error('Failed to fetch customers');
         const customersData = await customersRes.json();
         setCustomers(Array.isArray(customersData) ? customersData : customersData.customers || []);
 
-        const productsRes = await fetch('https://printmanager-api.onrender.com/api/products');
+        const productsRes = await fetch('https://printmanager-api.onrender.com/api/products', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!productsRes.ok) throw new Error('Failed to fetch products');
         const productsData = await productsRes.json();
         setProducts(Array.isArray(productsData) ? productsData : productsData.products || []);
 
-        const servicesRes = await fetch('https://printmanager-api.onrender.com/api/services');
+        const servicesRes = await fetch('https://printmanager-api.onrender.com/api/services', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!servicesRes.ok) throw new Error('Failed to fetch services');
         const servicesData = await servicesRes.json();
         setServices(Array.isArray(servicesData) ? servicesData : servicesData.services || []);
@@ -78,7 +90,11 @@ export default function CreateOrder() {
   // Handle customer selection
   const selectCustomer = async (customer) => {
     try {
-      const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${customer.id}`);
+      const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${customer.id}`, {
+              headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      });
       if (!res.ok) throw new Error('Customer not found');
       const data = await res.json();
       setCustomerInfo(data);
@@ -220,7 +236,11 @@ export default function CreateOrder() {
   const handleItemChange = async (itemIndex, field, value) => {
     if (field === 'productId') {
       try {
-        const res = await fetch(`https://printmanager-api.onrender.com/api/products/${value}`);
+        const res = await fetch(`https://printmanager-api.onrender.com/api/products/${value}`, {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!res.ok) throw new Error('Product not found');
         const product = await res.json();
         setOrderData(prev => {
@@ -339,6 +359,9 @@ export default function CreateOrder() {
       const response = await fetch('https://printmanager-api.onrender.com/api/orders', {
         method: 'POST',
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!response.ok) {
         const errorData = await response.json();

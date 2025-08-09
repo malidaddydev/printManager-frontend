@@ -8,13 +8,12 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     state: '',
     name: '',
-    team: '',
+    position: 0,
     color: '#000000',
     days: 1,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const teams = ['Design', 'Embroidery', 'DTF', 'Sublimation', 'Production'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,13 +23,14 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.state.trim() || !formData.name.trim() || !formData.team || !formData.color.trim() || !formData.days) {
+    if (!formData.state.trim() || !formData.name.trim() || !formData.position || !formData.color.trim() || !formData.days) {
       setError('All fields are required');
       return;
     }
 
     const payload = {
       ...formData,
+      position: parseInt(formData.position, 0),
       days: parseInt(formData.days, 10),
       createdBy: sessionStorage.getItem('username') || 'Unknown',
     };
@@ -44,7 +44,10 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
     try {
       const response = await fetch('https://printmanager-api.onrender.com/api/stages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
@@ -95,21 +98,15 @@ const CreateStagePopup = ({ isOpen, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Team</label>
-            <select
-              name="team"
-              value={formData.team}
+            <label className="block text-sm font-medium text-[#111928]">Position</label>
+            <input
+              name="position"
+              type="number"
+              value={formData.position}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
-            >
-              <option value="">Select a Team</option>
-              {teams.map((team) => (
-                <option key={team} value={team}>
-                  {team}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Color (e.g., #FF5733)</label>
@@ -171,20 +168,19 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
   const [formData, setFormData] = useState({
     state: stage?.state || '',
     name: stage?.name || '',
-    team: stage?.team || '',
+    position: stage?.position || 0,
     color: stage?.color || '#000000',
     days: stage?.days || 1,
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const teams = ['Design', 'Embroidery', 'DTF', 'Sublimation', 'Production'];
 
   useEffect(() => {
     if (stage) {
       setFormData({
         state: stage.state || '',
         name: stage.name || '',
-        team: stage.team || '',
+        position: stage.position || 0,
         color: stage.color || '#000000',
         days: stage.days || 1,
       });
@@ -200,13 +196,14 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.state.trim() || !formData.name.trim() || !formData.team || !formData.color.trim() || !formData.days) {
+    if (!formData.state.trim() || !formData.name.trim() || !formData.position || !formData.color.trim() || !formData.days) {
       setError('All fields are required');
       return;
     }
 
     const payload = {
       ...formData,
+      position: parseInt(formData.position, 0),
       days: parseInt(formData.days, 10),
       createdBy: sessionStorage.getItem('username') || 'Unknown',
     };
@@ -220,7 +217,10 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/stages/${stage.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error('Failed to update stage');
@@ -268,21 +268,15 @@ const EditStagePopup = ({ isOpen, onClose, stage, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#111928]">Team</label>
-            <select
-              name="team"
-              value={formData.team}
+            <label className="block text-sm font-medium text-[#111928]">Position</label>
+            <input
+              type="number"
+              name="position"
+              value={formData.position}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1]"
               required
-            >
-              <option value="">Select a Team</option>
-              {teams.map((team) => (
-                <option key={team} value={team}>
-                  {team}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#111928]">Color (e.g., #FF5733)</label>
@@ -348,6 +342,9 @@ const DeleteStagePopup = ({ isOpen, onClose, stageId, onDelete }) => {
     try {
       const response = await fetch(`https://printmanager-api.onrender.com/api/stages/${stageId}`, {
         method: 'DELETE',
+              headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
       });
       if (!response.ok) throw new Error('Failed to delete stage');
       onDelete(stageId);
@@ -445,7 +442,11 @@ export default function Stage() {
     const fetchStages = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/stages');
+        const response = await fetch('https://printmanager-api.onrender.com/api/stages', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!response.ok) throw new Error('Failed to fetch stages');
         const data = await response.json();
         setStages(Array.isArray(data) ? data : data.stages || []);
@@ -504,7 +505,11 @@ export default function Stage() {
       useEffect(() => {
         const email = sessionStorage.getItem('email');
     
-        fetch('https://printmanager-api.onrender.com/api/users')
+        fetch('https://printmanager-api.onrender.com/api/users', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        })
           .then((res) => res.json())
           .then((users) => {
             const user = users.find((u) => u.email === email);
@@ -566,7 +571,7 @@ export default function Stage() {
                 </div>
                 <div className="space-y-2 mt-2 text-sm text-[#9ca3af]">
                   <div>Name: {stage.name}</div>
-                  <div>Team: {stage.team}</div>
+                  <div>Position: {stage.position}</div>
                   <div>Days: {stage.days}</div>
                   <div>Created By: {stage.createdBy}</div>
                 </div>

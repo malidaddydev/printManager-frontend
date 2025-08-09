@@ -19,7 +19,11 @@ function DashboardCard() {
       setIsLoading(true);
       try {
         // Fetch orders
-        const ordersResponse = await fetch('https://printmanager-api.onrender.com/api/orders');
+        const ordersResponse = await fetch('https://printmanager-api.onrender.com/api/orders', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!ordersResponse.ok) {
           const errorData = await ordersResponse.json();
           throw new Error(errorData.message || 'Failed to fetch orders');
@@ -28,7 +32,11 @@ function DashboardCard() {
         const ordersArray = Array.isArray(orders) ? orders : [];
 
         // Fetch customers
-        const customersResponse = await fetch('https://printmanager-api.onrender.com/api/customers');
+        const customersResponse = await fetch('https://printmanager-api.onrender.com/api/customers', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!customersResponse.ok) {
           const errorData = await customersResponse.json();
           throw new Error(errorData.message || 'Failed to fetch customers');

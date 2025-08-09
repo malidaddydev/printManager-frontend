@@ -47,7 +47,11 @@ function Files() {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/orderFiles/');
+        const response = await fetch('https://printmanager-api.onrender.com/api/orderFiles/', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!response.ok) throw new Error('Failed to fetch files');
         const data = await response.json();
         // Filter out files where orderId is null

@@ -9,7 +9,11 @@ export default function ServicesPage() {
   useEffect(() => {
     const email = sessionStorage.getItem('email');
 
-    fetch('https://printmanager-api.onrender.com/api/users')
+    fetch('https://printmanager-api.onrender.com/api/users', {
+      headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+    })
       .then((res) => res.json())
       .then((users) => {
         const user = users.find((u) => u.email === email);

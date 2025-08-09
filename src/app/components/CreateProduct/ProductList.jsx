@@ -525,7 +525,33 @@ export default function ProductList() {
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [searchTerm, setSearchTerm] = useState('');
   const [services, setServices] = useState([]);
+  const [sortField, setSortField] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [isAllowed, setIsAllowed] = useState(false);
   const router = useRouter();
+
+  // Fetch user permissions
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
+    if (email) {
+      fetch('https://printmanager-api.onrender.com/api/users', {
+              headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching users:', err);
+          setError('Failed to fetch user permissions');
+        });
+    }
+  }, []);
 
   // Fetch products
   useEffect(() => {
@@ -590,6 +616,7 @@ export default function ProductList() {
     fetchServices();
   }, []);
 
+  // Handle outside click to close dropdown
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-button')) {
@@ -600,17 +627,84 @@ export default function ProductList() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Filter products
-  useEffect(() => {
-    const filtered = products.filter((product) =>
-      [
-        product.id?.toString(),
-        product.title,
-        product.service?.title || services.find((s) => s.id === product.serviceId)?.title || '',
-      ].some((field) => field && field.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Handle sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  // Render sort icon
+  const renderSortIcon = (field) => {
+    if (sortField === field) {
+      return sortOrder === 'asc' ? (
+        <div className="ml-2 inline-flex flex-col space-y-[2px]">
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor">
+            <path d="M5 0L0 5H10L5 0Z" />
+          </svg>
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180">
+            <path d="M5 0L0 5H10L5 0Z" />
+          </svg>
+        </div>
+      ) : (
+        <div className="ml-2 inline-flex flex-col space-y-[2px]">
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor">
+            <path d="M5 0L0 5H10L5 0Z" />
+          </svg>
+          <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180">
+            <path d="M5 0L0 5H10L5 0Z" />
+          </svg>
+        </div>
+      );
+    }
+    return (
+      <div className="ml-2 inline-flex flex-col space-y-[2px]">
+        <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor">
+          <path d="M5 0L0 5H10L5 0Z" />
+        </svg>
+        <svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180">
+          <path d="M5 0L0 5H10L5 0Z" />
+        </svg>
+      </div>
     );
+  };
+
+  // Filter and sort products
+  useEffect(() => {
+    const filtered = products
+      .filter((product) =>
+        [
+          product.id?.toString(),
+          product.title,
+          product.service?.title || services.find((s) => s.id === product.serviceId)?.title || '',
+        ].some((field) => field && field.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+      .sort((a, b) => {
+        if (!sortField) return 0;
+        let valueA, valueB;
+
+        if (sortField === 'service') {
+          valueA = a.service?.title || services.find((s) => s.id === a.serviceId)?.title || '';
+          valueB = b.service?.title || services.find((s) => s.id === b.serviceId)?.title || '';
+        } else {
+          valueA = a[sortField] || '';
+          valueB = b[sortField] || '';
+        }
+
+        valueA = valueA.toString().toLowerCase();
+        valueB = valueB.toString().toLowerCase();
+
+        if (sortOrder === 'asc') {
+          return valueA > valueB ? 1 : -1;
+        } else {
+          return valueA < valueB ? 1 : -1;
+        }
+      });
     setFilteredProducts(filtered);
-  }, [searchTerm, products, services]);
+  }, [searchTerm, products, services, sortField, sortOrder]);
 
   // Action handlers
   const handleEditProduct = (productId) => {
@@ -657,21 +751,6 @@ export default function ProductList() {
     setMenuOpen(menuOpen === productId ? null : productId);
   };
 
-    const [isAllowed, setIsAllowed] = useState(false);
-        
-    useEffect(() => {
-      const email = sessionStorage.getItem('email');
-  
-      fetch('https://printmanager-api.onrender.com/api/users')
-        .then((res) => res.json())
-        .then((users) => {
-          const user = users.find((u) => u.email === email);
-          if (!user || user.isMember === true) {
-            setIsAllowed(true);
-          } 
-        })
-    }, []);
-
   return (
     <div>
       <div className="bg-white rounded-lg p-4 sm:p-5 md:p-6 border border-[#e5e7eb] mt-4 sm:mt-6">
@@ -680,30 +759,30 @@ export default function ProductList() {
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-[#111928] mb-1 sm:mb-2">Product Directory</h2>
             <p className="text-xs sm:text-sm text-[#9ca3af] mb-2 sm:mb-3">Search product catalog</p>
           </div>
-          {isAllowed ? "" : (
-          <div className="sm:mb-0 mb-[20px]">
-            <button
-              onClick={() => router.push('/dashboard/products/create')}
-              className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-white"
+          {isAllowed ? null : (
+            <div className="sm:mb-0 mb-[20px]">
+              <button
+                onClick={() => router.push('/dashboard/products/create')}
+                className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition flex items-center justify-center gap-1.5"
               >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Create Product
-            </button>
-          </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-white"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Product
+              </button>
+            </div>
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-5">
@@ -753,14 +832,53 @@ export default function ProductList() {
             <table className="w-full caption-bottom text-xs sm:text-sm">
               <thead>
                 <tr className="border-none bg-[#f7f9fc] text-[#111928]">
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] sm:min-w-[100px] md:pl-6">Product ID</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[60px] sm:min-w-[80px]">Image</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Title</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Service</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px]">Type</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px]">Price</th>
-                  {isAllowed ? "" : (
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 md:pr-6">Actions</th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] sm:min-w-[100px] md:pl-6 cursor-pointer"
+                    onClick={() => handleSort('id')}
+                  >
+                    <div className="flex items-center">
+                      Product ID {renderSortIcon('id')}
+                    </div>
+                  </th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[60px] sm:min-w-[80px]">
+                    Image
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] cursor-pointer"
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center">
+                      Title {renderSortIcon('title')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] cursor-pointer"
+                    onClick={() => handleSort('service')}
+                  >
+                    <div className="flex items-center">
+                      Service {renderSortIcon('service')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] cursor-pointer"
+                    onClick={() => handleSort('category')}
+                  >
+                    <div className="flex items-center">
+                      Type {renderSortIcon('category')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] cursor-pointer"
+                    onClick={() => handleSort('unitPrice')}
+                  >
+                    <div className="flex items-center">
+                      Price {renderSortIcon('unitPrice')}
+                    </div>
+                  </th>
+                  {isAllowed ? null : (
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 md:pr-6">
+                      Actions
+                    </th>
                   )}
                 </tr>
               </thead>
@@ -801,33 +919,33 @@ export default function ProductList() {
                         {product.unitPrice ? `$${product.unitPrice}` : 'N/A'}
                       </p>
                     </td>
-                    {isAllowed ? "" : (
-                    <td className="p-3 sm:p-4 align-middle md:pr-6">
-                      <div className="relative flex justify-end">
-                        <button
-                          className="dropdown-button hover:text-[#2563eb] transition"
-                          onClick={(e) => handleMenuClick(product.id, e)}
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                    {isAllowed ? null : (
+                      <td className="p-3 sm:p-4 align-middle md:pr-6">
+                        <div className="relative flex justify-end">
+                          <button
+                            className="dropdown-button hover:text-[#2563eb] transition"
+                            onClick={(e) => handleMenuClick(product.id, e)}
                           >
-                            <circle cx="10" cy="4" r="2" />
-                            <circle cx="10" cy="10" r="2" />
-                            <circle cx="10" cy="16" r="2" />
-                          </svg>
-                        </button>
-                        <DropdownMenu
-                          productId={product.id}
-                          menuPosition={menuPosition}
-                          menuOpen={menuOpen}
-                          onEdit={handleEditProduct}
-                          onDelete={handleDeleteProduct}
-                        />
-                      </div>
-                    </td>
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <circle cx="10" cy="4" r="2" />
+                              <circle cx="10" cy="10" r="2" />
+                              <circle cx="10" cy="16" r="2" />
+                            </svg>
+                          </button>
+                          <DropdownMenu
+                            productId={product.id}
+                            menuPosition={menuPosition}
+                            menuOpen={menuOpen}
+                            onEdit={handleEditProduct}
+                            onDelete={handleDeleteProduct}
+                          />
+                        </div>
+                      </td>
                     )}
                   </tr>
                 ))}

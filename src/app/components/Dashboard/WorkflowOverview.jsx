@@ -13,7 +13,11 @@ function WorkflowOverview() {
       setIsLoading(true);
       try {
         // Fetch workflows
-        const workflowsResponse = await fetch('https://printmanager-api.onrender.com/api/workflows');
+        const workflowsResponse = await fetch('https://printmanager-api.onrender.com/api/workflows', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!workflowsResponse.ok) {
           const errorData = await workflowsResponse.json();
           throw new Error(errorData.message || 'Failed to fetch workflows');
@@ -22,7 +26,11 @@ function WorkflowOverview() {
         const workflowsArray = Array.isArray(workflows) ? workflows : [];
 
         // Fetch orders
-        const ordersResponse = await fetch('https://printmanager-api.onrender.com/api/orders');
+        const ordersResponse = await fetch('https://printmanager-api.onrender.com/api/orders', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!ordersResponse.ok) {
           const errorData = await ordersResponse.json();
           throw new Error(errorData.message || 'Failed to fetch orders');

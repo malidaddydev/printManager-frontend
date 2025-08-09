@@ -17,6 +17,7 @@ const CancelOrderPopup = ({ isOpen, onClose, orderId, onCancel }) => {
       const response = await fetch(`https://printmanager-api.onrender.com/api/orders/cancel-order/${orderId}`, {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ status: 'cancelled' })
@@ -95,7 +96,7 @@ const DropdownMenu = ({ orderId, menuPosition, menuOpen, onView, onCancel, isAll
       >
         View Order
       </button>
-      {isAllowed ? "" : (
+      {isAllowed ? null : (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -121,61 +122,129 @@ export default function OrderList() {
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [cancelOrder, setCancelOrder] = useState({ isOpen: false, orderId: null });
   const [customerNames, setCustomerNames] = useState({});
+  const [filterOption, setFilterOption] = useState('showAll');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('');
+  const [dueDateFilterType, setDueDateFilterType] = useState('');
+  const [dueDateFilter, setDueDateFilter] = useState('');
+  const [sortField, setSortField] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [filters, setFilters] = useState({
-    orderStatus: '',
-    dueDate: '',
-    dueDateType: 'all'
-  });
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [isAllowed, setIsAllowed] = useState(false);
+  const [allOrders, setAllOrders] = useState([]);
 
+  // Fetch user permissions
+  useEffect(() => {
+    const email = sessionStorage.getItem('email');
+    if (email) {
+      fetch('https://printmanager-api.onrender.com/api/users', {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching users:', err);
+          setError('Failed to fetch user permissions');
+        });
+    }
+  }, []);
+
+  // Fetch all orders initially to get total count
+  useEffect(() => {
+    const fetchAllOrders = async () => {
+      try {
+        const response = await fetch('https://printmanager-api.onrender.com/api/orders/pagination?page=1&limit=999999', {
+          headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch all orders');
+        }
+        const fetchedOrders = await response.json();
+        setAllOrders(fetchedOrders);
+        setTotalOrders(fetchedOrders.length);
+        setTotalPages(Math.ceil(fetchedOrders.length / limit));
+      } catch (error) {
+        console.error('Error fetching all orders:', error);
+        setError(error.message);
+      }
+    };
+    fetchAllOrders();
+  }, [limit]);
+
+  // Fetch orders with pagination
   useEffect(() => {
     const fetchOrders = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/orders');
+        const response = await fetch(
+          `https://printmanager-api.onrender.com/api/orders/pagination?page=${currentPage}&limit=${limit}`,{
+            headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+          }
+        );
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch orders');
         }
-        const data = await response.json();
-        const ordersArray = Array.isArray(data) ? data : [];
-        setOrders(ordersArray);
+        const fetchedOrders = await response.json();
+        setOrders(fetchedOrders);
 
-        const customerIds = [...new Set(ordersArray.map(order => order.customerId))];
-        const customerPromises = customerIds.map(async (id) => {
-          try {
-            const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${id}`);
-            if (!res.ok) throw new Error(`Failed to fetch customer ${id}`);
-            const customerData = await res.json();
-            return { 
-              id, 
-              firstName: customerData.firstName || '', 
-              lastName: customerData.lastName || '' 
-            };
-          } catch (err) {
-            console.error(err);
-            return { id, firstName: '', lastName: '' };
-          }
-        });
-        const customers = await Promise.all(customerPromises);
-        const customerMap = customers.reduce((acc, { id, firstName, lastName }) => {
-          acc[id] = `${firstName} ${lastName}`.trim() || 'N/A';
-          return acc;
-        }, {});
-        setCustomerNames(customerMap);
+        // Fetch customer names only if orders exist
+        if (fetchedOrders.length > 0) {
+          const customerIds = [...new Set(fetchedOrders.map(order => order.customerId).filter(id => id))];
+          const customerPromises = customerIds.map(async (id) => {
+            try {
+              const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${id}`, {
+                headers: {
+                  'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+                },
+              });
+              if (!res.ok) throw new Error(`Failed to fetch customer ${id}`);
+              const customerData = await res.json();
+              return {
+                id,
+                firstName: customerData.firstName || '',
+                lastName: customerData.lastName || ''
+              };
+            } catch (err) {
+              console.error(err);
+              return { id, firstName: '', lastName: '' };
+            }
+          });
+          const customers = await Promise.all(customerPromises);
+          const customerMap = customers.reduce((acc, { id, firstName, lastName }) => {
+            acc[id] = `${firstName} ${lastName}`.trim() || 'N/A';
+            return acc;
+          }, {});
+          setCustomerNames(customerMap);
+        } else {
+          setCustomerNames({});
+        }
         setError(null);
       } catch (error) {
         console.error('Error fetching orders:', error);
         setError(error.message);
+        setOrders([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchOrders();
-  }, []);
+  }, [currentPage, limit]);
 
+  // Handle outside click to close dropdown
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-button')) {
@@ -186,82 +255,80 @@ export default function OrderList() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const handleSort = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
-    setCurrentPage(1); // Reset to first page on sort change
+  // Handle sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
   };
 
-  const sortedOrders = React.useMemo(() => {
-    let sortableOrders = [...orders];
-    if (sortConfig.key) {
-      sortableOrders.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
-
-        if (sortConfig.key === 'customerId') {
-          aValue = customerNames[a.customerId] || 'N/A';
-          bValue = customerNames[b.customerId] || 'N/A';
-        } else if (sortConfig.key === 'startDate' || sortConfig.key === 'dueDate') {
-          aValue = a[sortConfig.key] ? new Date(a[sortConfig.key]).getTime() : 0;
-          bValue = b[sortConfig.key] ? new Date(b[sortConfig.key]).getTime() : 0;
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-      });
+  // Render sort icon
+  const renderSortIcon = (field) => {
+    if (sortField === field) {
+      return sortOrder === 'asc' ? (<div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>) : (<div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>);
     }
-    return sortableOrders;
-  }, [orders, sortConfig, customerNames]);
-
-  const filteredOrders = sortedOrders.filter((order) => {
-    const customerName = customerNames[order.customerId]?.toLowerCase() || '';
-    const matchesSearch = !searchTerm.trim() || (
-      order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customerName.includes(searchTerm.toLowerCase()) ||
-      order.status?.toLowerCase().includes(searchTerm.toLowerCase())
+    return (
+      <div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>
     );
+  };
 
-    const matchesStatus = !filters.orderStatus || order.status?.toLowerCase() === filters.orderStatus.toLowerCase();
-    
-    const matchesDueDate = () => {
-      if (filters.dueDateType === 'all') return true;
-      if (!order.dueDate) return false;
+  // Filter and sort orders
+  const filteredOrders = Array.isArray(orders)
+    ? orders
+        .filter((order) => {
+          if (!order) return false;
+          if (filterOption === 'hideCancelled' && order.status?.toLowerCase() === 'cancelled') return false;
+          if (orderStatusFilter && order.status?.toLowerCase() !== orderStatusFilter.toLowerCase()) return false;
 
-      const dueDate = new Date(order.dueDate);
-      const now = new Date();
-      // Set time to 00:00:00 for date-only comparison
-      dueDate.setHours(0, 0, 0, 0);
-      now.setHours(0, 0, 0, 0);
+          const dueDateObj = new Date(order.dueDate);
+          if (isNaN(dueDateObj.getTime())) return false;
 
-      if (filters.dueDateType === 'overdue') {
-        // Include orders where due date is not equal to current date
-        // and exclude completed or cancelled orders
-        return dueDate.getTime() !== now.getTime() && 
-               order.status?.toLowerCase() !== 'completed' && 
-               order.status?.toLowerCase() !== 'cancelled';
-      } else if (filters.dueDateType === 'between') {
-        if (!filters.dueDate) return false;
-        const selectedDate = new Date(filters.dueDate);
-        selectedDate.setHours(0, 0, 0, 0);
-        return dueDate >= now && dueDate <= selectedDate;
-      }
-      return true;
-    };
+          const now = new Date();
+          now.setHours(0, 0, 0, 0);
+          const selectedDate = dueDateFilter ? new Date(dueDateFilter) : null;
+          if (selectedDate) selectedDate.setHours(23, 59, 59, 999);
 
-    return matchesSearch && matchesStatus && matchesDueDate();
-  });
+          if (dueDateFilterType === 'overdue') {
+            if (dueDateObj >= now) return false;
+          } else if (dueDateFilterType === 'dueBy' && dueDateFilter) {
+            if (dueDateObj < now || dueDateObj > selectedDate) return false;
+          }
 
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+          if (!searchTerm.trim()) return true;
+          const customerName = customerNames[order.customerId]?.toLowerCase() || '';
+          return (
+            (order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (order.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (customerName.includes(searchTerm.toLowerCase()) || false) ||
+            (order.status?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
+          );
+        })
+        .sort((a, b) => {
+          if (!sortField) return 0;
+          let valueA = a[sortField] || '';
+          let valueB = b[sortField] || '';
+          if (sortField === 'startDate' || sortField === 'dueDate') {
+            valueA = new Date(valueA).getTime();
+            valueB = new Date(valueB).getTime();
+          } else if (sortField === 'customerId') {
+            valueA = customerNames[valueA]?.toLowerCase() || '';
+            valueB = customerNames[valueB]?.toLowerCase() || '';
+          } else {
+            valueA = valueA.toString().toLowerCase();
+            valueB = valueB.toString().toLowerCase();
+          }
+          if (sortOrder === 'asc') {
+            return valueA > valueB ? 1 : -1;
+          } else {
+            return valueA < valueB ? 1 : -1;
+          }
+        })
+    : [];
 
+  // Action handlers
   const handleViewOrder = (orderId) => {
     router.push(`/dashboard/order/view/${orderId}`);
     setMenuOpen(null);
@@ -278,9 +345,15 @@ export default function OrderList() {
         order.id === orderId ? { ...order, status: 'Cancelled' } : order
       )
     );
+    setAllOrders((prev) =>
+      prev.map((order) =>
+        order.id === orderId ? { ...order, status: 'Cancelled' } : order
+      )
+    );
     setMenuOpen(null);
   };
 
+  // Handle menu open and position
   const handleMenuClick = (orderId, event) => {
     event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();
@@ -292,6 +365,19 @@ export default function OrderList() {
     setMenuOpen(menuOpen === orderId ? null : orderId);
   };
 
+  // Pagination handlers
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  // Status color mapping
   const getStatusStyles = (status) => {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -304,42 +390,77 @@ export default function OrderList() {
         return 'bg-gray-100 text-gray-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
+      case 'confirmed':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const [isAllowed, setIsAllowed] = useState(false);
-
-  useEffect(() => {
-    const email = sessionStorage.getItem('email');
-    fetch('https://printmanager-api.onrender.com/api/users')
-      .then((res) => res.json())
-      .then((users) => {
-        const user = users.find((u) => u.email === email);
-        if (!user || user.isMember === true) {
-          setIsAllowed(true);
-        }
-      });
-  }, []);
-
-  const renderSortIcon = (key) => {
-    // Always show the sort icon, default to ascending if not sorted
-    const isActive = sortConfig.key === key;
-    const direction = isActive ? sortConfig.direction : 'asc';
+  // Render pagination
+  const renderPagination = () => {
     return (
-      <svg
-        className="w-4 h-4 inline-block ml-1"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        {direction === 'asc' ? (
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-        ) : (
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        )}
-      </svg>
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4">
+        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+          <span className="text-sm text-[#111928]">Show</span>
+          <select
+            value={limit}
+            onChange={handleLimitChange}
+            className="px-2 py-1 border border-[#e5e7eb] rounded-lg text-sm"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={999999}>All</option>
+          </select>
+          <span className="text-sm text-[#111928]">entries</span>
+          <span className="text-sm text-[#111928]">
+            Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalOrders)} of {totalOrders} entries
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            First
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Previous
+          </button>
+          <span className="px-3 py-1 text-sm text-[#111928]">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Next
+          </button>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Last
+          </button>
+        </div>
+      </div>
     );
   };
 
@@ -352,7 +473,7 @@ export default function OrderList() {
             <p className="text-sm sm:text-base text-[#9ca3af] mb-3 sm:mb-4">Search and filter orders</p>
           </div>
           <div className="sm:mb-0 mb-[20px]">
-            {isAllowed ? "" : (
+            {isAllowed ? null : (
               <button
                 onClick={() => router.push('/dashboard/order/create')}
                 className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center cursor-pointer gap-1"
@@ -378,54 +499,75 @@ export default function OrderList() {
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label htmlFor="orderStatus" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+              <label htmlFor="filterOption" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+                Filter Orders
+              </label>
+              <select
+                id="filterOption"
+                value={filterOption}
+                onChange={(e) => setFilterOption(e.target.value)}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+              >
+                <option value="showAll">Show All Orders</option>
+                <option value="hideCancelled">Hide Cancelled Orders</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="orderStatusFilter" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
                 Order Status
               </label>
               <select
-                id="orderStatus"
-                value={filters.orderStatus}
-                onChange={(e) => setFilters(prev => ({ ...prev, orderStatus: e.target.value }))}
+                id="orderStatusFilter"
+                value={orderStatusFilter}
+                onChange={(e) => setOrderStatusFilter(e.target.value)}
                 className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
               >
                 <option value="">All Statuses</option>
-                <option value="draft">Draft</option>
-                <option value="in progress">In Progress</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
+                <option value="Draft">Draft</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Completed">Completed</option>
               </select>
             </div>
             <div>
-              <label htmlFor="dueDateType" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
+              <label htmlFor="dueDateFilterType" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
                 Due Date Filter
               </label>
               <select
-                id="dueDateType"
-                value={filters.dueDateType}
-                onChange={(e) => setFilters(prev => ({ ...prev, dueDateType: e.target.value }))}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+                id="dueDateFilterType"
+                value={dueDateFilterType}
+                onChange={(e) => setDueDateFilterType(e.target.value)}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm mb-2"
               >
-                <option value="all">All Dates</option>
+                <option value="">No Filter</option>
                 <option value="overdue">Overdue</option>
-                <option value="between">Due Between Now and Selected Date</option>
+                <option value="dueBy">Due Between Now and Date</option>
               </select>
+              {dueDateFilterType === 'dueBy' && (
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="date"
+                    id="dueDateFilter"
+                    value={dueDateFilter}
+                    onChange={(e) => setDueDateFilter(e.target.value)}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
+                  />
+                  {dueDateFilter && (
+                    <span className="text-xs sm:text-sm text-[#111928]">
+                      Showing orders due between {new Date().toLocaleDateString()} and {new Date(dueDateFilter).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              )}
+              {dueDateFilterType === 'overdue' && (
+                <span className="text-xs sm:text-sm text-[#111928]">
+                  Showing orders overdue as of {new Date().toLocaleDateString()}
+                </span>
+              )}
             </div>
-            {filters.dueDateType === 'between' && (
-              <div>
-                <label htmlFor="dueDate" className="block text-xs sm:text-sm font-medium text-[#111928] mb-1">
-                  Select Due Date
-                </label>
-                <input
-                  type="date"
-                  id="dueDate"
-                  value={filters.dueDate}
-                  onChange={(e) => setFilters(prev => ({ ...prev, dueDate: e.target.value }))}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-[#e5e7eb] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5750f1] text-xs sm:text-sm"
-                />
-              </div>
-            )}
           </div>
           <input
             type="text"
@@ -470,170 +612,125 @@ export default function OrderList() {
               No Data Found
             </div>
           ) : (
-            <>
-              <table className="w-full caption-bottom text-xs sm:text-sm">
-                <thead>
-                  <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-6">
-                      <button onClick={() => handleSort('orderNumber')} className="flex items-center">
-                        Order Number
-                        {renderSortIcon('orderNumber')}
-                      </button>
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                      <button onClick={() => handleSort('customerId')} className="flex items-center">
-                        Customer Name
-                        {renderSortIcon('customerId')}
-                      </button>
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                      <button onClick={() => handleSort('title')} className="flex items-center">
-                        Order Title
-                        {renderSortIcon('title')}
-                      </button>
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                      <button onClick={() => handleSort('startDate')} className="flex items-center">
-                        Order Date
-                        {renderSortIcon('startDate')}
-                      </button>
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                      <button onClick={() => handleSort('dueDate')} className="flex items-center">
-                        Delivery Date
-                        {renderSortIcon('dueDate')}
-                      </button>
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
-                      Order Status
-                    </th>
-                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="[&_tr:last-child]:border-0">
-                  {paginatedOrders.map((order) => (
-                    <tr
-                      key={order.id}
-                      className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
-                    >
-                      <td className="p-3 sm:p-4 align-middle min-w-[100px] xl:pl-6">
-                        <p className="text-[#111928] text-xs sm:text-sm">{order.orderNumber || 'N/A'}</p>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle">
-                        <p className="text-[#111928] text-xs sm:text-sm">{customerNames[order.customerId] || 'N/A'}</p>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle">
-                        <p className="text-[#111928] text-xs sm:text-sm">{order.title || 'N/A'}</p>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle">
-                        <p className="text-[#111928] text-xs sm:text-sm">
-                          {order.startDate ? new Date(order.startDate).toLocaleDateString() : 'N/A'}
-                        </p>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle">
-                        <p className="text-[#111928] text-xs sm:text-sm">
-                          {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : 'N/A'}
-                        </p>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle">
-                        <span
-                          className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
-                            order.status
-                          )}`}
+            <table className="w-full caption-bottom text-xs sm:text-sm">
+              <thead>
+                <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[100px] xl:pl-6 cursor-pointer"
+                    onClick={() => handleSort('orderNumber')}
+                  >
+                    <div className="flex items-center">
+                      Order Number {renderSortIcon('orderNumber')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('customerId')}
+                  >
+                    <div className="flex items-center">
+                      Customer Name {renderSortIcon('customerId')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('title')}
+                  >
+                    <div className="flex items-center">
+                      Order Title {renderSortIcon('title')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('startDate')}
+                  >
+                    <div className="flex items-center">
+                      Order Date {renderSortIcon('startDate')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('dueDate')}
+                  >
+                    <div className="flex items-center">
+                      Delivery Date {renderSortIcon('dueDate')}
+                    </div>
+                  </th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                    Order Status
+                  </th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:last-child]:border-0">
+                {filteredOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-[#eee] transition-colors hover:bg-neutral-100/50"
+                  >
+                    <td className="p-3 sm:p-4 align-middle min-w-[100px] xl:pl-6">
+                      <p className="text-[#111928] text-xs sm:text-sm">{order.orderNumber || 'N/A'}</p>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">{customerNames[order.customerId] || 'N/A'}</p>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">{order.title || 'N/A'}</p>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">
+                        {order.startDate ? new Date(order.startDate).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <p className="text-[#111928] text-xs sm:text-sm">
+                        {order.dueDate ? new Date(order.dueDate).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle">
+                      <span
+                        className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(
+                          order.status
+                        )}`}
+                      >
+                        {order.status || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="p-3 sm:p-4 align-middle xl:pr-6">
+                      <div className="relative flex justify-end">
+                        <button
+                          className="dropdown-button hover:text-[#2563eb] transition"
+                          onClick={(e) => handleMenuClick(order.id, e)}
                         >
-                          {order.status || 'N/A'}
-                        </span>
-                      </td>
-                      <td className="p-3 sm:p-4 align-middle xl:pr-6">
-                        <div className="relative flex justify-end">
-                          <button
-                            className="dropdown-button hover:text-[#2563eb] transition"
-                            onClick={(e) => handleMenuClick(order.id, e)}
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
                           >
-                            <svg
-                              width="18"
-                              height="18"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <circle cx="10" cy="4" r="2" />
-                              <circle cx="10" cy="10" r="2" />
-                              <circle cx="10" cy="16" r="2" />
-                            </svg>
-                          </button>
-                          <DropdownMenu
-                            orderId={order.id}
-                            menuPosition={menuPosition}
-                            menuOpen={menuOpen}
-                            onView={handleViewOrder}
-                            onCancel={handleCancelOrder}
-                            isAllowed={isAllowed}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-                <div className="text-sm text-[#9ca3af]">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(1)}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    First
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Previous
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 rounded-lg text-sm ${
-                        currentPage === page ? 'bg-[#5750f1] text-white' : 'bg-gray-200 hover:bg-gray-300'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded-lg text-sm ${
-                      currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    Last
-                  </button>
-                </div>
-              </div>
-            </>
+                            <circle cx="10" cy="4" r="2" />
+                            <circle cx="10" cy="10" r="2" />
+                            <circle cx="10" cy="16" r="2" />
+                          </svg>
+                        </button>
+                        <DropdownMenu
+                          orderId={order.id}
+                          menuPosition={menuPosition}
+                          menuOpen={menuOpen}
+                          onView={handleViewOrder}
+                          onCancel={handleCancelOrder}
+                          isAllowed={isAllowed}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
+        {renderPagination()}
       </div>
       <CancelOrderPopup
         isOpen={cancelOrder.isOpen}

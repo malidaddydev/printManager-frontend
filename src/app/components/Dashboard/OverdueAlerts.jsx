@@ -17,7 +17,11 @@ function OverdueAlerts() {
     const fetchOrders = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/orders');
+        const response = await fetch('https://printmanager-api.onrender.com/api/orders', {
+                headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+        });
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch orders');
@@ -44,7 +48,11 @@ function OverdueAlerts() {
         const customerIds = [...new Set(overdue.map(order => order.customerId))];
         const customerPromises = customerIds.map(async (id) => {
           try {
-            const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${id}`);
+            const res = await fetch(`https://printmanager-api.onrender.com/api/customers/${id}`, {
+                    headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+            });
             if (!res.ok) throw new Error(`Failed to fetch customer ${id}`);
             const customerData = await res.json();
             return { 

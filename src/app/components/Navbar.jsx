@@ -11,7 +11,11 @@ export default function Navbar({ toggleSidebar }) {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('https://printmanager-api.onrender.com/api/notifications/');
+      const response = await fetch('https://printmanager-api.onrender.com/api/notifications/', {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
@@ -49,7 +53,11 @@ export default function Navbar({ toggleSidebar }) {
   useEffect(() => {
     const email = sessionStorage.getItem('email');
   
-    fetch('https://printmanager-api.onrender.com/api/users')
+    fetch('https://printmanager-api.onrender.com/api/users', {
+      headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+    })
       .then((res) => res.json())
       .then((users) => {
         const user = users.find((u) => u.email === email);

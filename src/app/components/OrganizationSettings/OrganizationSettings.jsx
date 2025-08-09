@@ -72,7 +72,7 @@ const OrganizationSettings = () => {
         formData,
         {
           headers: {
-            // Authorization: `Bearer ${sessionStorage.getItem('authToken')}`,
+            Authorization: `Bearer ${sessionStorage.getItem('authToken')}`,
             'Content-Type': 'multipart/form-data',
           },
           onUploadProgress: (progressEvent) => {

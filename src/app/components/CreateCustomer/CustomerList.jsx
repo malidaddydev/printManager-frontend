@@ -317,18 +317,74 @@ export default function CustomerList({ onCustomerUpdated }) {
   const [menuOpen, setMenuOpen] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [isAllowed, setIsAllowed] = useState(false);
+  const [allCustomers, setAllCustomers] = useState([]);
   const router = useRouter();
 
-  // Fetch customers from API
+  // Fetch user permissions
   useEffect(() => {
-    const fetchCustomers = async () => {
-      setIsLoading(true);
+    const email = sessionStorage.getItem('email');
+    if (email) {
+      fetch('https://printmanager-api.onrender.com/api/users', {
+              headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((users) => {
+          const user = users.find((u) => u.email === email);
+          if (!user || user.isMember === true) {
+            setIsAllowed(true);
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching users:', err);
+          setError('Failed to fetch user permissions');
+        });
+    }
+  }, []);
+
+  // Fetch all customers initially to get total count
+  useEffect(() => {
+    const fetchAllCustomers = async () => {
       try {
-        const response = await fetch('https://printmanager-api.onrender.com/api/customers', {
+        const response = await fetch('https://printmanager-api.onrender.com/api/customers/pagination?page=1&limit=999999', {
           headers: {
             'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
           },
         });
+        if (!response.ok) {
+          throw new Error('Failed to fetch all customers');
+        }
+        const fetchedCustomers = await response.json();
+        setAllCustomers(fetchedCustomers);
+        setTotalCustomers(fetchedCustomers.length);
+        setTotalPages(Math.ceil(fetchedCustomers.length / limit));
+      } catch (error) {
+        console.error('Error fetching all customers:', error);
+        setError(error.message);
+      }
+    };
+    fetchAllCustomers();
+  }, [limit]);
+
+  // Fetch customers with pagination
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://printmanager-api.onrender.com/api/customers/pagination?page=${currentPage}&limit=${limit}`, {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+          },
+          });
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch customers');
@@ -339,12 +395,13 @@ export default function CustomerList({ onCustomerUpdated }) {
       } catch (error) {
         console.error('Error fetching customers:', error);
         setError(error.message);
+        setCustomers([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchCustomers();
-  }, [onCustomerUpdated]);
+  }, [currentPage, limit, onCustomerUpdated]);
 
   // Handle outside click to close dropdown
   useEffect(() => {
@@ -357,17 +414,56 @@ export default function CustomerList({ onCustomerUpdated }) {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Filter customers
-  const filteredCustomers = customers.filter((customer) => {
-    if (!searchTerm.trim()) return true;
-    const matchesSearch =
-      (customer.id && customer.id.toString().includes(searchTerm)) ||
-      (customer.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (customer.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (customer.company?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    return matchesSearch;
-  });
+  // Handle sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  // Render sort icon
+  const renderSortIcon = (field) => {
+    if (sortField === field) {
+      return sortOrder === 'asc' ? (
+        <div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>
+      ) : (
+        <div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>
+      );
+    }
+    return (
+      <div className="ml-2 inline-flex flex-col space-y-[2px]" bis_skin_checked="1"><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg><svg width="10" height="5" viewBox="0 0 10 5" fill="currentColor" className="rotate-180"><path d="M5 0L0 5H10L5 0Z" fill=""></path></svg></div>
+    );
+  };
+
+  // Filter and sort customers
+  const filteredCustomers = Array.isArray(customers)
+    ? customers
+        .filter((customer) => {
+          if (!searchTerm.trim()) return true;
+          const matchesSearch =
+            (customer.id && customer.id.toString().includes(searchTerm)) ||
+            (customer.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (customer.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+            (customer.company?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+          return matchesSearch;
+        })
+        .sort((a, b) => {
+          if (!sortField) return 0;
+          let valueA = a[sortField] || '';
+          let valueB = b[sortField] || '';
+          valueA = valueA.toString().toLowerCase();
+          valueB = valueB.toString().toLowerCase();
+          if (sortOrder === 'asc') {
+            return valueA > valueB ? 1 : -1;
+          } else {
+            return valueA < valueB ? 1 : -1;
+          }
+        })
+    : [];
 
   // Action handlers
   const handleEditCustomer = (customerId) => {
@@ -409,28 +505,90 @@ export default function CustomerList({ onCustomerUpdated }) {
     const rect = event.currentTarget.getBoundingClientRect();
     const newPosition = {
       top: rect.bottom + window.scrollY,
-      right: Math.max(16, window.innerWidth - rect.right + window.scrollX), // Ensure minimum 16px from right edge
+      right: Math.max(16, window.innerWidth - rect.right + window.scrollX),
     };
     setMenuPosition(newPosition);
     setMenuOpen(menuOpen === customerId ? null : customerId);
   };
 
-      const [isAllowed, setIsAllowed] = useState(false);
-    
-      useEffect(() => {
-        const email = sessionStorage.getItem('email');
-    
-        fetch('https://printmanager-api.onrender.com/api/users')
-          .then((res) => res.json())
-          .then((users) => {
-            const user = users.find((u) => u.email === email);
-            if (!user || user.isMember === true) {
-              setIsAllowed(true);
-            } 
-          })
-      }, []);
-    
-  
+  // Pagination handlers
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  // Render pagination
+  const renderPagination = () => {
+    return (
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4">
+        <div className="flex items-center gap-2 mb-2 sm:mb-0">
+          <span className="text-sm text-[#111928]">Show</span>
+          <select
+            value={limit}
+            onChange={handleLimitChange}
+            className="px-2 py-1 border border-[#e5e7eb] rounded-lg text-sm"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={999999}>All</option>
+          </select>
+          <span className="text-sm text-[#111928]">entries</span>
+          <span className="text-sm text-[#111928]">
+            Showing {(currentPage - 1) * limit + 1} to {Math.min(currentPage * limit, totalCustomers)} of {totalCustomers} entries
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            First
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === 1 ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Previous
+          </button>
+          <span className="px-3 py-1 text-sm text-[#111928]">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Next
+          </button>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-lg text-sm ${
+              currentPage === totalPages ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#5750f1] text-white hover:bg-blue-700'
+            }`}
+          >
+            Last
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -441,30 +599,28 @@ export default function CustomerList({ onCustomerUpdated }) {
             <p className="text-sm sm:text-base text-[#9ca3af] mt-1">Search customer accounts</p>
           </div>
           <div>
-            {isAllowed ? (
-              ""
-            ) : (
-            <button
-              onClick={() => router.push('/dashboard/customer/create')}
-              className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-white"
+            {isAllowed ? null : (
+              <button
+                onClick={() => router.push('/dashboard/customer/create')}
+                className="bg-[#5750f1] text-white py-2 sm:py-2.5 px-4 sm:px-6 md:px-8 rounded-lg font-medium text-xs sm:text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1"
               >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Create Customer
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-white"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Customer
+              </button>
             )}
           </div>
         </div>
@@ -515,16 +671,69 @@ export default function CustomerList({ onCustomerUpdated }) {
             <table className="w-full caption-bottom text-xs sm:text-sm">
               <thead>
                 <tr className="border-none bg-[#F7F9FC] py-3 sm:py-4 text-sm sm:text-base text-[#111928]">
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] sm:min-w-[100px] xl:pl-6">Customer ID</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">First Name</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">Last Name</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden sm:table-cell">Email</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden md:table-cell">Mobile</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell">Mobile 2</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell">Company</th>
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">Address</th>
-                  {isAllowed ? "" : (
-                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">Actions</th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 min-w-[80px] sm:min-w-[100px] xl:pl-6 cursor-pointer"
+                    onClick={() => handleSort('id')}
+                  >
+                    <div className="flex items-center">
+                      Customer ID {renderSortIcon('id')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('firstName')}
+                  >
+                    <div className="flex items-center">
+                      First Name {renderSortIcon('firstName')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 cursor-pointer"
+                    onClick={() => handleSort('lastName')}
+                  >
+                    <div className="flex items-center">
+                      Last Name {renderSortIcon('lastName')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden sm:table-cell cursor-pointer"
+                    onClick={() => handleSort('email')}
+                  >
+                    <div className="flex items-center">
+                      Email {renderSortIcon('email')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden md:table-cell cursor-pointer"
+                    onClick={() => handleSort('mobile')}
+                  >
+                    <div className="flex items-center">
+                      Mobile {renderSortIcon('mobile')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell cursor-pointer"
+                    onClick={() => handleSort('mobile2')}
+                  >
+                    <div className="flex items-center">
+                      Mobile 2 {renderSortIcon('mobile2')}
+                    </div>
+                  </th>
+                  <th
+                    className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500 hidden lg:table-cell cursor-pointer"
+                    onClick={() => handleSort('company')}
+                  >
+                    <div className="flex items-center">
+                      Company {renderSortIcon('company')}
+                    </div>
+                  </th>
+                  <th className="h-10 sm:h-12 px-3 sm:px-4 text-left align-middle font-medium text-neutral-500">
+                    Address
+                  </th>
+                  {isAllowed ? null : (
+                    <th className="h-10 sm:h-12 px-3 sm:px-4 text-right align-middle font-medium text-neutral-500 xl:pr-6">
+                      Actions
+                    </th>
                   )}
                 </tr>
               </thead>
@@ -565,35 +774,33 @@ export default function CustomerList({ onCustomerUpdated }) {
                         View Address
                       </button>
                     </td>
-                    {isAllowed ? (
-                      ""
-                    ) : (
-                    <td className="p-3 sm:p-4 align-middle xl:pr-6">
-                      <div className="relative flex justify-end">
-                        <button
-                          className="dropdown-button hover:text-[#2563eb] transition"
-                          onClick={(e) => handleMenuClick(customer.id, e)}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
+                    {isAllowed ? null : (
+                      <td className="p-3 sm:p-4 align-middle xl:pr-6">
+                        <div className="relative flex justify-end">
+                          <button
+                            className="dropdown-button hover:text-[#2563eb] transition"
+                            onClick={(e) => handleMenuClick(customer.id, e)}
                           >
-                            <circle cx="10" cy="4" r="2" />
-                            <circle cx="10" cy="10" r="2" />
-                            <circle cx="10" cy="16" r="2" />
-                          </svg>
-                        </button>
-                        <DropdownMenu
-                          customerId={customer.id}
-                          menuPosition={menuPosition}
-                          menuOpen={menuOpen}
-                          onEdit={handleEditCustomer}
-                          onDelete={handleDeleteCustomer}
-                        />
-                      </div>
-                    </td>
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <circle cx="10" cy="4" r="2" />
+                              <circle cx="10" cy="10" r="2" />
+                              <circle cx="10" cy="16" r="2" />
+                            </svg>
+                          </button>
+                          <DropdownMenu
+                            customerId={customer.id}
+                            menuPosition={menuPosition}
+                            menuOpen={menuOpen}
+                            onEdit={handleEditCustomer}
+                            onDelete={handleDeleteCustomer}
+                          />
+                        </div>
+                      </td>
                     )}
                   </tr>
                 ))}
@@ -601,6 +808,7 @@ export default function CustomerList({ onCustomerUpdated }) {
             </table>
           )}
         </div>
+        {renderPagination()}
       </div>
       <ViewAddressPopup
         isOpen={viewAddress.isOpen}
